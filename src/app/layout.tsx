@@ -10,16 +10,17 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "BioTech.Industries",
   description: "BioTech.Industries",
+  metadataBase: new URL("https://biotech.cedne.ru"),
   openGraph: {
     type: "website",
     locale: "ru_RU",
-    url: "https://biotech.industries",
+    url: "https://biotech.cedne.ru",
     description: "BioTech.Industries",
     title: "BioTech.Industries",
     siteName: "BioTech.Industries",
     images: [
       {
-        url: "https://biotech.industries/banner.png",
+        url: "https://biotech.cedne.ru/banner.png",
         width: 1024,
         height: 576,
         alt: "BioTech.Industries",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
   },
   authors: [
     { name: "Aleksey Vokhmin", url: "https://github.com/gosvoh" },
-    { name: "BioTech.Industries", url: "https://biotech.industries" },
+    { name: "BioTech.Industries", url: "https://biotech.cedne.ru" },
   ],
   creator: "Aleksey Vokhmin",
   applicationName: "BioTech.Industries",
