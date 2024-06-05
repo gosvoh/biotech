@@ -40,7 +40,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/biotech:${{ steps.package-version.outputs.version }}, ${{ secrets.DOCKER_USERNAME }}/biotech:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/biotech:${{ steps.package-version.outputs.current-version }}, ${{ secrets.DOCKER_USERNAME }}/biotech:latest
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
