@@ -19,6 +19,9 @@ export default function Navbar() {
         <Link href="/about" className="text-2xl font-bold">
           About
         </Link>
+        <Link href="/contact" className="text-2xl font-bold">
+          Contact
+        </Link>
       </div>
     </nav>
   );
