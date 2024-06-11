@@ -8,32 +8,32 @@ import Footer from "@/components/footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BioTech.Industries",
-  description: "BioTech.Industries",
+  title: "BioTech",
+  description: "BioTech",
   metadataBase: new URL("https://biotech.cedne.ru"),
   openGraph: {
     type: "website",
     locale: "ru_RU",
     url: "https://biotech.cedne.ru",
-    description: "BioTech.Industries",
-    title: "BioTech.Industries",
-    siteName: "BioTech.Industries",
+    description: "BioTech",
+    title: "BioTech",
+    siteName: "BioTech",
     images: [
       {
         url: "https://biotech.cedne.ru/banner.png",
         width: 1024,
         height: 576,
-        alt: "BioTech.Industries",
+        alt: "BioTech",
         type: "image/png",
       },
     ],
   },
   authors: [
     { name: "Aleksey Vokhmin", url: "https://github.com/gosvoh" },
-    { name: "BioTech.Industries", url: "https://biotech.cedne.ru" },
+    { name: "BioTech", url: "https://biotech.cedne.ru" },
   ],
   creator: "Aleksey Vokhmin",
-  applicationName: "BioTech.Industries",
+  applicationName: "BioTech",
 };
 
 export default function RootLayout({
