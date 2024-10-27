@@ -40,7 +40,7 @@ export const generateOGImage = async (
           }}
         >
           <img
-            src="http://localhost:3000/Biotech-Logotype.png"
+            src="https://biotech.cedne.ru/Biotech-Logotype.png"
             alt="Biotech"
             style={{
               width: 300,
