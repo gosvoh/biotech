@@ -2,7 +2,7 @@ import BiotechTextLogo from "@public/Biotech-Logotype.svg";
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SiV, SiVk } from "@icons-pack/react-simple-icons";
+import { SiVk } from "@icons-pack/react-simple-icons";
 import { links } from "@/lib/links";
 
 export default function Footer() {
