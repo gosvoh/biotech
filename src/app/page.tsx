@@ -10,8 +10,8 @@ import { generateMeta } from "@/lib/meta";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = generateMeta(
-  "Biotech.Industries",
-  "Создаем инновации в биотех-индустрии"
+  "БиоТех ИТМО",
+  "Факультет биотехнологий университета ИТМО"
 );
 
 export default function Home() {
