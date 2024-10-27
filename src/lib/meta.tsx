@@ -81,7 +81,7 @@ export const generateMeta = (title: string, description: string): Metadata => ({
   title,
   description,
   icons: "favicon.ico",
-  metadataBase: new URL("https://itmo.biotech.industries"),
+  metadataBase: new URL("https://biotech.cedne.ru"),
   creator: "Aleksey Vokhmin",
   openGraph: {
     type: "website",
