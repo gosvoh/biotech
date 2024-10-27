@@ -74,7 +74,7 @@ export default function Home() {
 
         <section className="max-md:p-0">
           <div className="wrapper">
-            <div className="accent-gradient md:rounded-3xl p-20 gap-6 main-block xl:flex-row md:gap-[48px] items-center justify-center">
+            <div className="accent-gradient md:rounded-3xl section-padding gap-6 main-block xl:flex-row md:gap-[48px] items-center justify-center">
               <Image
                 src={Mvk}
                 alt=""

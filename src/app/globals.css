@@ -95,7 +95,7 @@ body {
 
   section {
     @apply scroll-mt-20;
-    @apply pt-10 md:pt-20 pb-20;
+    @apply section-padding;
 
     & > * {
       @apply main-block;
@@ -104,6 +104,10 @@ body {
 }
 
 @layer components {
+  .section-padding {
+    @apply pt-10 md:pt-20 pb-20 p-6 md:px-20;
+  }
+
   .wrapper {
     @apply w-full max-w-[1400px] mx-auto;
   }
