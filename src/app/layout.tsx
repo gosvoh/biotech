@@ -4,7 +4,10 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
-const font = Montserrat_Alternates({ weight: ["400", "700"] });
+const font = Montserrat_Alternates({
+  weight: ["400", "700"],
+  subsets: ["cyrillic"],
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
