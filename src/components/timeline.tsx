@@ -20,10 +20,10 @@ export default function Timeline({
             key={`timeline-step-${i}`}
             className="flex flex-col gap-2 relative half-circle"
           >
-            <p className="text-typo-secondary font-bold text-3xl">
-              {date} <span className="text-2xl">год</span>
+            <p className="text-typo-secondary font-bold text-3xl md:text-5xl">
+              {date} <span className="text-2xl md:text-3xl">год</span>
             </p>
-            <p className="text-sm">{text}</p>
+            <p className="text-sm md:text-xl">{text}</p>
           </div>
         ))}
       </div>
