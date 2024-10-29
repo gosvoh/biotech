@@ -8,6 +8,8 @@ import Mvk from "@public/mvk.png";
 import Link from "next/link";
 import { generateMeta } from "@/lib/meta";
 import type { Metadata } from "next";
+import Carousel from "@/components/carousel";
+import Timeline from "@/components/timeline";
 
 export const metadata: Metadata = generateMeta(
   "БиоТех ИТМО",
@@ -17,7 +19,7 @@ export const metadata: Metadata = generateMeta(
 export default function Home() {
   return (
     <div className="">
-      <main className="">
+      <main className="overflow-hidden">
         <section className="accent-gradient max-md:rounded-b-[60px] max-w-none">
           <div className="wrapper flex flex-col gap-6 md:flex-row-reverse items-center">
             <div className="relative">
@@ -42,11 +44,19 @@ export default function Home() {
           </div>
         </section>
 
+        {/* <div>
+          <h2 className="wrapper">Новости факультета</h2>
+          <Carousel />
+          <div className="wrapper">
+            <Button className="xl:text-2xl">Все новости</Button>
+          </div>
+        </div> */}
+
         <section>
           <div className="wrapper">
             <h2>Новости факультета</h2>
-            <div className="space-y-6">
-              <div className="border border-black rounded-2.5xl h-[530px]"></div>
+            <div className="space-y-6 wrapper overflow-visible">
+              <Carousel />
               <Button className="xl:text-2xl">Все новости</Button>
             </div>
           </div>
@@ -69,6 +79,30 @@ export default function Home() {
           </div>
           <div className="wrapper">
             <h3>История факультета</h3>
+            <Timeline
+              steps={[
+                {
+                  date: "1772",
+                  text: "Основание Императорского коммерческого училища, наследником которого стал Институт холодильной промышленности",
+                },
+                {
+                  date: "1931",
+                  text: "Основание Института холодильной промышленности",
+                },
+                {
+                  date: "2011",
+                  text: "Присоединение Института холодильной промышленности к Университету ИТМО и его преобразование в Институт холода и биотехнологий",
+                },
+                {
+                  date: "2015",
+                  text: "Расформирование Института холода и биотехнологий, создание факультета холодильной, криогенной техники и кондиционирования, а также факультета пищевых биотехнологий и инженерии",
+                },
+                {
+                  date: "2020",
+                  text: "Начало новейшей истории факультета биотехнологий",
+                },
+              ]}
+            />
           </div>
         </section>
 

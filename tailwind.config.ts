@@ -60,13 +60,19 @@ const config: Config = {
         brand: {
           DEFAULT: "hsl(var(--brand))",
         },
+        brand3: {
+          DEFAULT: "hsl(var(--brand3))",
+        },
+        "typo-secondary": {
+          DEFAULT: "hsl(var(--typo-secondary))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
         "2.5xl": "calc(var(--radius) + 0.5rem)",
-        "2.75xl": "calc(var(--radius) + 0.75rem)",
+        "2.75xl": "calc(var(--radius) + 0.75rem) /* 24px */",
       },
       fontSize: {
         "2xs": ["0.625rem", "0.75rem"],
