@@ -10,6 +10,7 @@ import { generateMeta } from "@/lib/meta";
 import type { Metadata } from "next";
 import Carousel from "@/components/carousel";
 import Timeline from "@/components/timeline";
+import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = generateMeta(
   "БиоТех ИТМО",
@@ -44,20 +45,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* <div>
-          <h2 className="wrapper">Новости факультета</h2>
-          <Carousel />
-          <div className="wrapper">
-            <Button className="xl:text-2xl">Все новости</Button>
-          </div>
-        </div> */}
-
         <section>
           <div className="wrapper">
             <h2>Новости факультета</h2>
             <div className="space-y-6 wrapper overflow-visible">
               <Carousel />
-              <Button className="xl:text-2xl">Все новости</Button>
+              <Button className="xl:text-2xl gap-[10px] md:gap-4">
+                Все новости <ArrowUpRight />
+              </Button>
             </div>
           </div>
         </section>
