@@ -18,7 +18,7 @@ export default function Timeline({
         {steps.map(({ date, text }, i) => (
           <div
             key={`timeline-step-${i}`}
-            className="flex flex-col gap-2 relative half-circle"
+            className="flex flex-col gap-2 md:gap-4 relative half-circle"
           >
             <p className="text-typo-secondary font-bold text-3xl md:text-5xl">
               {date} <span className="text-2xl md:text-3xl">год</span>
