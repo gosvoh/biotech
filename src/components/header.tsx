@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import BiotechTextLogo from "@public/Biotech-Logotype.svg";
 import {
@@ -12,7 +14,7 @@ import {
 import { Button } from "./ui/button";
 import { MenuIcon } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 
 const links: {
   href: React.ComponentPropsWithoutRef<typeof Link>["href"];
@@ -65,8 +67,32 @@ const DesktopMenu = () => (
 );
 
 export default function Header() {
+  const headerRef = React.useRef<HTMLDivElement>(null);
+  const prevScrollPos = React.useRef(0);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      if (prevScrollPos.current <= currentScrollPos) {
+        header.classList.add("-translate-y-[200px]");
+      } else {
+        header.classList.remove("-translate-y-[200px]");
+      }
+      prevScrollPos.current = currentScrollPos;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [headerRef.current]);
+
   return (
-    <header className="sticky top-0 z-10 md:bg-card">
+    <header
+      ref={headerRef}
+      className="sticky top-0 z-10 md:bg-card transition-transform duration-300"
+    >
       <div className="flex flex-row justify-between items-center gap-4 wrapper">
         <Link href="/">
           <Image
