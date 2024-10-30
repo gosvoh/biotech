@@ -49,8 +49,12 @@ export default function Home() {
           <div className="wrapper">
             <h2>Новости факультета</h2>
             <div className="space-y-6 wrapper overflow-visible">
-              <Carousel />
-              <Button className="xl:text-2xl gap-[10px] md:gap-4">
+              <Carousel>
+                <Button className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden">
+                  Все новости <ArrowUpRight />
+                </Button>
+              </Carousel>
+              <Button className="xl:text-2xl gap-[10px] md:gap-4 md:hidden">
                 Все новости <ArrowUpRight />
               </Button>
             </div>

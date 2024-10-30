@@ -66,6 +66,9 @@ const config: Config = {
         "typo-secondary": {
           DEFAULT: "hsl(var(--typo-secondary))",
         },
+        "accent-carbon": {
+          DEFAULT: "hsl(var(--accent-carbon))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

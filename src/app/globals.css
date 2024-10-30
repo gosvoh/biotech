@@ -48,6 +48,7 @@ body {
     --brand3: 260 72% 54%;
 
     --typo-secondary: 0 0% 60%;
+    --accent-carbon: 223 16% 22%;
   }
 }
 
@@ -150,34 +151,6 @@ body {
       @apply w-full;
     }
   }
-
-  .half-circle {
-    &:before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -58px;
-      width: 36px;
-      height: 36px;
-      background-color: hsl(var(--accent));
-      border-radius: 50%;
-      z-index: -1;
-      transform: translateX(-25%);
-    }
-
-    /* круг создан в before, теперь нужно обрезать его до половины */
-    &:after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -58px;
-      width: 18px;
-      height: 36px;
-      background-color: hsl(var(--background));
-      z-index: -1;
-      transform: translateX(-60%);
-    }
-  }
 }
 
 @layer utilities {
@@ -188,5 +161,9 @@ body {
 
   .position-normal {
     position: initial;
+  }
+
+  .dev-outline {
+    @apply outline outline-1 outline-[red];
   }
 }

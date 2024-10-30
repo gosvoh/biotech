@@ -35,13 +35,13 @@ const CarouselImage = ({
       />
       <div className="space-y-4">
         <p className="text-brand3 text-xl">{date}</p>
-        <h3>{title}</h3>
+        <h3 className="text-2xl text-accent-carbon">{title}</h3>
       </div>
     </div>
   </CarouselItem>
 );
 
-export default function Carousel() {
+export default function Carousel({ children }: React.PropsWithChildren) {
   return (
     <EmblaCarousel
       opts={{
@@ -52,26 +52,29 @@ export default function Carousel() {
       }}
       className={cn("w-full h-full flex flex-col gap-6 overflow-visible")}
     >
-      <CarouselContent className="flex-1 max-md:-ml-10 overflow-visible">
+      <CarouselContent className="flex-1 max-md:-ml-10 -ml-6 overflow-visible">
         {Array.from({ length: 20 }).map((_, i) => (
           <CarouselImage
             key={i}
             src={TestImage}
-            className="max-md:pl-10"
+            className="max-md:pl-10 pl-6"
             date="14 сентября"
             title="День Открытых Дверей программы магистратуры «ФудТех»"
           />
         ))}
       </CarouselContent>
-      <div className="flex flex-row justify-center gap-4">
-        <CarouselPrevious
-          variant={"default"}
-          className="disabled:bg-card disabled:text-foreground disabled:opacity-100"
-        />
-        <CarouselNext
-          variant={"default"}
-          className="disabled:bg-card disabled:text-foreground disabled:opacity-100"
-        />
+      <div className="flex flex-row justify-center gap-4 items-center md:justify-between">
+        {children}
+        <div className="flex flex-row justify-center gap-4 items-center">
+          <CarouselPrevious
+            variant={"default"}
+            className="disabled:bg-card disabled:text-foreground disabled:opacity-100"
+          />
+          <CarouselNext
+            variant={"default"}
+            className="disabled:bg-card disabled:text-foreground disabled:opacity-100"
+          />
+        </div>
       </div>
     </EmblaCarousel>
   );
