@@ -61,7 +61,7 @@ const Card = ({
 
 const DevelopmentDepartment = () => (
   <>
-    <p className="text-special-dark-gray text-base lg:max-w-3/5">
+    <p className="text-special-dark-gray text-base lg:max-w-3/5 lg:mb-20">
       {removeHangingPrepositionsAndConjunctions(
         <>
           Отдел развития факультета занимается стратегическим планированием,
@@ -127,7 +127,7 @@ const DesktopLayout = ({ className }: { className?: string }) => (
       <DevelopmentDepartment />
     </div>
     <div className="flex flex-col gap-4 py-20">
-      <h2>Преподаватели/Руководители научных групп</h2>
+      <h2 className="mb-20">Преподаватели/Руководители научных групп</h2>
       <ResearchDepartment />
     </div>
   </div>
