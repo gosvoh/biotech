@@ -22,10 +22,7 @@ const CarouselImage = ({
   className?: string;
 }) => (
   <CarouselItem
-    className={cn(
-      "md:basis-3/4 xl:basis-2/5 max-h-[720px] min-h-350px",
-      className
-    )}
+    className={cn("md:basis-3/4 xl:basis-2/5 min-h-350px", className)}
   >
     <div className="border border-border rounded-2.75xl p-10 space-y-6">
       <Image
