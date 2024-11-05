@@ -69,6 +69,9 @@ const config: Config = {
         "accent-carbon": {
           DEFAULT: "hsl(var(--accent-carbon))",
         },
+        "special-dark-gray": {
+          DEFAULT: "hsl(var(--special-dark-gray))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -116,6 +119,28 @@ const config: Config = {
         width: "width",
         spacing: "margin, padding",
         border: "border",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
+        },
+        "accordion-up": {
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
