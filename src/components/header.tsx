@@ -95,7 +95,7 @@ export default function Header() {
           <Image
             src={BiotechTextLogo}
             alt="Biotech"
-            className="w-32 max-md:invert"
+            className="h-11 md:h-20 w-auto max-md:invert"
           />
         </Link>
         <MobileMenu />
