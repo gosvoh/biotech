@@ -41,6 +41,5 @@ next-env.d.ts
 
 
 database
-migrations
 
 /src/lib/db/client

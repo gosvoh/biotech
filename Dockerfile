@@ -12,6 +12,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+VOLUME /app/database
+
+RUN npm run db:deploy
+RUN npm run db:generate
 RUN npm run build
 
 FROM base AS runner
@@ -36,7 +40,6 @@ EXPOSE 3000
 
 ENV PORT 3000
 
-VOLUME /app/database
 VOLUME /app/uploads
 
 CMD HOSTNAME="0.0.0.0" node server.js
