@@ -12,8 +12,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-VOLUME /app/database
-
 ARG DATABASE_URL
 ENV DATABASE_URL ${DATABASE_URL}
 
@@ -43,6 +41,7 @@ EXPOSE 3000
 
 ENV PORT 3000
 
+VOLUME /app/database
 VOLUME /app/uploads
 
 CMD HOSTNAME="0.0.0.0" node server.js
