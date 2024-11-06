@@ -10,6 +10,16 @@ import Link from "next/link";
 import Mvk from "@public/mvk.png";
 import FigureImage from "@/components/figure-image";
 import Breadcrumbs from "@/components/breadcrumbs";
+import { unstable_cache as cache } from "next/cache";
+
+const getMemberData = cache(
+  async () => {
+    const res = await fetch(`https://api.example.com/members/`);
+    return res.json();
+  },
+  ["members"],
+  { revalidate: 3600, tags: ["members"] }
+);
 
 const Card = ({
   image,
