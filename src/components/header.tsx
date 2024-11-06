@@ -71,22 +71,19 @@ export default function Header() {
   const prevScrollPos = React.useRef(0);
 
   useEffect(() => {
-    const header = headerRef.current;
-    if (!header) return;
-
     const handleScroll = () => {
       const currentScrollPos = window.scrollY;
       if (prevScrollPos.current <= currentScrollPos) {
-        header.classList.add("-translate-y-[200px]");
+        headerRef.current?.classList.add("-translate-y-[200px]");
       } else {
-        header.classList.remove("-translate-y-[200px]");
+        headerRef.current?.classList.remove("-translate-y-[200px]");
       }
       prevScrollPos.current = currentScrollPos;
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [headerRef.current]);
+  }, []);
 
   return (
     <header

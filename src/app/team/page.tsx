@@ -12,6 +12,7 @@ import FigureImage from "@/components/figure-image";
 import Breadcrumbs from "@/components/breadcrumbs";
 import { unstable_cache as cache } from "next/cache";
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const getMemberData = cache(
   async () => {
     const res = await fetch(`https://api.example.com/members/`);
