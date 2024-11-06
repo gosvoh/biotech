@@ -14,6 +14,9 @@ COPY . .
 
 VOLUME /app/database
 
+ARG DATABASE_URL
+ENV DATABASE_URL ${DATABASE_URL}
+
 RUN npm run db:deploy
 RUN npm run db:generate
 RUN npm run build
