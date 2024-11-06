@@ -36,4 +36,7 @@ EXPOSE 3000
 
 ENV PORT 3000
 
+VOLUME /app/database
+VOLUME /app/uploads
+
 CMD HOSTNAME="0.0.0.0" node server.js
