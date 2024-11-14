@@ -106,6 +106,10 @@ body {
       @apply main-block;
     }
   }
+
+  main *:not(div) {
+    @apply transition-opacity duration-1000 ease-in-out;
+  }
 }
 
 @layer components {
