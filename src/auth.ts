@@ -9,12 +9,13 @@ declare module "next-auth" {
       role: string;
     } & DefaultSession["user"];
   }
-  // interface User {
-  //   role: string;
-  // }
+  interface User {
+    role: string;
+  }
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // @ts-ignore - PrismaAdapter is not typed in the NextAuth library
   adapter: PrismaAdapter(prisma),
   callbacks: {
     authorized: async ({ auth }) => {
