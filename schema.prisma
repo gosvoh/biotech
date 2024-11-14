@@ -22,6 +22,8 @@ model User {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    role String @default("user")
 }
 
 model Account {

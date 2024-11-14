@@ -12,12 +12,14 @@
     "db:generate": "prisma generate"
   },
   "dependencies": {
+    "@ant-design/nextjs-registry": "^1.0.1",
     "@auth/prisma-adapter": "^2.7.3",
     "@icons-pack/react-simple-icons": "^10.1.0",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-accordion": "^1.2.1",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.0",
+    "antd": "^5.21.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.3.1",

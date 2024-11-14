@@ -1,3 +1,18 @@
+import { Button, Space } from "antd";
+import Link from "next/link";
+
 export default function Admin() {
-  return <>ADMIN</>;
+  return (
+    <main>
+      <section>
+        <div className="wrapper">
+          <Space>
+            <Link href="/admin/users">
+              <Button>Пользователи</Button>
+            </Link>
+          </Space>
+        </div>
+      </section>
+    </main>
+  );
 }
