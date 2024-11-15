@@ -15,16 +15,7 @@ import { Button } from "./ui/button";
 import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect } from "react";
-
-const links: {
-  href: React.ComponentPropsWithoutRef<typeof Link>["href"];
-  text: string;
-}[] = [
-  { href: "/team", text: "Команда" },
-  { href: "/#education", text: "Обучение" },
-  { href: "/#research", text: "Исследования" },
-  { href: "/contacts", text: "Контакты" },
-];
+import { headerFooterLinks } from "@/lib/links";
 
 const MobileMenu = () => (
   <Sheet>
@@ -42,7 +33,7 @@ const MobileMenu = () => (
         </SheetTitle>
         <SheetDescription asChild>
           <nav className="flex flex-col gap-8 items-start text-xl">
-            {links.map(({ href, text }, i) => (
+            {headerFooterLinks.map(({ href, text }, i) => (
               <SheetClose asChild key={`link-${i}`}>
                 <Link className="text-left" href={href}>
                   {text}
@@ -58,7 +49,7 @@ const MobileMenu = () => (
 
 const DesktopMenu = () => (
   <nav className="hidden md:inline-flex gap-6 text-left text-lg">
-    {links.map(({ href, text }, i) => (
+    {headerFooterLinks.map(({ href, text }, i) => (
       <Link key={`link-${i}`} href={href} className="link-hover-underline">
         {text}
       </Link>
