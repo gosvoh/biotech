@@ -7,70 +7,77 @@ import {
 import { cn, removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import Mvk from "@public/mvk.png";
 import FigureImage from "@/components/figure-image";
 import Breadcrumbs from "@/components/breadcrumbs";
 import { unstable_cache as cache } from "next/cache";
+import { prisma } from "@/prisma";
+import type { Member } from "@/lib/db/client";
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const getMemberData = cache(
-  async () => {
-    const res = await fetch(`https://api.example.com/members/`);
-    return res.json();
-  },
-  ["members"],
-  { revalidate: 3600, tags: ["members"] }
+const getMembers = cache(() => prisma.member.findMany(), ["members"], {
+  revalidate: 60,
+  tags: ["members"],
+});
+const getDepartments = cache(
+  () => prisma.department.findMany(),
+  ["departments"],
+  {
+    revalidate: 60,
+    tags: ["departments"],
+  }
 );
 
 const Card = ({
-  image,
-  name,
-  position,
-  email,
-  tel,
+  member,
   className,
   imgBlock,
 }: {
-  image: React.ComponentProps<typeof Image>["src"];
-  name: string;
-  position: string;
-  email: string;
-  tel?: string;
+  member: Member;
   className?: string;
   imgBlock?: boolean;
 }) => {
-  const [lastName, firstName, middleName] = name.split(" ");
+  const name = [member.firstName, member.middleName, member.lastName].join(" ");
 
   return (
     <div
       className={cn("text-base flex flex-col items-center gap-4", className)}
     >
       <Image
-        src={image}
+        src={`/uploads/members/${member.id}.webp`}
         alt={name}
         className={cn(
           "rounded-full aspect-square object-cover",
           imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2"
         )}
+        width={500}
+        height={500}
       />
       <div className="flex flex-col gap-2 items-center text-center">
         <div className="">
-          <p className="text-brand3 text-xl font-bold">{lastName}</p>
+          <p className="text-brand3 text-xl font-bold">{member.lastName}</p>
           <p className="text-lg font-bold">
-            {`${firstName} ${middleName ? middleName : ""}`.trim()}
+            {[member.firstName, member.middleName].join(" ")}
           </p>
         </div>
-        <p>{position}</p>
+        <p>{member.position}</p>
         <div className="[&>*]:block">
-          {tel && <Link href={`tel:${tel}`}>{tel}</Link>}
-          <Link href={`mailto:${email}`}>{email}</Link>
+          {member.phone && (
+            <Link href={`tel:${member.phone}`} className="link-hover-underline">
+              {member.phone}
+            </Link>
+          )}
+          <Link
+            href={`mailto:${member.email}`}
+            className="link-hover-underline"
+          >
+            {member.email}
+          </Link>
         </div>
       </div>
     </div>
   );
 };
 
-const DevelopmentDepartment = () => (
+const DevelopmentDepartment = ({ members }: { members: Member[] }) => (
   <>
     <p className="text-special-dark-gray text-base lg:max-w-3/5 lg:mb-20">
       {removeHangingPrepositionsAndConjunctions(
@@ -83,41 +90,36 @@ const DevelopmentDepartment = () => (
       )}
     </p>
     <div className="flex flex-col gap-6 lg:grid lg:gap-y-10 grid-cols-4">
-      {Array.from({ length: 10 }).map((_, i) => (
-        <Card
-          image={Mvk}
-          name="Султанова Светлана Юрьевна"
-          position="Вице-декан"
-          email="sysultanova@itmo.ru"
-          imgBlock
-          key={`card-dev-${i}`}
-        />
+      {members.map((member) => (
+        <Card member={member} imgBlock key={member.id} />
       ))}
     </div>
   </>
 );
 
-const ResearchDepartment = () => (
+const ResearchDepartment = ({ members }: { members: Member[] }) => (
   <div className="flex flex-col gap-6 lg:grid lg:gap-y-10 grid-cols-4">
-    {Array.from({ length: 20 }).map((_, i) => (
-      <Card
-        image={Mvk}
-        name="Султанова Светлана Юрьевна"
-        position="Вице-декан"
-        email="sysultanova@itmo.ru"
-        tel="+7 (812) 123-45-67"
-        key={`card-res-${i}`}
-      />
+    {members.map((member) => (
+      <Card member={member} key={member.id} />
     ))}
   </div>
 );
 
-const MobileLayout = ({ className }: { className?: string }) => (
+const MobileLayout = ({
+  className,
+  members,
+}: {
+  className?: string;
+  members: {
+    development: Member[];
+    research: Member[];
+  };
+}) => (
   <Accordion type="multiple" className={className}>
     <AccordionItem value="item-1">
       <AccordionTrigger>Отдел развития</AccordionTrigger>
       <AccordionContent>
-        <DevelopmentDepartment />
+        <DevelopmentDepartment members={members.development} />
       </AccordionContent>
     </AccordionItem>
     <AccordionItem value="item-2">
@@ -125,26 +127,46 @@ const MobileLayout = ({ className }: { className?: string }) => (
         Преподаватели/Руководители научных групп
       </AccordionTrigger>
       <AccordionContent>
-        <ResearchDepartment />
+        <ResearchDepartment members={members.research} />
       </AccordionContent>
     </AccordionItem>
   </Accordion>
 );
 
-const DesktopLayout = ({ className }: { className?: string }) => (
+const DesktopLayout = ({
+  className,
+  members,
+}: {
+  className?: string;
+  members: {
+    development: Member[];
+    research: Member[];
+  };
+}) => (
   <div className={cn("text-center flex flex-col gap-4", className)}>
     <div className="flex flex-col gap-4 py-20 items-center">
       <h2>Отдел развития</h2>
-      <DevelopmentDepartment />
+      <DevelopmentDepartment members={members.development} />
     </div>
     <div className="flex flex-col gap-4 py-20">
       <h2 className="mb-20">Преподаватели/Руководители научных групп</h2>
-      <ResearchDepartment />
+      <ResearchDepartment members={members.research} />
     </div>
   </div>
 );
 
-export default function Team() {
+export default async function Team() {
+  const members = await getMembers();
+  const departments = await getDepartments();
+
+  const development = members.filter(
+    (member) => member.departmentId === departments[0].id
+  );
+  const research = members.filter(
+    (member) => member.departmentId === departments[1].id
+  );
+  const membersByDepartment = { development, research };
+
   return (
     <main>
       <section>
@@ -159,8 +181,11 @@ export default function Team() {
 
       <section className="">
         <div className="wrapper">
-          <MobileLayout className="lg:hidden" />
-          <DesktopLayout className="max-lg:hidden" />
+          <MobileLayout className="lg:hidden" members={membersByDepartment} />
+          <DesktopLayout
+            className="max-lg:hidden"
+            members={membersByDepartment}
+          />
         </div>
       </section>
     </main>
