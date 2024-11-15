@@ -41,6 +41,6 @@ next-env.d.ts
 
 
 database
-uploads
+/uploads
 
 /src/lib/db/client
