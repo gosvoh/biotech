@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { revalidateTag } from "next/cache";
 import type React from "react";
 import { twMerge } from "tailwind-merge";
 
@@ -25,4 +26,8 @@ export function removeHangingPrepositionsAndConjunctions(
     return textString.replace(/(\s[а-яё]{1,3})\s/gi, "$1\u00A0");
   }
   return "ERROR REMOVE HANGING PREPOSITIONS AND CONJUNCTIONS";
+}
+
+export function dbAction<T>(action: Promise<T>, tagToRevalidate: string) {
+  return action.then(() => revalidateTag(tagToRevalidate)).then(() => true);
 }

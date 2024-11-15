@@ -18,11 +18,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   // @ts-ignore - PrismaAdapter is not typed in the NextAuth library
   adapter: PrismaAdapter(prisma),
   callbacks: {
-    authorized: async ({ auth }) => {
-      console.log("authorized", auth);
-      return !!auth;
-    },
-    session({ session, token, user }) {
+    authorized: async ({ auth }) => !!auth,
+    session({ session, user }) {
       return {
         ...session,
         user: {

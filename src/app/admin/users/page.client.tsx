@@ -2,8 +2,10 @@
 
 import { Button, Popconfirm, Space, Table } from "antd";
 import IsAdmin from "./is-admin";
-import { User } from "@/lib/db/client";
-import { TrashIcon } from "lucide-react";
+import type { User } from "@/lib/db/client";
+import { deleteUser } from "./actions";
+import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
+import Link from "next/link";
 
 export default function UsersClient({
   userId,
@@ -17,6 +19,13 @@ export default function UsersClient({
       dataSource={users}
       rowKey={"id"}
       pagination={{ pageSize: 30 }}
+      title={() => (
+        <Link href="/admin">
+          <Button icon={<ArrowLeftOutlined />} type="primary">
+            Back
+          </Button>
+        </Link>
+      )}
       columns={[
         {
           title: "Email",
@@ -45,11 +54,14 @@ export default function UsersClient({
           width: 150,
           render: (_, record) => (
             <Space>
-              <Popconfirm title="Are you sure?">
+              <Popconfirm
+                title="Are you sure?"
+                onConfirm={() => deleteUser(record.id)}
+              >
                 <Button
                   danger
                   disabled={userId === record.id}
-                  icon={<TrashIcon />}
+                  icon={<DeleteOutlined />}
                 />
               </Popconfirm>
             </Space>

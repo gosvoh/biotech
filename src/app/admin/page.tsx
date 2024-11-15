@@ -10,6 +10,9 @@ export default function Admin() {
             <Link href="/admin/users">
               <Button>Пользователи</Button>
             </Link>
+            <Link href="/admin/members">
+              <Button>Команда</Button>
+            </Link>
           </Space>
         </div>
       </section>
