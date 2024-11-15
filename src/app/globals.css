@@ -59,10 +59,14 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    @apply text-pretty;
+    @apply text-pretty flex flex-col;
   }
   html {
     @apply scroll-smooth;
+  }
+  html,
+  body {
+    @apply min-h-screen;
   }
   h1,
   h2,
@@ -107,6 +111,11 @@ body {
     }
   }
 
+  main,
+  .ant-app {
+    @apply flex-1;
+  }
+
   main *:not(div) {
     @apply transition-opacity duration-1000 ease-in-out;
   }
@@ -136,7 +145,7 @@ body {
     @apply hover:ring-2 ring-accent transition-shadow duration-300 ease-in-out;
 
     &:any-link {
-      @apply block font-bold text-xl md:text-2xl;
+      @apply flex items-center font-bold text-xl md:text-2xl;
     }
   }
 
