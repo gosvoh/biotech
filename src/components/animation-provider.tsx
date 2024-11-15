@@ -42,7 +42,7 @@ export default function AnimationProvider({
     });
 
     return () => observers.forEach((observer) => observer.disconnect());
-  }, [pathname, elements.length]);
+  }, [pathname, elements, elements.length]);
 
   return <>{children}</>;
 }

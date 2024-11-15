@@ -15,7 +15,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // @ts-ignore - PrismaAdapter is not typed in the NextAuth library
+  // @ts-expect-error - PrismaAdapter is not typed in the NextAuth library
   adapter: PrismaAdapter(prisma),
   callbacks: {
     authorized: async ({ auth }) => !!auth,

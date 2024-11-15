@@ -48,7 +48,7 @@ function EditModal({
     <Modal
       open={open}
       title={member ? "Edit Member" : "Add Member"}
-      onOk={(_) => form.submit()}
+      onOk={() => form.submit()}
       onCancel={close}
       destroyOnClose
     >
@@ -172,12 +172,17 @@ export default function MembersClient({
             title: "Image",
             dataIndex: "id",
             width: 100,
-            render: (id) => (
+            render: (id, record) => (
               <Image
                 width={100}
                 height={100}
                 src={`/uploads/members/${id}.webp`}
                 className="object-cover rounded-full"
+                alt={[
+                  record.firstName,
+                  record.middleName,
+                  record.lastName,
+                ].join(" ")}
                 placeholder
               />
             ),
