@@ -12,7 +12,7 @@ import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import FigureImage from "@/components/figure-image";
 
 export const metadata: Metadata = generateMeta(
-  "БиоТех ИТМО",
+  "Биотех ИТМО",
   "Факультет биотехнологий университета ИТМО"
 );
 
@@ -23,7 +23,7 @@ export default function Home() {
         <div className="wrapper flex flex-col gap-6 md:flex-row-reverse items-center">
           <FigureImage />
           <div className="space-y-6 md:space-y-[42px]">
-            <h1 className="text-5xl xl:text-6xl">БиоТех ИТМО</h1>
+            <h1 className="text-5xl xl:text-6xl">Биотех ИТМО</h1>
             <p className="text-xl xl:text-2xl">
               Факультет биотехнологий университета ИТМО
             </p>
@@ -52,7 +52,7 @@ export default function Home() {
           <Image src={Bag} alt="" className="md:max-w-3/8" />
           <div className="space-y-6 md:max-w-1/2">
             <div className="space-y-2 md:space-y-4">
-              <h2>БиоТех ИТМО</h2>
+              <h2>Биотех ИТМО</h2>
               <p>
                 {removeHangingPrepositionsAndConjunctions(
                   <>
@@ -129,7 +129,7 @@ export default function Home() {
               <p className="text-base">
                 {removeHangingPrepositionsAndConjunctions(
                   <>
-                    БиоТех Университета ИТМО рад открыть для вас свои двери.
+                    Биотех Университета ИТМО рад открыть для вас свои двери.
                     Здесь, в самом сердце Санкт-Петербурга, под одним флагом
                     объединены фуд-, эко-, агро- и геномные биотехнологии.
                     Развиваемая на факультете экосистема создаст атмосферу
@@ -139,7 +139,7 @@ export default function Home() {
                     видение. Индустриально-образовательное партнёрство и
                     интернационализация, образование, отвечающее потребностям
                     реального сектора экономики — фундамент, на котором твёрдо
-                    стоит БиоТех сегодня.
+                    стоит Биотех сегодня.
                   </>
                 )}
               </p>
@@ -150,7 +150,7 @@ export default function Home() {
 
       <section className="section-home-padding">
         <div className="wrapper">
-          <h2>Жизнь на БиоТехе</h2>
+          <h2>Жизнь на Биотехе</h2>
           <div className="flex flex-col gap-6 lg:flex-row lg:flex-wrap [&>*]:lg:flex-[1_1_45%]">
             <Link href="#" className="card">
               Food Biotechnology Lab
