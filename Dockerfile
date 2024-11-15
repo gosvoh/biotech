@@ -33,6 +33,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/database ./database
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
+RUN mkdir uploads
+RUN chown -R nextjs:nodejs uploads
+
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
