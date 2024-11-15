@@ -13,7 +13,7 @@ export default function AnimationProvider({
 
   useLayoutEffect(() => {
     const main = document.querySelector("main");
-    if (!main) return;
+    if (!main || pathname.startsWith("/admin")) return;
 
     const elements = [...main.getElementsByTagName("*")].filter(
       (x) => x.tagName !== "DIV"
