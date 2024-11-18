@@ -94,10 +94,28 @@ model Member {
 
     Department   Department? @relation(fields: [departmentId], references: [id])
     departmentId String?
+
+    disciplines     Discipline[]
+    scientificWorks ScientificWork[]
 }
 
 model Department {
-    id      String   @id @default(cuid())
-    name    String
+    id   String @id @default(cuid())
+    name String
+
+    members Member[]
+}
+
+model Discipline {
+    id    String @id @default(cuid())
+    title String
+
+    members Member[]
+}
+
+model ScientificWork {
+    id    String @id @default(cuid())
+    title String
+
     members Member[]
 }
