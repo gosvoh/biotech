@@ -13,14 +13,19 @@ import {
   Table,
   Upload,
 } from "antd";
-import type { Department, Member } from "@/lib/db/client";
+import type {
+  Department,
+  Discipline,
+  Member,
+  ScientificWork,
+} from "@/lib/db/client";
 import {
   addMember,
   deleteMember,
   duplicateMember,
   updateMember,
 } from "./actions";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ArrowLeftOutlined,
   CopyOutlined,
@@ -34,11 +39,15 @@ import Link from "next/link";
 function EditModal({
   member,
   departments,
+  scientificWorks,
+  disciplines,
   open,
   close,
 }: {
   member?: Member;
   departments: Department[];
+  scientificWorks: ScientificWork[];
+  disciplines: Discipline[];
   open: boolean;
   close: () => void;
 }) {
@@ -114,6 +123,21 @@ function EditModal({
             options={departments.map((d) => ({ label: d.name, value: d.id }))}
           />
         </Form.Item>
+        <Form.Item label="Disciplines" name="disciplines">
+          <Select
+            mode="multiple"
+            options={disciplines.map((d) => ({ label: d.title, value: d.id }))}
+          />
+        </Form.Item>
+        <Form.Item label="Scientific Works" name="scientificWorks">
+          <Select
+            mode="multiple"
+            options={scientificWorks.map((d) => ({
+              label: d.title,
+              value: d.id,
+            }))}
+          />
+        </Form.Item>
         <Form.Item
           label="Image"
           name="image"
@@ -138,9 +162,16 @@ function EditModal({
 export default function MembersClient({
   members = [],
   departments = [],
+  disciplines = [],
+  scientificWorks = [],
 }: {
-  members: Member[];
+  members: (Member & {
+    disciplines: Discipline[];
+    scientificWorks: ScientificWork[];
+  })[];
   departments: Department[];
+  disciplines: Discipline[];
+  scientificWorks: ScientificWork[];
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [member, setMember] = useState<Member>();
@@ -150,6 +181,8 @@ export default function MembersClient({
       <EditModal
         member={member}
         departments={departments}
+        disciplines={disciplines}
+        scientificWorks={scientificWorks}
         open={modalOpen}
         close={() => {
           setModalOpen(false);
@@ -195,25 +228,46 @@ export default function MembersClient({
               }`.trim(),
           },
           {
-            title: "Department",
+            title: "Department & Position",
             width: 200,
-            render: (_, record) =>
-              departments.find((d) => d.id === record.departmentId)?.name,
+            render: (_, record) => (
+              <Space direction="vertical">
+                {departments.find((d) => d.id === record.departmentId)?.name}
+                {record.position}
+              </Space>
+            ),
           },
           {
-            title: "Position",
-            dataIndex: "position",
+            title: "Disciplines",
             width: 200,
+            render: (_, record) => (
+              <Space direction="vertical">
+                {record.disciplines.map((x) => (
+                  <React.Fragment key={x.id}>{x.title}</React.Fragment>
+                ))}
+              </Space>
+            ),
           },
           {
-            title: "Email",
-            dataIndex: "email",
+            title: "Scientific Works",
             width: 200,
+            render: (_, record) => (
+              <Space direction="vertical">
+                {record.scientificWorks.map((x) => (
+                  <React.Fragment key={x.id}>{x.title}</React.Fragment>
+                ))}
+              </Space>
+            ),
           },
           {
-            title: "Phone",
-            dataIndex: "phone",
+            title: "Email & Phone",
             width: 200,
+            render: (_, record) => (
+              <Space direction="vertical">
+                {record.email}
+                {record.phone}
+              </Space>
+            ),
           },
           {
             title: "Actions",

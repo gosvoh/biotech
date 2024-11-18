@@ -16,6 +16,12 @@ export async function addMember(formData: FormData) {
     phone: formData.get("phone") as string,
     departmentId: formData.get("departmentId") as string,
   };
+  const disciplinesStr = formData.get("disciplines") as string;
+  const scientificWorksStr = formData.get("scientificWorks") as string;
+  const disciplines = disciplinesStr ? disciplinesStr.split(",") : [];
+  const scientificWorks = scientificWorksStr
+    ? scientificWorksStr.split(",")
+    : [];
   const image = formData.get("image") as File;
 
   if (!member.lastName || !member.firstName || !image) {
@@ -24,7 +30,13 @@ export async function addMember(formData: FormData) {
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
-      const newMember = await prisma.member.create({ data: member });
+      const newMember = await prisma.member.create({
+        data: {
+          ...member,
+          disciplines: { connect: disciplines.map((id) => ({ id })) },
+          scientificWorks: { connect: scientificWorks.map((id) => ({ id })) },
+        },
+      });
       await fs.mkdir("uploads/members", { recursive: true });
       await sharp(await image.arrayBuffer()).toFile(
         `./uploads/members/${newMember.id}.webp`
@@ -45,6 +57,12 @@ export async function updateMember(formData: FormData) {
     phone: formData.get("phone") as string,
     departmentId: formData.get("departmentId") as string,
   };
+  const disciplinesStr = formData.get("disciplines") as string;
+  const scientificWorksStr = formData.get("scientificWorks") as string;
+  const disciplines = disciplinesStr ? disciplinesStr.split(",") : [];
+  const scientificWorks = scientificWorksStr
+    ? scientificWorksStr.split(",")
+    : [];
   const image = formData.get("image") as File;
 
   if (!member.id || !member.lastName || !member.firstName) {
@@ -53,7 +71,14 @@ export async function updateMember(formData: FormData) {
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
-      await prisma.member.update({ where: { id: member.id }, data: member });
+      await prisma.member.update({
+        where: { id: member.id },
+        data: {
+          ...member,
+          disciplines: { set: disciplines.map((id) => ({ id })) },
+          scientificWorks: { set: scientificWorks.map((id) => ({ id })) },
+        },
+      });
       if (image) {
         await sharp(await image.arrayBuffer())
           .resize(200, 200)
@@ -74,19 +99,37 @@ export async function deleteMember(memberId: string) {
   );
 }
 
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
 export async function duplicateMember(memberId: string) {
   return dbAction(
     prisma.$transaction(async (prisma) => {
       const member = await prisma.member.findUnique({
         where: { id: memberId },
+        include: { disciplines: true, scientificWorks: true },
       });
       if (!member) {
         throw new Error("Member not found");
       }
+
+      const disciplines = member.disciplines;
+      const scientificWorks = member.scientificWorks;
+
+      const memberToCreate: Optional<
+        typeof member,
+        "id" | "disciplines" | "scientificWorks"
+      > = { ...member };
+      delete memberToCreate.id;
+      delete memberToCreate.disciplines;
+      delete memberToCreate.scientificWorks;
+
       const newMember = await prisma.member.create({
         data: {
-          ...member,
-          id: undefined,
+          ...memberToCreate,
+          disciplines: { connect: disciplines.map((d) => ({ id: d.id })) },
+          scientificWorks: {
+            connect: scientificWorks.map((sw) => ({ id: sw.id })),
+          },
         },
       });
       await fs.copyFile(

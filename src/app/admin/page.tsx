@@ -13,6 +13,12 @@ export default function Admin() {
             <Link href="/admin/members">
               <Button>Команда</Button>
             </Link>
+            <Link href="/admin/disciplines">
+              <Button>Дисциплины</Button>
+            </Link>
+            <Link href="/admin/scientific-works">
+              <Button>Научные работы</Button>
+            </Link>
           </Space>
         </div>
       </section>
