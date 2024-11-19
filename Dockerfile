@@ -27,11 +27,6 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/database ./database
-COPY --from=builder --chown=nextjs:nodejs /app/migrations ./migrations
-COPY --from=builder --chown=nextjs:nodejs /app/schema.prisma ./schema.prisma
-
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
@@ -40,6 +35,10 @@ RUN chown -R nextjs:nodejs uploads
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/database ./database
+COPY --from=builder --chown=nextjs:nodejs /app/migrations ./migrations
+COPY --from=builder --chown=nextjs:nodejs /app/schema.prisma ./schema.prisma
 
 USER nextjs
 
@@ -50,6 +49,8 @@ ENV PORT 3000
 VOLUME /app/database
 VOLUME /app/uploads
 
+ARG DATABASE_URL
+ENV DATABASE_URL ${DATABASE_URL}
 RUN npx --yes prisma migrate deploy
 
 CMD HOSTNAME="0.0.0.0" node server.js
