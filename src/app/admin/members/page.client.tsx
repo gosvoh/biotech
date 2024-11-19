@@ -117,10 +117,18 @@ function EditModal({
         <Form.Item label="Position" name="position">
           <Input />
         </Form.Item>
-        <Form.Item label="Email" name="email">
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[{ type: "email", message: "Invalid email" }]}
+        >
           <Input />
         </Form.Item>
-        <Form.Item label="Phone" name="phone">
+        <Form.Item
+          label="Phone"
+          name="phone"
+          rules={[{ pattern: /^\+?[0-9]+$/, message: "Invalid phone number" }]}
+        >
           <Input />
         </Form.Item>
         <Form.Item label="Department" name="departmentId">
@@ -221,7 +229,6 @@ export default function MembersClient({
                   record.middleName,
                   record.lastName,
                 ].join(" ")}
-                placeholder
               />
             ),
           },
