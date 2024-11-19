@@ -56,8 +56,10 @@ export default function ScientificWorksClient({
 
           return (
             <List.Item
+              key={item.id}
               actions={[
                 <Button
+                  key={`edit-btn-${item.id}`}
                   disabled={isEditingNotCurrent}
                   onClick={() => {
                     if (!isEditing) setCurrentItem(item);
@@ -70,6 +72,7 @@ export default function ScientificWorksClient({
                   icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
                 />,
                 <Popconfirm
+                  key={`delete-btn-${item.id}`}
                   title="Are you sure?"
                   onConfirm={() => {
                     if (isEditing) return setCurrentItem(undefined);
