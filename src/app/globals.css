@@ -159,10 +159,14 @@ body {
   }
 
   .link-hover-underline {
-    @apply relative inline-block;
+    @apply relative block w-fit;
 
     &::after {
       @apply content-[""] absolute -bottom-2 left-0 w-0 h-[2px] bg-accent transition-width duration-300 ease-in-out;
+    }
+
+    &::after.compact {
+      @apply bottom-0;
     }
 
     &:hover::after {
