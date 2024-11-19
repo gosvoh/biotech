@@ -74,30 +74,36 @@ export default async function Member({
 
       <section className="md:text-xl">
         <div className="wrapper">
-          <div className="space-y-4 md:space-y-6">
-            <p className="font-bold md:text-3xl">
-              {removeHangingPrepositionsAndConjunctions(
-                <>Преподаваемые дисциплины в 2024–2025 гг:</>
-              )}
-            </p>
-            <ul className="list-disc list-inside">
-              {member.disciplines.map((x) => (
-                <li key={`discipline-${x.id}`}>
-                  {removeHangingPrepositionsAndConjunctions(x.title)}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="space-y-4">
-            <p className="font-bold md:text-3xl">Темы научных работ:</p>
-            <ul className="list-disc list-inside">
-              {member.scientificWorks.map((x) => (
-                <li key={`scientific-work-${x.id}`}>
-                  {removeHangingPrepositionsAndConjunctions(x.title)}
-                </li>
-              ))}
-            </ul>
-          </div>
+          {member.disciplines.length > 0 && (
+            <div className="space-y-4 md:space-y-6">
+              <p className="font-bold md:text-3xl">
+                {removeHangingPrepositionsAndConjunctions(
+                  <>Преподаваемые дисциплины в 2024–2025 гг:</>
+                )}
+              </p>
+              <ul className="list-disc list-inside">
+                {member.disciplines.map((x) => (
+                  <li key={`discipline-${x.id}`}>
+                    {removeHangingPrepositionsAndConjunctions(x.title)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {member.scientificWorks.length > 0 && (
+            <div className="space-y-4">
+              <p className="font-bold md:text-3xl">Темы научных работ:</p>
+              <ul className="list-disc list-inside">
+                {member.scientificWorks.map((x) => (
+                  <li key={`scientific-work-${x.id}`}>
+                    {removeHangingPrepositionsAndConjunctions(x.title)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {(member.phone || member.email) && (
             <div className="space-y-4 md:space-y-6">
               <p className="font-bold md:text-3xl">Контакты</p>
