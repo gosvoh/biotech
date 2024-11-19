@@ -41,33 +41,49 @@ const Card = ({
     <div
       className={cn("text-base flex flex-col items-center gap-4", className)}
     >
-      <Image
-        src={`/uploads/members/${member.id}.webp`}
-        alt={name}
-        className={cn(
-          "rounded-full aspect-square object-cover",
-          imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2"
-        )}
-        width={500}
-        height={500}
-      />
+      <Link
+        href={`/team/${member.id}`}
+        className={imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2"}
+      >
+        <Image
+          src={`/uploads/members/${member.id}.webp`}
+          alt={name}
+          className={cn("rounded-full aspect-square object-cover")}
+          width={500}
+          height={500}
+        />
+      </Link>
       <div className="flex flex-col gap-2 items-center text-center">
-        <div className="">
-          <p className="text-brand3 text-xl font-bold">{member.lastName}</p>
-          <p className="text-lg font-bold">
-            {[member.firstName, member.middleName].join(" ")}
-          </p>
+        <div>
+          <Link
+            href={`/team/${member.id}`}
+            className={cn(
+              "text-brand3 text-xl font-bold mx-auto",
+              "link-hover-underline compact"
+            )}
+          >
+            {member.firstName}
+          </Link>
+          <Link
+            href={`/team/${member.id}`}
+            className={cn("text-lg font-bold", "link-hover-underline compact")}
+          >
+            {[member.middleName, member.lastName].join(" ")}
+          </Link>
         </div>
         <p>{member.position}</p>
         <div className="[&>*]:block">
           {member.phone && (
-            <Link href={`tel:${member.phone}`} className="link-hover-underline">
+            <Link
+              href={`tel:${member.phone}`}
+              className="link-hover-underline compact"
+            >
               {member.phone}
             </Link>
           )}
           <Link
             href={`mailto:${member.email}`}
-            className="link-hover-underline"
+            className="link-hover-underline compact"
           >
             {member.email}
           </Link>
