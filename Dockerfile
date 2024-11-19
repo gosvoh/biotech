@@ -29,6 +29,7 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/database ./database
+COPY --from=builder --chown=nextjs:nodejs /app/migrations ./migrations
 
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
@@ -47,5 +48,7 @@ ENV PORT 3000
 
 VOLUME /app/database
 VOLUME /app/uploads
+
+RUN npm run db:deploy
 
 CMD HOSTNAME="0.0.0.0" node server.js
