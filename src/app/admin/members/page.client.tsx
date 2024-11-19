@@ -44,7 +44,10 @@ function EditModal({
   open,
   close,
 }: {
-  member?: Member;
+  member?: Member & {
+    disciplines: Discipline[];
+    scientificWorks: ScientificWork[];
+  };
   departments: Department[];
   scientificWorks: ScientificWork[];
   disciplines: Discipline[];
@@ -90,6 +93,8 @@ function EditModal({
           email: member?.email,
           phone: member?.phone,
           departmentId: member?.departmentId ?? departments[0]?.id,
+          disciplines: member?.disciplines.map((d) => d.id) ?? [],
+          scientificWorks: member?.scientificWorks.map((d) => d.id) ?? [],
         }}
       >
         <Form.Item
@@ -174,7 +179,7 @@ export default function MembersClient({
   scientificWorks: ScientificWork[];
 }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [member, setMember] = useState<Member>();
+  const [member, setMember] = useState<(typeof members)[number]>();
 
   return (
     <>
