@@ -54,6 +54,7 @@ export default async function Member({
               priority
               width={350}
               height={350}
+              placeholder="blur"
               className="rounded-full aspect-square object-cover w-1/2 xl:w-1/4"
             />
             <div className="md:space-y-4">

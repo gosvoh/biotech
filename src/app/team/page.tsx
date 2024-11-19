@@ -51,6 +51,7 @@ const Card = ({
           className={cn("rounded-full aspect-square object-cover")}
           width={500}
           height={500}
+          placeholder="blur"
         />
       </Link>
       <div className="flex flex-col gap-2 items-center text-center">
@@ -66,13 +67,16 @@ const Card = ({
           </Link>
           <Link
             href={`/team/${member.id}`}
-            className={cn("text-lg font-bold", "link-hover-underline compact")}
+            className={cn(
+              "text-lg font-bold mx-auto",
+              "link-hover-underline compact"
+            )}
           >
             {[member.middleName, member.lastName].join(" ")}
           </Link>
         </div>
         <p>{member.position}</p>
-        <div className="[&>*]:block">
+        <div className="[&>*]:block [&>*]:mx-auto">
           {member.phone && (
             <Link
               href={`tel:${member.phone}`}
