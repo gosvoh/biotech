@@ -1,5 +1,6 @@
-import { execSync } from "child_process";
-
-export function register() {
-  execSync("npx --yes prisma migrate deploy");
+export async function register() {
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { execSync } = await import("child_process");
+    execSync("npx --yes prisma migrate deploy");
+  }
 }
