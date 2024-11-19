@@ -21,7 +21,7 @@ const MobileMenu = () => (
   <Sheet>
     <SheetTrigger asChild>
       <Button size="icon" variant="ghost" className="md:hidden">
-        <MenuIcon className="w-10 h-10 text-white" />
+        <MenuIcon className="!size-6 text-white" />
       </Button>
     </SheetTrigger>
     <SheetContent side={"top"} className="h-full">
