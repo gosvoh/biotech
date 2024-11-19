@@ -44,18 +44,21 @@ export default function Footer() {
           </div>
           <div className="flex flex-col gap-2">
             <Link
-              className="max-md:font-bold text-xl md:text-3xl link-hover-underline w-fit"
+              className="max-md:font-bold text-xl md:text-3xl link-hover-underline-compact w-fit"
               href="mailto:biotech@itmo.ru"
             >
               biotech@itmo.ru
             </Link>
             <Link
               href="tel:+78124800930"
-              className="link-hover-underline w-fit"
+              className="link-hover-underline-compact w-fit"
             >
               +7 (812) 480-09-30 (отдел развития)
             </Link>
-            <Link href="tel:+9312789700" className="link-hover-underline w-fit">
+            <Link
+              href="tel:+9312789700"
+              className="link-hover-underline-compact w-fit"
+            >
               +7 (931) 278-97-00 (декан)
             </Link>
           </div>

@@ -54,7 +54,6 @@ export default async function Member({
               priority
               width={350}
               height={350}
-              placeholder="blur"
               className="rounded-full aspect-square object-cover w-1/2 xl:w-1/4"
             />
             <div className="md:space-y-4">
@@ -81,7 +80,7 @@ export default async function Member({
                   <>Преподаваемые дисциплины в 2024–2025 гг:</>
                 )}
               </p>
-              <ul className="list-disc list-inside">
+              <ul className="list-disc ml-8">
                 {member.disciplines.map((x) => (
                   <li key={`discipline-${x.id}`}>
                     {removeHangingPrepositionsAndConjunctions(x.title)}
@@ -94,7 +93,7 @@ export default async function Member({
           {member.scientificWorks.length > 0 && (
             <div className="space-y-4">
               <p className="font-bold md:text-3xl">Темы научных работ:</p>
-              <ul className="list-disc list-inside">
+              <ul className="list-disc ml-8">
                 {member.scientificWorks.map((x) => (
                   <li key={`scientific-work-${x.id}`}>
                     {removeHangingPrepositionsAndConjunctions(x.title)}

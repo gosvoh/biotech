@@ -39,55 +39,48 @@ const Card = ({
 
   return (
     <div
-      className={cn("text-base flex flex-col items-center gap-4", className)}
+      className={cn(
+        "text-base flex flex-col items-center gap-4 group",
+        className
+      )}
     >
-      <Link
-        href={`/team/${member.id}`}
-        className={imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2"}
-      >
+      <Link href={`/team/${member.id}`} className="contents">
         <Image
           src={`/uploads/members/${member.id}.webp`}
           alt={name}
-          className={cn("rounded-full aspect-square object-cover")}
+          className={cn(
+            imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",
+            "rounded-full aspect-square object-cover transition-all duration-300",
+            "group-hover:shadow-[0px_4px_100px_-50px_hsl(var(--brand3))]",
+            "group-hover:outline-1 group-hover:outline-brand3 group-hover:outline",
+            "group-hover:scale-[1.25] origin-bottom"
+          )}
           width={500}
           height={500}
-          placeholder="blur"
         />
       </Link>
-      <div className="flex flex-col gap-2 items-center text-center">
-        <div>
-          <Link
-            href={`/team/${member.id}`}
-            className={cn(
-              "text-brand3 text-xl font-bold mx-auto",
-              "link-hover-underline compact"
-            )}
-          >
-            {member.firstName}
-          </Link>
-          <Link
-            href={`/team/${member.id}`}
-            className={cn(
-              "text-lg font-bold mx-auto",
-              "link-hover-underline compact"
-            )}
-          >
-            {[member.middleName, member.lastName].join(" ")}
-          </Link>
-        </div>
+      <div className="space-y-2 text-center">
+        <Link
+          href={`/team/${member.id}`}
+          className="text-lg font-bold text-center link-hover-underline-compact"
+        >
+          <span className="text-xl text-brand3">{member.firstName}</span>
+          <br />
+          {[member.middleName, member.lastName].join(" ")}
+        </Link>
         <p>{member.position}</p>
         <div className="[&>*]:block [&>*]:mx-auto">
           {member.phone && (
             <Link
               href={`tel:${member.phone}`}
-              className="link-hover-underline compact"
+              className="link-hover-underline-compact"
             >
               {member.phone}
             </Link>
           )}
           <Link
             href={`mailto:${member.email}`}
-            className="link-hover-underline compact"
+            className="link-hover-underline-compact"
           >
             {member.email}
           </Link>

@@ -119,6 +119,8 @@ const config: Config = {
         width: "width",
         spacing: "margin, padding",
         border: "border",
+        "background-size": "background-size",
+        shadow: "box-shadow",
       },
       keyframes: {
         "accordion-down": {
