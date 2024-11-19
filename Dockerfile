@@ -49,8 +49,4 @@ ENV PORT 3000
 VOLUME /app/database
 VOLUME /app/uploads
 
-ARG DATABASE_URL
-ENV DATABASE_URL ${DATABASE_URL}
-RUN npx --yes prisma migrate deploy
-
 CMD HOSTNAME="0.0.0.0" node server.js
