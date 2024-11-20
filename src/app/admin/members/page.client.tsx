@@ -127,7 +127,7 @@ function EditModal({
         <Form.Item
           label="Phone"
           name="phone"
-          rules={[{ pattern: /^\+?[0-9]+$/, message: "Invalid phone number" }]}
+          rules={[{ pattern: /^\+?[0-9 ]+$/, message: "Invalid phone number" }]}
         >
           <Input />
         </Form.Item>
