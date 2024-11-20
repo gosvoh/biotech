@@ -110,7 +110,7 @@ export default async function Member({
                 {member.phone && (
                   <Link
                     href={`tel:${member.phone}`}
-                    className="link-hover-underline compact"
+                    className="link-hover-underline-compact block"
                   >
                     {member.phone}
                   </Link>
@@ -118,7 +118,7 @@ export default async function Member({
                 {member.email && (
                   <Link
                     href={`mailto:${member.email}`}
-                    className="link-hover-underline compact"
+                    className="link-hover-underline-compact block"
                   >
                     {member.email}
                   </Link>

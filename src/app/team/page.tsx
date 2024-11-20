@@ -51,9 +51,7 @@ const Card = ({
           className={cn(
             imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",
             "rounded-full aspect-square object-cover transition-all duration-300",
-            "group-hover:shadow-[0px_4px_100px_-50px_hsl(var(--brand3))]",
-            "group-hover:outline-1 group-hover:outline-brand3 group-hover:outline",
-            "group-hover:scale-[1.25] origin-bottom"
+            "group-hover:outline-1 group-hover:outline-brand3 group-hover:outline"
           )}
           width={500}
           height={500}
@@ -73,14 +71,14 @@ const Card = ({
           {member.phone && (
             <Link
               href={`tel:${member.phone}`}
-              className="link-hover-underline-compact"
+              className="hover:text-accent transition-colors duration-300 w-fit"
             >
               {member.phone}
             </Link>
           )}
           <Link
             href={`mailto:${member.email}`}
-            className="link-hover-underline-compact"
+            className="hover:text-accent transition-colors duration-300 w-fit"
           >
             {member.email}
           </Link>
