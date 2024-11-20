@@ -50,8 +50,8 @@ const Card = ({
           alt={name}
           className={cn(
             imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",
-            "rounded-full aspect-square object-cover transition-all duration-300",
-            "group-hover:outline-1 group-hover:outline-brand3 group-hover:outline"
+            "rounded-full aspect-square object-cover transition-shadow duration-300",
+            "group-hover:shadow-[0px_0px_0px_1px_hsl(var(--brand3))]"
           )}
           width={500}
           height={500}
