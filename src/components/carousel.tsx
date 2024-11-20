@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/carousel";
 import Image, { StaticImageData } from "next/image";
 
-import TestImage from "@public/landing1.png";
+import TestImage from "@public/landing1.webp";
 import { cn } from "@/lib/utils";
 
 const CarouselImage = ({
