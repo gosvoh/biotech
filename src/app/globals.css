@@ -119,6 +119,16 @@ body {
   main *:not(div) {
     @apply transition-opacity duration-1000 ease-in-out;
   }
+
+  body .w-md-editor-preview {
+    & h3 {
+      @apply text-xl !important;
+    }
+
+    & p {
+      @apply text-lg !important;
+    }
+  }
 }
 
 @layer components {

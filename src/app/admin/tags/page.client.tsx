@@ -1,0 +1,98 @@
+"use client";
+
+import type { NewsTags } from "@/lib/db/client";
+import {
+  ArrowLeftOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
+import { Button, Form, Input, List, Popconfirm, Space } from "antd";
+import { useState } from "react";
+import { addNewsTags, deleteNewsTags, updateNewsTags } from "./actions";
+import Link from "next/link";
+
+export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
+  const [currentItem, setCurrentItem] = useState<NewsTags>();
+  const [form] = Form.useForm();
+
+  return (
+    <Space direction="vertical" className="w-full">
+      <Link href="/admin">
+        <Button icon={<ArrowLeftOutlined />} type="primary">
+          Back
+        </Button>
+      </Link>
+      <Form
+        form={form}
+        layout="inline"
+        className="w-full"
+        onFinish={(values) =>
+          addNewsTags(values.title).then(() => form.resetFields())
+        }
+      >
+        <Form.Item name="title" label="Title" className="!flex-1">
+          <Input maxLength={30} />
+        </Form.Item>
+        <Button htmlType="submit" type="primary">
+          Add
+        </Button>
+      </Form>
+      <List
+        dataSource={newsTags}
+        renderItem={(item) => {
+          const isEditing =
+            (currentItem && currentItem.id === item.id) ?? false;
+          const isEditingNotCurrent = currentItem && currentItem.id !== item.id;
+
+          return (
+            <List.Item
+              key={item.id}
+              actions={[
+                <Button
+                  key={`edit-btn-${item.id}`}
+                  disabled={isEditingNotCurrent}
+                  onClick={() => {
+                    if (!isEditing) setCurrentItem(item);
+                    else {
+                      updateNewsTags(currentItem!).then(() =>
+                        setCurrentItem(undefined)
+                      );
+                    }
+                  }}
+                  icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+                />,
+                <Popconfirm
+                  key={`delete-btn-${item.id}`}
+                  title="Are you sure?"
+                  onConfirm={() => {
+                    if (isEditing) return setCurrentItem(undefined);
+                    else return deleteNewsTags(item.id);
+                  }}
+                >
+                  <Button
+                    danger
+                    disabled={isEditingNotCurrent}
+                    icon={isEditing ? <CloseOutlined /> : <DeleteOutlined />}
+                  />
+                </Popconfirm>,
+              ]}
+            >
+              {isEditing ? (
+                <Input
+                  value={currentItem?.title}
+                  onChange={(e) =>
+                    setCurrentItem((i) => ({ ...i!, title: e.target.value }))
+                  }
+                />
+              ) : (
+                item.title
+              )}
+            </List.Item>
+          );
+        }}
+      />
+    </Space>
+  );
+}

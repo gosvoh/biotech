@@ -6,7 +6,7 @@ export default function Admin() {
     <main>
       <section>
         <div className="wrapper">
-          <Space>
+          <Space direction="vertical">
             <Link href="/admin/users">
               <Button>Пользователи</Button>
             </Link>
@@ -18,6 +18,12 @@ export default function Admin() {
             </Link>
             <Link href="/admin/scientific-works">
               <Button>Научные работы</Button>
+            </Link>
+            <Link href="/admin/news">
+              <Button>Новости</Button>
+            </Link>
+            <Link href="/admin/tags">
+              <Button>Теги новостей</Button>
             </Link>
           </Space>
         </div>
