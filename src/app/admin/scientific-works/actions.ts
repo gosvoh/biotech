@@ -5,10 +5,10 @@ import { prisma } from "@/prisma";
 import type { ScientificWork } from "@/lib/db/client";
 
 export async function addScientificWork(title: string) {
-  return dbAction(
-    prisma.scientificWork.create({ data: { title } }),
-    "scientificWorks"
-  );
+  return dbAction(prisma.scientificWork.create({ data: { title } }), [
+    "scientificWorks",
+    "members",
+  ]);
 }
 
 export async function updateScientificWork(scientificWork: ScientificWork) {
@@ -17,13 +17,13 @@ export async function updateScientificWork(scientificWork: ScientificWork) {
       where: { id: scientificWork.id },
       data: scientificWork,
     }),
-    "scientificWorks"
+    ["scientificWorks", "members"]
   );
 }
 
 export async function deleteScientificWork(id: string) {
-  return dbAction(
-    prisma.scientificWork.delete({ where: { id } }),
-    "scientificWorks"
-  );
+  return dbAction(prisma.scientificWork.delete({ where: { id } }), [
+    "scientificWorks",
+    "members",
+  ]);
 }

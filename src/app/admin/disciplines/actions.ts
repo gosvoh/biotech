@@ -5,7 +5,10 @@ import { prisma } from "@/prisma";
 import type { Discipline } from "@/lib/db/client";
 
 export async function addDiscipline(title: string) {
-  return dbAction(prisma.discipline.create({ data: { title } }), "disciplines");
+  return dbAction(prisma.discipline.create({ data: { title } }), [
+    "disciplines",
+    "members",
+  ]);
 }
 
 export async function updateDiscipline(discipline: Discipline) {
@@ -14,10 +17,13 @@ export async function updateDiscipline(discipline: Discipline) {
       where: { id: discipline.id },
       data: discipline,
     }),
-    "disciplines"
+    ["disciplines", "members"]
   );
 }
 
 export async function deleteDiscipline(id: string) {
-  return dbAction(prisma.discipline.delete({ where: { id } }), "disciplines");
+  return dbAction(prisma.discipline.delete({ where: { id } }), [
+    "disciplines",
+    "members",
+  ]);
 }
