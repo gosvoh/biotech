@@ -1,6 +1,7 @@
 import { auth, signIn } from "@/auth";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider, App } from "antd";
+import ruRU from "antd/locale/ru_RU";
 
 export default async function AdminLayout({
   children,
@@ -12,7 +13,7 @@ export default async function AdminLayout({
 
   return (
     <AntdRegistry>
-      <ConfigProvider>
+      <ConfigProvider locale={ruRU}>
         <App>{children}</App>
       </ConfigProvider>
     </AntdRegistry>

@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ru" data-color-mode="light">
       <body className={`${font.className} antialiased`}>
         <Header />
         <AnimationProvider>{children}</AnimationProvider>
