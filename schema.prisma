@@ -119,3 +119,21 @@ model ScientificWork {
 
     members Member[]
 }
+
+model News {
+    id     String  @id @default(cuid())
+    title  String
+    text   String
+    links  String
+    hidden Boolean @default(false)
+    date   String
+
+    tags NewsTags[]
+}
+
+model NewsTags {
+    id    String @id @default(cuid())
+    title String
+
+    news News[]
+}
