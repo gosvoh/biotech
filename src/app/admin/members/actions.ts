@@ -105,14 +105,12 @@ export async function updateMember(formData: FormData) {
 export async function deleteMember(memberId: string) {
   return dbAction(
     prisma.$transaction(async (prisma) => {
-      const member = await prisma.member.delete({ where: { id: memberId } });
-      await fs.unlink(`uploads/members/${member.id}.webp`);
+      await prisma.member.delete({ where: { id: memberId } });
+      await fs.unlink(`uploads/members/${memberId}.webp`);
     }),
     "members"
   );
 }
-
-type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 export async function duplicateMember(memberId: string) {
   return dbAction(
