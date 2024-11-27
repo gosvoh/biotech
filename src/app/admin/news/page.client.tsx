@@ -24,7 +24,7 @@ import { changeVisibility, deleteNews, duplicateNews } from "./actions";
 export default function NewsClient({
   news,
 }: {
-  news: (News & { tags: NewsTags[] })[];
+  news: (Omit<News, "text"> & { tags: NewsTags[] })[];
 }) {
   return (
     <>
@@ -73,6 +73,7 @@ export default function NewsClient({
           {
             title: "Hidden",
             width: 100,
+
             render: (_, record) => (
               <Checkbox
                 checked={record.hidden}

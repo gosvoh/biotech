@@ -15,13 +15,11 @@ import {
 import Link from "next/link";
 import { addNews, updateNews } from "./actions";
 import { useRouter } from "next/navigation";
-
-import dayjs from "dayjs";
-import LocalizedFormat from "dayjs/plugin/localizedFormat";
-import "dayjs/locale/ru";
 import { useFormStatus } from "react-dom";
 
-dayjs.extend(LocalizedFormat);
+import dayjs from "@/lib/dayjs";
+import { cn } from "@/lib/utils";
+import { rehypeRewrite } from "@/components/markdown-render";
 
 export default function NewsClient({
   news,
@@ -170,6 +168,13 @@ export default function NewsClient({
             >
               <MarkdownEditor
                 height={400}
+                previewOptions={{
+                  rehypeRewrite,
+                  className: cn(
+                    "!text-base md:!text-lg",
+                    "[&>h3]:!text-lg [&>h3]:md:!text-xl"
+                  ),
+                }}
                 commandsFilter={(command) => {
                   if (
                     ["hr", "divider", "table", "codeBlock", "code"].includes(
@@ -177,7 +182,7 @@ export default function NewsClient({
                     )
                   )
                     return false;
-                  console.log(command);
+
                   if (command.name === "title") {
                     const title3 = (command.children as (typeof command)[])[2];
 

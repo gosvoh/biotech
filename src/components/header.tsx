@@ -14,7 +14,7 @@ import {
 import { Button } from "./ui/button";
 import { MenuIcon } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React from "react";
 import { headerFooterLinks } from "@/lib/links";
 
 const MobileMenu = () => (
@@ -58,29 +58,8 @@ const DesktopMenu = () => (
 );
 
 export default function Header() {
-  const headerRef = React.useRef<HTMLDivElement>(null);
-  const prevScrollPos = React.useRef(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollPos = window.scrollY;
-      if (prevScrollPos.current <= currentScrollPos) {
-        headerRef.current?.classList.add("-translate-y-[200px]");
-      } else {
-        headerRef.current?.classList.remove("-translate-y-[200px]");
-      }
-      prevScrollPos.current = currentScrollPos;
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <header
-      ref={headerRef}
-      className="sticky top-0 z-10 md:bg-card transition-transform duration-300"
-    >
+    <header className="md:bg-card">
       <div className="flex flex-row justify-between items-center gap-4 wrapper">
         <Link href="/">
           <Image

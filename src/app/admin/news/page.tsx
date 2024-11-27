@@ -3,7 +3,17 @@ import { unstable_cache as cache } from "next/cache";
 import NewsClient from "./page.client";
 
 const getNews = cache(
-  () => prisma.news.findMany({ include: { tags: true } }),
+  () =>
+    prisma.news.findMany({
+      select: {
+        id: true,
+        date: true,
+        hidden: true,
+        links: true,
+        tags: true,
+        title: true,
+      },
+    }),
   ["news"],
   {
     revalidate: 60,

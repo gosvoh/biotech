@@ -10,6 +10,8 @@ import Timeline from "@/components/timeline";
 import { ArrowUpRight } from "lucide-react";
 import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import FigureImage from "@/components/figure-image";
+import { Suspense } from "react";
+import NewsSkeleton from "@/components/news-skeleton";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО",
@@ -35,13 +37,36 @@ export default function Home() {
         <div className="wrapper">
           <h2>Новости факультета</h2>
           <div className="space-y-6 wrapper overflow-visible">
-            <Carousel>
-              <Button className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden">
+            <Suspense
+              fallback={
+                <NewsSkeleton>
+                  <Button
+                    className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden"
+                    disabled
+                  >
+                    Все новости <ArrowUpRight />
+                  </Button>
+                </NewsSkeleton>
+              }
+            >
+              <Carousel>
+                <Button
+                  asChild
+                  className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden"
+                >
+                  <Link href="/news">
+                    Все новости <ArrowUpRight />
+                  </Link>
+                </Button>
+              </Carousel>
+            </Suspense>
+            <Button
+              asChild
+              className="xl:text-2xl gap-[10px] md:gap-4 md:hidden"
+            >
+              <Link href="/news">
                 Все новости <ArrowUpRight />
-              </Button>
-            </Carousel>
-            <Button className="xl:text-2xl gap-[10px] md:gap-4 md:hidden">
-              Все новости <ArrowUpRight />
+              </Link>
             </Button>
           </div>
         </div>

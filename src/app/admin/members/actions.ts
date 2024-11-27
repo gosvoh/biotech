@@ -79,8 +79,6 @@ export async function updateMember(formData: FormData) {
     ? parsePhoneNumber(phone)?.formatInternational()
     : undefined;
 
-  console.log(phone, phoneNumber);
-
   return dbAction(
     prisma.$transaction(async (prisma) => {
       await prisma.member.update({

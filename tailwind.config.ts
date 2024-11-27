@@ -4,6 +4,7 @@ import { parse } from "postcss";
 import { objectify } from "postcss-js";
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import animate from "tailwindcss-animate";
 
 const config: Config = {
   content: [
@@ -147,8 +148,8 @@ const config: Config = {
     },
   },
   plugins: [
-    require("tailwindcss-animate"),
-    ({ addBase, addComponents, addUtilities }: PluginAPI) => {
+    animate,
+    ({ addComponents, addUtilities }: PluginAPI) => {
       const css = readFileSync(
         resolve(__dirname, "./src/app/globals.css"),
         "utf8"

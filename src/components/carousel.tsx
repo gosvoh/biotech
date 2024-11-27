@@ -5,10 +5,32 @@ import {
   CarouselNext,
   Carousel as EmblaCarousel,
 } from "@/components/ui/carousel";
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
+import { unstable_cache as cache } from "next/cache";
 
-import TestImage from "@public/landing1.webp";
 import { cn } from "@/lib/utils";
+import { prisma } from "@/prisma";
+
+import dayjs from "@/lib/dayjs";
+import NewsCard from "./news-card";
+
+const getNews = cache(
+  () =>
+    prisma.news.findMany({
+      select: {
+        id: true,
+        date: true,
+        title: true,
+      },
+      where: { hidden: false },
+      take: 10,
+    }),
+  ["news"],
+  {
+    revalidate: 60,
+    tags: ["news"],
+  }
+);
 
 const CarouselImage = ({
   src,
@@ -16,29 +38,24 @@ const CarouselImage = ({
   title,
   className,
 }: {
-  src: StaticImageData;
+  src: React.ComponentProps<typeof Image>["src"];
   date: string;
   title: string;
   className?: string;
 }) => (
   <CarouselItem
-    className={cn("md:basis-3/4 xl:basis-2/5 min-h-350px", className)}
+    className={cn(
+      "md:basis-3/4 xl:basis-2/5 min-h-350px max-md:pl-10 pl-6",
+      className
+    )}
   >
-    <div className="border border-border rounded-2.75xl p-10 space-y-6">
-      <Image
-        src={src}
-        alt=""
-        className="h-full object-cover rounded-2.75xl aspect-square md:aspect-video"
-      />
-      <div className="space-y-4">
-        <p className="text-brand3 text-xl">{date}</p>
-        <h3 className="text-2xl text-accent-carbon">{title}</h3>
-      </div>
-    </div>
+    <NewsCard date={date} imageSrc={src} title={title} />
   </CarouselItem>
 );
 
-export default function Carousel({ children }: React.PropsWithChildren) {
+export default async function Carousel({ children }: React.PropsWithChildren) {
+  const news = await getNews();
+
   return (
     <EmblaCarousel
       opts={{
@@ -50,13 +67,12 @@ export default function Carousel({ children }: React.PropsWithChildren) {
       className={cn("w-full h-full flex flex-col gap-6 overflow-visible")}
     >
       <CarouselContent className="flex-1 max-md:-ml-10 -ml-6 overflow-visible">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {news.map((x) => (
           <CarouselImage
-            key={i}
-            src={TestImage}
-            className="max-md:pl-10 pl-6"
-            date="14 сентября"
-            title="День Открытых Дверей программы магистратуры «ФудТех»"
+            key={`news-${x.id}`}
+            src={`/uploads/news/${x.id}.webp`}
+            date={dayjs(x.date).format("LL")}
+            title={x.title}
           />
         ))}
       </CarouselContent>
