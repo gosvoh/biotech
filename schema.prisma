@@ -128,7 +128,8 @@ model News {
     hidden Boolean @default(false)
     date   String
 
-    tags NewsTags[]
+    tags   NewsTags[]
+    images NewsImages[]
 }
 
 model NewsTags {
@@ -136,4 +137,11 @@ model NewsTags {
     title String
 
     news News[]
+}
+
+model NewsImages {
+    id String @id @default(cuid())
+
+    News   News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
+    newsId String
 }
