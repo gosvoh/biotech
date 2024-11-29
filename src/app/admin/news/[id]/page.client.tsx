@@ -1,6 +1,6 @@
 "use client";
 
-import type { News, NewsTags } from "@/lib/db/client";
+import type { News, NewsTags, NewsImages } from "@/lib/db/client";
 import { ArrowLeftOutlined, UploadOutlined } from "@ant-design/icons";
 import MarkdownEditor from "@uiw/react-md-editor/nohighlight";
 import {
@@ -25,7 +25,7 @@ export default function NewsClient({
   news,
   tags,
 }: {
-  news?: News & { tags: NewsTags[] };
+  news?: News & { tags: NewsTags[]; images: NewsImages[] };
   tags: NewsTags[];
 }) {
   const {
@@ -49,15 +49,19 @@ export default function NewsClient({
             </Button>
           </Link>
           <Form
+            preserve={false}
             onFinish={(values) => {
               const fd = new FormData();
               if (news?.id) fd.append("id", news.id);
               for (const key in values) {
                 if (!values[key] || ["vkLink", "tgLink"].includes(key))
                   continue;
-                if (key === "image") {
-                  const file = values[key][0]?.originFileObj;
-                  if (file) fd.append(key, file);
+                if (key === "images") {
+                  for (const image of values.images) {
+                    if (image.originFileObj)
+                      fd.append("images", image.originFileObj);
+                    else fd.append("images", image.uid);
+                  }
                 } else fd.append(key, values[key]);
               }
               fd.append(
@@ -68,7 +72,7 @@ export default function NewsClient({
                 })
               );
 
-              if (news) updateNews(fd);
+              if (news) updateNews(fd).then(() => window.location.reload());
               else
                 addNews(fd).then((x) =>
                   router.push(`/admin/news/${(x as { id: string }).id}`)
@@ -83,6 +87,12 @@ export default function NewsClient({
               text: news?.text,
               date: dayjs(news?.date),
               hidden: news?.hidden,
+              images: news?.images.map((x) => ({
+                uid: x.id,
+                name: x.id,
+                status: "done",
+                url: `/uploads/news/${x.id}.webp`,
+              })),
             }}
           >
             <Form.Item name="title" label="Title" rules={[{ required: true }]}>
@@ -94,6 +104,10 @@ export default function NewsClient({
                 options={tags.map((x) => ({ label: x.title, value: x.id }))}
                 maxTagTextLength={30}
                 maxCount={15}
+                filterOption={(input, option) =>
+                  option?.label.toLowerCase().includes(input.toLowerCase()) ??
+                  false
+                }
               />
             </Form.Item>
             <Form.Item
@@ -145,17 +159,20 @@ export default function NewsClient({
               <Checkbox />
             </Form.Item>
             <Form.Item
-              label="Image"
-              name="image"
+              label="Images"
+              name="images"
               valuePropName="fileList"
-              getValueFromEvent={(e) => e.fileList}
+              getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
               rules={[{ required: !news }]}
             >
               <Upload
-                listType="picture"
+                multiple
+                listType="picture-card"
                 beforeUpload={() => false}
-                maxCount={1}
                 accept="image/*"
+                previewFile={(file) =>
+                  new Promise((res) => res(URL.createObjectURL(file)))
+                }
               >
                 <Button icon={<UploadOutlined />}>Upload</Button>
               </Upload>

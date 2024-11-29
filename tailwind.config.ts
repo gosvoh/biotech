@@ -73,6 +73,9 @@ const config: Config = {
         "special-dark-gray": {
           DEFAULT: "hsl(var(--special-dark-gray))",
         },
+        "news-carousel-button": {
+          DEFAULT: "hsl(var(--news-carousel-button))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

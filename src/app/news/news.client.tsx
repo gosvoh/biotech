@@ -80,7 +80,7 @@ export default function NewsClient({ newsTags }: { newsTags: NewsTags[] }) {
           >
             <NewsCard
               date={dayjs(item.date).format("LL")}
-              imageSrc={`/uploads/news/${item.id}.webp`}
+              imageSrc={`/uploads/news/${item.images[0]?.id}.webp`}
               title={item.title}
             />
           </Link>

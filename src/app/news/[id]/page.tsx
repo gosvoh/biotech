@@ -10,10 +10,15 @@ import vkLogo from "@public/vkLogo.svg";
 import tgLogo from "@public/tgLogo.svg";
 import Link from "next/link";
 import Image from "next/image";
+import NewsImageCarousel from "@/components/news-images-carousel";
+import NewsCarouselSection from "@/components/news-carousel-section";
 
 const getNews = cache(
   (id: string) =>
-    prisma.news.findUnique({ where: { id }, include: { tags: true } }),
+    prisma.news.findUnique({
+      where: { id },
+      include: { tags: true, images: true },
+    }),
   ["news"],
   {
     revalidate: 60,
@@ -51,23 +56,21 @@ export default async function News({
         </div>
       </section>
 
-      <section>
+      <section className="max-md:px-0">
         <div className="wrapper">
-          <div className="flex gap-2 md:gap-4 flex-wrap justify-center">
+          <div className="flex gap-2 md:gap-4 flex-wrap justify-center max-md:section-padding max-md:py-0">
             {news.tags.map((tag) => (
               <Tag active key={`news-tag-${tag.id}`}>
                 {tag.title}
               </Tag>
             ))}
           </div>
-          <div className="lg:max-w-3/4 mx-auto w-full space-y-6 md:space-y-10">
-            <Image
-              src={`/uploads/news/${news.id}.webp`}
-              alt={news.title}
-              width={800}
-              height={400}
-              className="object-cover rounded-2.75xl aspect-square md:aspect-video w-full max-md:max-h-[300px]"
-            />
+          <NewsImageCarousel
+            images={news.images}
+            newsTitle={news.title}
+            className="px-6 lg:max-w-3/4 mx-auto w-full max-lg:overflow-hidden"
+          />
+          <div className="lg:max-w-3/4 mx-auto w-full space-y-6 md:space-y-10 max-md:section-padding max-md:py-0">
             <p className="text-brand3">{dayjs(news.date).format("LL")}</p>
             <h2 className="text-2xl lg:text-4xl text-accent-carbon !mt-4">
               {news.title}
@@ -116,6 +119,8 @@ export default async function News({
           </div>
         </div>
       </section>
+
+      <NewsCarouselSection className="max-md:hidden" />
     </main>
   );
 }

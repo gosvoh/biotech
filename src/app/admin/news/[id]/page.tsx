@@ -5,7 +5,10 @@ import { notFound } from "next/navigation";
 
 const getNews = cache(
   (id: string) =>
-    prisma.news.findFirst({ where: { id }, include: { tags: true } }),
+    prisma.news.findFirst({
+      where: { id },
+      include: { tags: true, images: true },
+    }),
   ["news"],
   {
     revalidate: 60,

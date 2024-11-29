@@ -5,13 +5,10 @@ import Mvk from "@public/mvk.png";
 import Link from "next/link";
 import { generateMeta } from "@/lib/meta";
 import type { Metadata } from "next";
-import Carousel from "@/components/carousel";
 import Timeline from "@/components/timeline";
-import { ArrowUpRight } from "lucide-react";
 import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import FigureImage from "@/components/figure-image";
-import { Suspense } from "react";
-import NewsSkeleton from "@/components/news-skeleton";
+import NewsCarouselSection from "@/components/news-carousel-section";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО",
@@ -33,44 +30,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="section-home-padding">
-        <div className="wrapper">
-          <h2>Новости факультета</h2>
-          <div className="space-y-6 wrapper overflow-visible">
-            <Suspense
-              fallback={
-                <NewsSkeleton>
-                  <Button
-                    className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden"
-                    disabled
-                  >
-                    Все новости <ArrowUpRight />
-                  </Button>
-                </NewsSkeleton>
-              }
-            >
-              <Carousel>
-                <Button
-                  asChild
-                  className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden"
-                >
-                  <Link href="/news">
-                    Все новости <ArrowUpRight />
-                  </Link>
-                </Button>
-              </Carousel>
-            </Suspense>
-            <Button
-              asChild
-              className="xl:text-2xl gap-[10px] md:gap-4 md:hidden"
-            >
-              <Link href="/news">
-                Все новости <ArrowUpRight />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <NewsCarouselSection />
 
       <section className="main-block section-home-padding">
         <div className="wrapper md:flex-row-reverse items-center justify-between">

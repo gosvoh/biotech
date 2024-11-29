@@ -8,6 +8,7 @@ export async function getNews(page: number = 0, tags: string[] = []) {
     id: true,
     tags: true,
     title: true,
+    images: { select: { id: true } },
   };
   const where = {
     hidden: false,

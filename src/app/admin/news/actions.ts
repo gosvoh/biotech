@@ -7,8 +7,13 @@ import fs from "fs/promises";
 export async function deleteNews(id: string) {
   return dbAction(
     prisma.$transaction(async (prisma) => {
-      await prisma.news.delete({ where: { id } });
-      await fs.unlink(`./uploads/news/${id}.webp`);
+      const deleted = await prisma.news.delete({
+        where: { id },
+        include: { images: true },
+      });
+      for (const image of deleted.images) {
+        await fs.unlink(`./uploads/news/${image.id}.webp`);
+      }
     }),
     "news"
   );

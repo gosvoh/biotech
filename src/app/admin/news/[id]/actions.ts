@@ -16,7 +16,9 @@ export async function addNews(formData: FormData) {
   };
   const tagsStr = formData.get("tags") as string;
   const tags = tagsStr ? tagsStr.split(",") : [];
-  const image = formData.get("image") as File;
+  const images = formData.getAll("images") as File[];
+
+  console.log(images);
 
   if (!news.title || !news.text || !news.date || !tags.length) {
     return Promise.reject("Please fill out the required fields.");
@@ -31,9 +33,15 @@ export async function addNews(formData: FormData) {
         },
       });
       await fs.mkdir("uploads/news", { recursive: true });
-      await sharp(await image.arrayBuffer()).toFile(
-        `./uploads/news/${newNews.id}.webp`
-      );
+      for (const image of images) {
+        const n = await prisma.newsImages.create({
+          data: { newsId: newNews.id },
+        });
+        console.log(image, n);
+        await sharp(await image.arrayBuffer(), { animated: true }).toFile(
+          `./uploads/news/${n.id}.webp`
+        );
+      }
       return newNews;
     }),
     "news",
@@ -52,7 +60,7 @@ export async function updateNews(formData: FormData) {
   };
   const tagsStr = formData.get("tags") as string;
   const tags = tagsStr ? tagsStr.split(",") : [];
-  const image = formData.get("image") as File;
+  const images = formData.getAll("images") as (File | string)[];
 
   if (!news.id || !news.title || !news.text || !news.date || !tags.length) {
     return Promise.reject("Please fill out the required fields.");
@@ -60,20 +68,46 @@ export async function updateNews(formData: FormData) {
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
-      const n = await prisma.news.update({
+      const newNews = await prisma.news.update({
         where: { id: news.id },
         data: {
           ...news,
           tags: { set: tags.map((id) => ({ id })) },
         },
+        include: {
+          images: {
+            where: {
+              NOT: { id: { in: images.filter((x) => typeof x === "string") } },
+            },
+          },
+        },
       });
-      if (image) {
-        await fs.mkdir("uploads/news", { recursive: true });
-        await sharp(await image.arrayBuffer()).toFile(
-          `./uploads/news/${news.id}.webp`
+
+      await prisma.newsImages.deleteMany({
+        where: { id: { in: newNews.images.map((x) => x.id) } },
+      });
+
+      if (newNews.images.length) {
+        await Promise.all(
+          newNews.images.map(({ id }) =>
+            fs.unlink(`./uploads/news/${id}.webp`).catch(() => {})
+          )
         );
       }
-      return n;
+
+      if (images.length) {
+        await fs.mkdir("uploads/news", { recursive: true });
+        for (const image of images) {
+          if (typeof image === "string") continue;
+          const n = await prisma.newsImages.create({
+            data: { newsId: news.id },
+          });
+          await sharp(await image.arrayBuffer()).toFile(
+            `./uploads/news/${n.id}.webp`
+          );
+        }
+      }
+      return newNews;
     }),
     "news",
     true

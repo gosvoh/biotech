@@ -12,6 +12,7 @@ const getNews = cache(
         links: true,
         tags: true,
         title: true,
+        images: { select: { id: true } },
       },
     }),
   ["news"],
