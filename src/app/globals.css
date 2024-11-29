@@ -21,7 +21,8 @@ body {
     margin-bottom: 8px !important;
   }
 
-  & ul {
+  & ul,
+  & ol {
     list-style-type: initial !important;
     margin: 0 !important;
     font-size: inherit !important;
