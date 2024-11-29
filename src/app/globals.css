@@ -23,7 +23,7 @@ body {
 
   & ul,
   & ol {
-    list-style-type: initial !important;
+    list-style-type: revert !important;
     margin: 0 !important;
     font-size: inherit !important;
 
