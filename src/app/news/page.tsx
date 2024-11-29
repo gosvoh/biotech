@@ -2,6 +2,7 @@ import Breadcrumbs from "@/components/breadcrumbs";
 import { prisma } from "@/prisma";
 import { unstable_cache as cache } from "next/cache";
 import NewsClient from "./news.client";
+import { Suspense } from "react";
 
 const getNewsTags = cache(() => prisma.newsTags.findMany(), ["newsTags"], {
   revalidate: 60,
@@ -24,7 +25,9 @@ export default async function News() {
 
       <section>
         <div className="wrapper">
-          <NewsClient newsTags={newsTags} />
+          <Suspense>
+            <NewsClient newsTags={newsTags} />
+          </Suspense>
         </div>
       </section>
     </main>
