@@ -57,7 +57,7 @@ export default function Vkr() {
         <div className="wrapper">
           <Accordion
             type="multiple"
-            className="lg:max-w-3/4 lg:ml-auto lg:mr-0 w-full"
+            className="lg:max-w-3/4 lg:ml-auto lg:mr-0 w-full [&_p]:text-base [&_p.font-bold]:md:text-2xl"
             defaultValue={["1"]}
           >
             <AccordionItem value="1">
@@ -110,7 +110,7 @@ export default function Vkr() {
                   биотехнологий осуществляется в формате индустриального проекта
                 </p>
                 <div className="px-7 space-y-4">
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <p className="font-bold">Что такое индустриальный проект</p>
                     <p>
                       Проектная работа по заказу индустриального партнера,
@@ -126,7 +126,7 @@ export default function Vkr() {
                     </p>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <p className="font-bold">
                       Как подать заявку выполнение индустриального проекта от
                       компании-партнера факультета:
@@ -179,7 +179,7 @@ export default function Vkr() {
                     </ol>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <p className="font-bold">
                       Даты конкурса на ВКР в формате индустриального проекта
                       (для проектов с витрины):
@@ -208,8 +208,8 @@ export default function Vkr() {
                     </p>
                   </div>
 
-                  <div className="space-y-2 [&>*:not(:first-child)]:underline">
-                    <p className="font-bold">
+                  <div className="space-y-4 [&>*:not(:first-child)]:underline">
+                    <p className="font-bold !text-base">
                       Чему может быть посвящен индустриальный проект на ФБТ:
                     </p>
                     <p>Пищевые системы</p>

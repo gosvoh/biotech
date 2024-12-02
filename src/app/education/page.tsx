@@ -23,7 +23,7 @@ const OpenDoors = ({
   className?: string;
 }) => (
   <div className={cn("flex flex-col gap-[14px]", className)}>
-    <p className="text-xl text-center">
+    <p className="text-xl max-md:text-center">
       Подробное описание программ и записи дней открытых дверей
     </p>
     <Link href="/#" className="card justify-center text-center md:w-fit">
@@ -34,13 +34,13 @@ const OpenDoors = ({
 
 const BachelorContent = () => (
   <>
-    <div className="space-y-2">
+    <div className="space-y-4 [&>p:not(.font-bold)]:text-base">
       <p>Образовательная программа бакалавриата</p>
-      <p className="font-bold">
+      <p className="font-bold md:text- mb-6">
         «Биотехнология» (направление подготовки 19.03.01 Биотехнология)
       </p>
     </div>
-    <div className="space-y-2">
+    <div className="space-y-4 [&>p:not(.font-bold)]:text-base">
       <p>
         Мы готовим специалистов в области биомедицины (в том числе
         биофармацевтики) и пищевой биотехнологии.
@@ -73,13 +73,13 @@ const BachelorContent = () => (
 
 const MasterContent = () => (
   <>
-    <div className="space-y-2">
+    <div className="space-y-4 [&>p:not(.font-bold)]:text-base">
       <p>Образовательная программа магистратуры</p>
-      <p className="font-bold">
+      <p className="font-bold mb-6">
         «ФудТех» (направления подготовки 19.04.01 Биотехнология)
       </p>
     </div>
-    <div className="space-y-2">
+    <div className="space-y-4 [&>p:not(.font-bold)]:text-base">
       <p>
         Флагманская программа факультета биотехнологий ИТМО; постоянным
         руководителем является Олеся Волох — директор по научным исследованиям,
@@ -115,14 +115,14 @@ const MasterContent = () => (
     </div>
     <Divider className="md:hidden" />
     <OpenDoors className="md:hidden" title="ФудТех" />
-    <div className="space-y-2 mt-4">
+    <div className="space-y-4 mt-4 [&>p:not(.font-bold)]:text-base">
       <p>Образовательная программа магистратуры</p>
-      <p className="font-bold">
+      <p className="font-bold mb-6">
         «Индустриальная биотехнология» (направление подготовки 19.04.01
         Биотехнология)
       </p>
     </div>
-    <div className="space-y-2">
+    <div className="space-y-4 [&>p:not(.font-bold)]:text-base">
       <p>Программа реализуется в тесной взаимосвязи с лидерами индустрии.</p>
       <p>
         Постоянным руководителем является Руслан Аль-Шехадат — генеральный
@@ -136,7 +136,7 @@ const MasterContent = () => (
         качеством, валидации и сертификации биотехнологической продукции.
       </p>
       <p>В первом семестре отбор на треки проведут компании-партнёры:</p>
-      <ul className="list-disc pl-6 text-sm">
+      <ul className="list-disc pl-6">
         <li>BIOCAD — генотерапевтические лекарственные препараты;</li>
         <li>
           Объединённые пивоварни — иннновационные напитки на растительной основе
@@ -188,8 +188,8 @@ const MasterContent = () => (
 
 const PhDContent = () => (
   <>
-    <p>Аспирантура (научная специальность)</p>
-    <div className="space-y-4 font-bold">
+    <p className="md:text-lg">Аспирантура (научная специальность)</p>
+    <div className="space-y-4 font-bold [&>p]:md:text-xl">
       <p>
         2.7.1. Биотехнологии пищевых продуктов, лекарственных и биологически
         активных веществ (технические науки), обучение 4 года
@@ -206,7 +206,7 @@ const PhDContent = () => (
 
 const VKRContent = () => (
   <>
-    <p className="text-center text-xl">
+    <p className="text-center text-xl md:text-2xl">
       Полезная информация о выпускной квалификационной работе
     </p>
     <Button className="md:w-fit" asChild>
@@ -334,7 +334,7 @@ export default function Education() {
               Переводами и восстановлениями на все программы занимается
               Студенческий офис
             </p>
-            <p className="max-md:text-center md:text-balance">
+            <p className="max-md:text-center md:text-balance md:text-2xl">
               Вы можете ознакомиться с порядком перевода здесь
             </p>
             <Button variant="outline" className="md:w-fit">
