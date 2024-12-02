@@ -7,7 +7,7 @@ export const headerFooterLinks: {
   text: string;
 }[] = [
   { href: "/team", text: "Команда" },
-  { href: "/#education", text: "Обучение" },
+  { href: "/education", text: "Образование" },
   { href: "/#research", text: "Исследования" },
   { href: "/#contacts", text: "Контакты" },
 ] as const;

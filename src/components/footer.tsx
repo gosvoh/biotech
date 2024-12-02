@@ -43,12 +43,14 @@ export default function Footer() {
         </div>
         <div className="flex flex-col gap-4 md:gap-6 text-lg">
           <div className="space-y-2">
-            <p className="max-md:font-bold text-xl md:text-3xl">191002</p>
-            <p>Санкт-Петербург, ул. Ломоносова, д. 9</p>
+            <p className="max-md:font-bold text-xl lg:text-2xl xl:text-3xl">
+              191002
+            </p>
+            <p>Санкт-Петербург, ул. Ломоносова, д. 9</p>
           </div>
           <div className="flex flex-col gap-2">
             <Link
-              className="max-md:font-bold text-xl md:text-3xl footer-link w-fit"
+              className="max-md:font-bold text-xl lg:text-2xl xl:text-3xl footer-link w-fit"
               href="mailto:biotech@itmo.ru"
             >
               biotech@itmo.ru
