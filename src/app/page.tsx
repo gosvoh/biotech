@@ -48,7 +48,9 @@ export default function Home() {
                 )}
               </p>
             </div>
-            <Button>Образование</Button>
+            <Button asChild>
+              <Link href="/education">Образование</Link>
+            </Button>
           </div>
         </div>
         <div className="wrapper">
