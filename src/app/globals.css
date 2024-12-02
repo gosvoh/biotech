@@ -176,11 +176,15 @@ body {
     @apply border border-black rounded-2.75xl;
     @apply px-10 py-6;
 
-    @apply hover:ring-2 ring-accent transition-shadow duration-300 ease-in-out;
+    @apply card-hover-effect;
 
     &:any-link {
       @apply flex items-center font-bold text-xl md:text-2xl;
     }
+  }
+
+  .card-hover-effect {
+    @apply hover:ring-2 ring-accent transition-shadow duration-300 ease-in-out;
   }
 
   .footer-link {

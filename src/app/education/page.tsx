@@ -209,7 +209,9 @@ const VKRContent = () => (
     <p className="text-center text-xl">
       Полезная информация о выпускной квалификационной работе
     </p>
-    <Button className="md:w-fit">Перейти</Button>
+    <Button className="md:w-fit" asChild>
+      <Link href="/education/vkr">Перейти</Link>
+    </Button>
   </>
 );
 
@@ -324,7 +326,7 @@ export default function Education() {
         <div className="wrapper gap-6 md:relative">
           <Image
             src={EduWhite}
-            className="absolute top-0 bottom-0 right-0 h-full"
+            className="absolute top-0 bottom-0 right-0 h-full max-md:hidden"
             alt=""
           />
           <div className="flex flex-col gap-6 md:max-w-1/2">
