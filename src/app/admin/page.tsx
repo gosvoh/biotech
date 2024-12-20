@@ -25,6 +25,9 @@ export default function Admin() {
             <Link href="/admin/tags">
               <Button>Теги новостей</Button>
             </Link>
+            <Link href="/admin/publications">
+              <Button>Публикации</Button>
+            </Link>
           </Space>
         </div>
       </section>
