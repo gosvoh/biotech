@@ -12,6 +12,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+RUN apk add --no-cache openssl
+
 ARG DATABASE_URL
 ENV DATABASE_URL ${DATABASE_URL}
 
