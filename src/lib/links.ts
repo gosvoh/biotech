@@ -8,6 +8,6 @@ export const headerFooterLinks: {
 }[] = [
   { href: "/team", text: "Команда" },
   { href: "/education", text: "Образование" },
-  { href: "/#research", text: "Исследования" },
-  { href: "/#contacts", text: "Контакты" },
+  { href: "/research", text: "Исследования" },
+  { href: "/contacts", text: "Контакты" },
 ] as const;

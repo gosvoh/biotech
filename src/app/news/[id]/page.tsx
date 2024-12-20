@@ -43,7 +43,7 @@ export default async function News({
 
   return (
     <main>
-      <section className="space-y-6">
+      <section>
         <Breadcrumbs
           items={[
             { title: "Главная", href: "/" },
