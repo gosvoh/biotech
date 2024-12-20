@@ -15,7 +15,7 @@ export default function Breadcrumbs({
       className={cn(
         "text-sm lg:text-base xl:text-xl wrapper w-full",
         "hidden md:flex flex-row gap-2 xl:gap-4 items-center",
-        "mb-[18px]"
+        "mb-6"
       )}
     >
       {items.map((item, i) => (
