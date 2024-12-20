@@ -145,3 +145,12 @@ model NewsImages {
     News   News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
     newsId String
 }
+
+model Publication {
+    id String @id @default(cuid())
+
+    year    String
+    title   String
+    authors String
+    link    String
+}
