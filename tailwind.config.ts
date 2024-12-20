@@ -14,6 +14,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        "2xl": "1440px",
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -118,6 +121,20 @@ const config: Config = {
         "5/8": "62.5%",
         "7/8": "87.5%",
       },
+      height: {
+        "10/12": "83.333333%",
+        "11/12": "91.666667%",
+      },
+      translate: {
+        "1/12": "8.333333%",
+        "2/12": "16.666667%",
+        "1/5": "20%",
+        "2/5": "40%",
+        "1/10": "10%",
+        "3/10": "30%",
+        "1/20": "5%",
+        "3/20": "15%",
+      },
       transitionProperty: {
         height: "height",
         width: "width",
@@ -125,6 +142,7 @@ const config: Config = {
         border: "border",
         "background-size": "background-size",
         shadow: "box-shadow",
+        inset: "top, right, bottom, left, inset",
       },
       keyframes: {
         "accordion-down": {

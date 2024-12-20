@@ -10,11 +10,13 @@ export default function Footer() {
     <footer className="bg-brand">
       <div className="flex flex-col justify-between md:flex-row gap-10 wrapper">
         <div className="flex flex-row md:flex-col justify-between">
-          <Image
-            src={BiotechTextLogo}
-            alt="Biotech"
-            className="w-[150px] invert"
-          />
+          <Link href="/" className="w-fit">
+            <Image
+              src={BiotechTextLogo}
+              alt="Biotech"
+              className="w-[150px] invert"
+            />
+          </Link>
           <Link href={links.VK} className="w-fit">
             <SiVk className="w-10 h-10" />
           </Link>
