@@ -19,11 +19,11 @@ export default function Breadcrumbs({
       )}
     >
       {items.map((item, i) => (
-        <React.Fragment key={`breadcrumb-${i}`}>
+        <div className="group contents" key={`breadcrumb-${i}`}>
           {item.href ? (
             <Link
               className={cn(
-                "opacity-50 hover:opacity-100 transition-opacity duration-300 min-w-fit",
+                "opacity-50 group-hover:opacity-100 transition-opacity duration-300 min-w-fit",
                 "peer"
               )}
               href={item.href}
@@ -37,11 +37,11 @@ export default function Breadcrumbs({
             className={cn(
               "bg-brand3 rounded-full w-2 h-2",
               item.href
-                ? "opacity-50 peer-hover:opacity-100 transition-opacity duration-300"
+                ? "opacity-50 group-hover:opacity-100 transition-opacity duration-300"
                 : ""
             )}
           />
-        </React.Fragment>
+        </div>
       ))}
     </div>
   );
