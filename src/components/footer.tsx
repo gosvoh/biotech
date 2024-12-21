@@ -3,7 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SiVk } from "@icons-pack/react-simple-icons";
-import { headerFooterLinks, links } from "@/lib/links";
+import { contacts, headerFooterLinks, links } from "@/lib/links";
 
 export default function Footer() {
   return (
@@ -48,20 +48,23 @@ export default function Footer() {
             <p className="max-md:font-bold text-xl lg:text-2xl xl:text-3xl">
               191002
             </p>
-            <p>Санкт-Петербург, ул. Ломоносова, д. 9</p>
+            <p>{contacts.address}</p>
           </div>
           <div className="flex flex-col gap-2">
             <Link
               className="max-md:font-bold text-xl lg:text-2xl xl:text-3xl footer-link w-fit"
-              href="mailto:biotech@itmo.ru"
+              href={`mailto:${contacts.email}`}
             >
-              biotech@itmo.ru
+              {contacts.email}
             </Link>
-            <Link href="tel:+78124800930" className="footer-link w-fit">
-              +7 (812) 480-09-30 (отдел развития)
+            <Link
+              href={`tel:${contacts.development}`}
+              className="footer-link w-fit"
+            >
+              {`${contacts.development} (отдел развития)`}
             </Link>
-            <Link href="tel:+9312789700" className="footer-link w-fit">
-              +7 (931) 278-97-00 (декан)
+            <Link href={`tel:${contacts.dean}`} className="footer-link w-fit">
+              {`${contacts.dean} (декан)`}
             </Link>
           </div>
         </div>
