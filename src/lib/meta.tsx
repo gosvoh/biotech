@@ -1,26 +1,16 @@
 import { ImageResponse } from "next/og";
 import { type Metadata } from "next";
 import type React from "react";
-
-const getFont = async (runtime: "edge" | "nodejs") => {
-  if (runtime === "edge")
-    return fetch(
-      new URL("@public/MontserratAlternates-Black.ttf", import.meta.url)
-    ).then((res) => res.arrayBuffer());
-
-  const { join } = await import("node:path");
-  const { readFile } = await import("node:fs/promises");
-  return readFile(
-    join(process.cwd(), "public/MontserratAlternates-Black.ttf")
-  ).then((res) => Uint8Array.from(res).buffer);
-};
+import { join } from "path";
+import { readFile } from "fs/promises";
 
 export const generateOGImage = async (
   title: string,
-  textStyle?: React.CSSProperties,
-  runtime: "edge" | "nodejs" = "edge"
+  textStyle?: React.CSSProperties
 ) => {
-  const Montserrat_Alternates = getFont(runtime);
+  const Montserrat_Alternates = readFile(
+    join(process.cwd(), "public/MontserratAlternates-Black.ttf")
+  ).then((res) => Uint8Array.from(res).buffer);
 
   return new ImageResponse(
     (

@@ -19,7 +19,6 @@ export default async function Image({ params }: { params: { id: string } }) {
     `Команда: ${[member.firstName, member.middleName, member.lastName].join(
       " "
     )}`,
-    { fontSize: 100 },
-    "nodejs"
+    { fontSize: 100 }
   );
 }

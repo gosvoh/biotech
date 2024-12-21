@@ -1,7 +1,5 @@
 import { generateOGImage } from "@/lib/meta";
 
-export const runtime = "edge";
-
 export const alt = "Админка";
 export const size = {
   width: 1920,

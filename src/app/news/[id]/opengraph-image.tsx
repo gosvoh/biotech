@@ -15,5 +15,5 @@ export default async function Image({ params }: { params: { id: string } }) {
 
   if (!news) return notFound();
 
-  return generateOGImage(`Новость: ${news.title}`, { fontSize: 100 }, "nodejs");
+  return generateOGImage(`Новость: ${news.title}`, { fontSize: 100 });
 }
