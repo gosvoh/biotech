@@ -41,6 +41,8 @@ export async function generateMetadata(
     ...(parentMeta as Metadata),
     title: `Биотех ИТМО | ${news.title}`,
     description: `Новость факультета биотехнологий университета ИТМО: ${news.title} от ${news.date}`,
+    openGraph: { images: { url: `https://biotech.cedne.ru/news/${id}` } },
+    twitter: { images: { url: `https://biotech.cedne.ru/news/${id}` } },
   };
 }
 

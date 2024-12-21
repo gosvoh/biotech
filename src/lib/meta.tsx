@@ -102,7 +102,11 @@ export const generateMeta = (
     description,
     images: imageBaseUrl
       ? {
-          url: `${imageBaseUrl}/opengraph-image`,
+          url: `${
+            imageBaseUrl.startsWith("http")
+              ? imageBaseUrl
+              : `https://biotech.cedne.ru${imageBaseUrl}`
+          }/opengraph-image`,
           width: 1920,
           height: 960,
         }
@@ -116,7 +120,11 @@ export const generateMeta = (
     creator: "@gosvoh",
     images: imageBaseUrl
       ? {
-          url: `${imageBaseUrl}/opengraph-image`,
+          url: `${
+            imageBaseUrl.startsWith("http")
+              ? imageBaseUrl
+              : `https://biotech.cedne.ru${imageBaseUrl}`
+          }/opengraph-image`,
           width: 1920,
           height: 960,
         }

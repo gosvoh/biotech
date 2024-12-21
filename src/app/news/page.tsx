@@ -8,7 +8,8 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Новости",
-  "Новости факультета биотехнологий университета ИТМО"
+  "Новости факультета биотехнологий университета ИТМО",
+  "/news"
 );
 
 const getNewsTags = cache(() => prisma.newsTags.findMany(), ["newsTags"], {

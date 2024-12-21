@@ -10,7 +10,8 @@ import AskQuestion from "./ask-question";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Контакты",
-  "Контакты факультета биотехнологий университета ИТМО"
+  "Контакты факультета биотехнологий университета ИТМО",
+  "/contacts"
 );
 
 export default function ContactsPage() {

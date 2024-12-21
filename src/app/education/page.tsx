@@ -19,7 +19,8 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Образование",
-  "Образование на факультете биотехнологий университета ИТМО"
+  "Образование на факультете биотехнологий университета ИТМО",
+  "/education"
 );
 
 const OpenDoors = ({

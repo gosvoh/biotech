@@ -23,7 +23,8 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Исследования",
-  "Исследования факультета биотехнологий университета ИТМО"
+  "Исследования факультета биотехнологий университета ИТМО",
+  "/research"
 );
 
 const RNFProjects: string[] = [

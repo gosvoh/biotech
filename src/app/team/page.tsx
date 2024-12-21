@@ -17,7 +17,8 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Команда факультета",
-  "Команда факультета биотехнологий университета ИТМО"
+  "Команда факультета биотехнологий университета ИТМО",
+  "/team"
 );
 
 const getMembers = cache(() => prisma.member.findMany(), ["members"], {

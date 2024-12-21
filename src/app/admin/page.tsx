@@ -5,7 +5,8 @@ import Link from "next/link";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Администрирование",
-  "Админка сайта факультета биотехнологий университета ИТМО"
+  "Админка сайта факультета биотехнологий университета ИТМО",
+  "/admin"
 );
 
 export default function Admin() {

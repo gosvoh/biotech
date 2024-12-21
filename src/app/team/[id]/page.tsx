@@ -41,6 +41,8 @@ export async function generateMetadata(
     ...(parentMeta as Metadata),
     title: `Биотех ИТМО | ${memberName}`,
     description: `Команда факультета биотехнологий университета ИТМО: ${memberName}`,
+    openGraph: { images: { url: `https://biotech.cedne.ru/team/${id}` } },
+    twitter: { images: { url: `https://biotech.cedne.ru/team/${id}` } },
   };
 }
 

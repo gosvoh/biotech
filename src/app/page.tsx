@@ -12,7 +12,8 @@ import NewsCarouselSection from "@/components/news-carousel-section";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО",
-  "Факультет биотехнологий университета ИТМО"
+  "Факультет биотехнологий университета ИТМО",
+  ""
 );
 
 export default function Home() {
