@@ -11,5 +11,7 @@ export const size = {
 export const contentType = "image/png";
 
 export default async function Image() {
-  return generateOGImage(alt);
+  return generateOGImage(alt, {
+    fontSize: 200,
+  });
 }

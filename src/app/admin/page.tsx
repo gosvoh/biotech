@@ -1,5 +1,12 @@
+import { generateMeta } from "@/lib/meta";
 import { Button, Space } from "antd";
+import { type Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = generateMeta(
+  "Биотех ИТМО | Администрирование",
+  "Админка сайта факультета биотехнологий университета ИТМО"
+);
 
 export default function Admin() {
   return (

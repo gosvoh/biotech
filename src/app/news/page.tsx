@@ -3,6 +3,13 @@ import { prisma } from "@/prisma";
 import { unstable_cache as cache } from "next/cache";
 import NewsClient from "./news.client";
 import { Suspense } from "react";
+import type { Metadata } from "next";
+import { generateMeta } from "@/lib/meta";
+
+export const metadata: Metadata = generateMeta(
+  "Биотех ИТМО | Новости",
+  "Новости факультета биотехнологий университета ИТМО"
+);
 
 const getNewsTags = cache(() => prisma.newsTags.findMany(), ["newsTags"], {
   revalidate: 60,

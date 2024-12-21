@@ -2,7 +2,7 @@ import { generateOGImage } from "@/lib/meta";
 
 export const runtime = "edge";
 
-export const alt = "Главная";
+export const alt = "Исследования";
 export const size = {
   width: 1920,
   height: 960,

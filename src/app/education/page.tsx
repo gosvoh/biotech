@@ -14,6 +14,13 @@ import EduPirple from "@public/edu_pirple.svg";
 import EduGreen from "@public/edu_green.svg";
 import EduWhite from "@public/edu_white.svg";
 import Image from "next/image";
+import type { Metadata } from "next";
+import { generateMeta } from "@/lib/meta";
+
+export const metadata: Metadata = generateMeta(
+  "Биотех ИТМО | Образование",
+  "Образование на факультете биотехнологий университета ИТМО"
+);
 
 const OpenDoors = ({
   title,

@@ -12,8 +12,9 @@ import Link from "next/link";
 import Image from "next/image";
 import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
+import { type Metadata, type ResolvingMetadata } from "next";
 
-const getNews = cache(
+export const getNews = cache(
   (id: string) =>
     prisma.news.findUnique({
       where: { id },
@@ -25,6 +26,23 @@ const getNews = cache(
     tags: ["news"],
   }
 );
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const id = (await params).id;
+  const news = await getNews(id);
+  const parentMeta = await parent;
+
+  if (!news || news.hidden) return parentMeta as Metadata;
+
+  return {
+    ...(parentMeta as Metadata),
+    title: `Биотех ИТМО | ${news.title}`,
+    description: `Новость факультета биотехнологий университета ИТМО: ${news.title} от ${news.date}`,
+  };
+}
 
 export default async function News({
   params,

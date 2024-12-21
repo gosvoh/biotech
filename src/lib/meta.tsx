@@ -1,14 +1,26 @@
 import { ImageResponse } from "next/og";
-import type { Metadata } from "next";
+import { type Metadata } from "next";
 import type React from "react";
+
+const getFont = async (runtime: "edge" | "nodejs") => {
+  if (runtime === "edge")
+    return fetch(
+      new URL("@public/MontserratAlternates-Black.ttf", import.meta.url)
+    ).then((res) => res.arrayBuffer());
+
+  const { join } = await import("node:path");
+  const { readFile } = await import("node:fs/promises");
+  return readFile(
+    join(process.cwd(), "public/MontserratAlternates-Black.ttf")
+  ).then((res) => Uint8Array.from(res).buffer);
+};
 
 export const generateOGImage = async (
   title: string,
-  textStyle?: React.CSSProperties
+  textStyle?: React.CSSProperties,
+  runtime: "edge" | "nodejs" = "edge"
 ) => {
-  const Montserrat_Alternates = fetch(
-    new URL("@public/MontserratAlternates-Black.ttf", import.meta.url)
-  ).then((res) => res.arrayBuffer());
+  const Montserrat_Alternates = getFont(runtime);
 
   return new ImageResponse(
     (
@@ -39,21 +51,27 @@ export const generateOGImage = async (
             alignItems: "center",
           }}
         >
-          <img
-            src="https://biotech.cedne.ru/Biotech-Logotype.png"
-            alt="Biotech"
+          <picture
             style={{
-              width: 300,
-              filter: "invert(1)",
               position: "absolute",
               top: 0,
               left: 0,
+              width: 300,
             }}
-          />
+          >
+            <img
+              src="https://biotech.cedne.ru/Biotech-Logotype.svg"
+              alt="Biotech"
+              style={{ filter: "invert(1)" }}
+            />
+          </picture>
           <p
             style={{
               textAlign: "center",
               marginInline: "auto",
+              color: "hsl(156, 99%, 41%)",
+              outline: "2px solid red",
+              alignSelf: "center",
               ...textStyle,
             }}
           >
@@ -77,7 +95,11 @@ export const generateOGImage = async (
   );
 };
 
-export const generateMeta = (title: string, description: string): Metadata => ({
+export const generateMeta = (
+  title: string,
+  description: string,
+  imageBaseUrl?: string
+): Metadata => ({
   title,
   description,
   icons: "favicon.ico",
@@ -88,6 +110,13 @@ export const generateMeta = (title: string, description: string): Metadata => ({
     locale: "ru_RU",
     title,
     description,
+    images: imageBaseUrl
+      ? {
+          url: `${imageBaseUrl}/opengraph-image`,
+          width: 1920,
+          height: 960,
+        }
+      : undefined,
   },
   twitter: {
     card: "summary_large_image",
@@ -95,5 +124,12 @@ export const generateMeta = (title: string, description: string): Metadata => ({
     description,
     site: "@biotech",
     creator: "@gosvoh",
+    images: imageBaseUrl
+      ? {
+          url: `${imageBaseUrl}/opengraph-image`,
+          width: 1920,
+          height: 960,
+        }
+      : undefined,
   },
 });

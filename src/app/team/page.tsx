@@ -12,6 +12,13 @@ import Breadcrumbs from "@/components/breadcrumbs";
 import { unstable_cache as cache } from "next/cache";
 import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
+import { type Metadata } from "next";
+import { generateMeta } from "@/lib/meta";
+
+export const metadata: Metadata = generateMeta(
+  "Биотех ИТМО | Команда факультета",
+  "Команда факультета биотехнологий университета ИТМО"
+);
 
 const getMembers = cache(() => prisma.member.findMany(), ["members"], {
   revalidate: 60,
@@ -171,10 +178,10 @@ export default async function Team() {
   const departments = await getDepartments();
 
   const development = members.filter(
-    (member) => member.departmentId === departments[0].id
+    (member) => member.departmentId === departments[0]?.id
   );
   const research = members.filter(
-    (member) => member.departmentId === departments[1].id
+    (member) => member.departmentId === departments[1]?.id
   );
   const membersByDepartment = { development, research };
 

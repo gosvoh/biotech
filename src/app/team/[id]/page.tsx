@@ -5,8 +5,10 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import Link from "next/link";
+import { type Metadata, type ResolvingMetadata } from "next";
+import type { Member } from "@/lib/db/client";
 
-const getMember = cache(
+export const getMember = cache(
   (id: string) =>
     prisma.member.findUnique({
       where: { id },
@@ -18,6 +20,29 @@ const getMember = cache(
     tags: ["members"],
   }
 );
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const id = (await params).id;
+  const member = await getMember(id);
+  const parentMeta = await parent;
+
+  if (!member) return parentMeta as Metadata;
+
+  const memberName = [
+    member.firstName,
+    member.middleName,
+    member.lastName,
+  ].join(" ");
+
+  return {
+    ...(parentMeta as Metadata),
+    title: `Биотех ИТМО | ${memberName}`,
+    description: `Команда факультета биотехнологий университета ИТМО: ${memberName}`,
+  };
+}
 
 export default async function Member({
   params,

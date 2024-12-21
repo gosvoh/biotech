@@ -18,6 +18,13 @@ import { Button } from "@/components/ui/button";
 import ResearchHover from "@public/research.jpg";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
+import { type Metadata } from "next";
+import { generateMeta } from "@/lib/meta";
+
+export const metadata: Metadata = generateMeta(
+  "Биотех ИТМО | Исследования",
+  "Исследования факультета биотехнологий университета ИТМО"
+);
 
 const RNFProjects: string[] = [
   "Интеллектуальный биоразлагаемый упаковочный материал для пищевых продуктов",

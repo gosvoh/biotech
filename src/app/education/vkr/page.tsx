@@ -10,6 +10,13 @@ import PdfIcon from "@public/pdf.svg";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Lightning from "@public/Lightning.svg";
+import type { Metadata } from "next";
+import { generateMeta } from "@/lib/meta";
+
+export const metadata: Metadata = generateMeta(
+  "Биотех ИТМО | Виды ВКР",
+  "Виды ВКР на факультете биотехнологий университета ИТМО"
+);
 
 function PdfLink({
   className,
