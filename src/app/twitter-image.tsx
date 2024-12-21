@@ -1,6 +1,6 @@
 import { generateOGImage } from "@/lib/meta";
 
-export const alt = "Главная";
+export const alt = "Биотех ИТМО";
 export const size = {
   width: 1920,
   height: 960,

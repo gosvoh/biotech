@@ -100,18 +100,15 @@ export const generateMeta = (
     locale: "ru_RU",
     title,
     description,
-    images:
-      imageBaseUrl !== undefined
-        ? {
-            url: `${
-              imageBaseUrl.startsWith("http")
-                ? imageBaseUrl
-                : `https://biotech.cedne.ru${imageBaseUrl}`
-            }/opengraph-image`,
-            width: 1920,
-            height: 960,
-          }
-        : undefined,
+    images: {
+      url: `${
+        imageBaseUrl?.startsWith("http")
+          ? imageBaseUrl
+          : `https://biotech.cedne.ru${imageBaseUrl ?? ""}`
+      }/opengraph-image`,
+      width: 1920,
+      height: 960,
+    },
   },
   twitter: {
     card: "summary_large_image",
@@ -119,17 +116,14 @@ export const generateMeta = (
     description,
     site: "@biotech",
     creator: "@gosvoh",
-    images:
-      imageBaseUrl !== undefined
-        ? {
-            url: `${
-              imageBaseUrl.startsWith("http")
-                ? imageBaseUrl
-                : `https://biotech.cedne.ru${imageBaseUrl}`
-            }/opengraph-image`,
-            width: 1920,
-            height: 960,
-          }
-        : undefined,
+    images: {
+      url: `${
+        imageBaseUrl?.startsWith("http")
+          ? imageBaseUrl
+          : `https://biotech.cedne.ru${imageBaseUrl ?? ""}`
+      }/opengraph-image`,
+      width: 1920,
+      height: 960,
+    },
   },
 });
