@@ -134,12 +134,18 @@ function EditModal({
         <Form.Item label="Department" name="departmentId">
           <Select
             options={departments.map((d) => ({ label: d.name, value: d.id }))}
+            filterOption={(input, option) =>
+              option?.label.toLowerCase().includes(input.toLowerCase()) ?? false
+            }
           />
         </Form.Item>
         <Form.Item label="Disciplines" name="disciplines">
           <Select
             mode="multiple"
             options={disciplines.map((d) => ({ label: d.title, value: d.id }))}
+            filterOption={(input, option) =>
+              option?.label.toLowerCase().includes(input.toLowerCase()) ?? false
+            }
           />
         </Form.Item>
         <Form.Item label="Scientific Works" name="scientificWorks">
@@ -149,6 +155,9 @@ function EditModal({
               label: d.title,
               value: d.id,
             }))}
+            filterOption={(input, option) =>
+              option?.label.toLowerCase().includes(input.toLowerCase()) ?? false
+            }
           />
         </Form.Item>
         <Form.Item
