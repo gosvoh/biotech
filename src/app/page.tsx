@@ -5,7 +5,7 @@ import Mvk from "@public/mvk.png";
 import Link from "next/link";
 import { generateMeta } from "@/lib/meta";
 import type { Metadata } from "next";
-import Timeline from "@/components/timeline";
+// import Timeline from "@/components/timeline";
 import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import FigureImage from "@/components/figure-image";
 import NewsCarouselSection from "@/components/news-carousel-section";
@@ -53,7 +53,7 @@ export default function Home() {
             </Button>
           </div>
         </div>
-        <div className="wrapper">
+        {/* <div className="wrapper">
           <h3>История факультета</h3>
           <Timeline
             steps={[
@@ -97,7 +97,7 @@ export default function Home() {
               },
             ]}
           />
-        </div>
+        </div> */}
       </section>
 
       <section className="section-home-padding max-md:p-0">
