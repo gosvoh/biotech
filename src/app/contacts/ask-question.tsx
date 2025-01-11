@@ -12,11 +12,13 @@ import {
 import { cn } from "@/lib/utils";
 import { Form } from "antd";
 import { useEffect, useState } from "react";
+import { sendMail } from "./actions";
 
 export default function AskQuestion({ className }: { className?: string }) {
   const [formModalOpen, setFormModalOpen] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [form] = Form.useForm();
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (!successModalOpen) return;
@@ -31,7 +33,10 @@ export default function AskQuestion({ className }: { className?: string }) {
       <p className="font-bold text-xl xl:text-2xl text-accent-carbon">
         Задать вопрос декану
       </p>
-      <Dialog open={formModalOpen} onOpenChange={setFormModalOpen}>
+      <Dialog
+        open={formModalOpen}
+        onOpenChange={(open) => (sending ? undefined : setFormModalOpen(open))}
+      >
         <DialogTrigger asChild>
           <Button variant="secondary">Задать вопрос</Button>
         </DialogTrigger>
@@ -41,7 +46,20 @@ export default function AskQuestion({ className }: { className?: string }) {
               Задать вопрос декану
             </DialogTitle>
           </DialogHeader>
-          <Form form={form} onFinish={console.log}>
+          <Form
+            form={form}
+            onFinish={(values) => {
+              setSending(true);
+              sendMail(values)
+                .then((isSent) => {
+                  if (!isSent) return;
+                  form.resetFields();
+                  setFormModalOpen(false);
+                  setSuccessModalOpen(true);
+                })
+                .finally(() => setSending(false));
+            }}
+          >
             <Form.Item
               name="name"
               rules={[
@@ -74,12 +92,12 @@ export default function AskQuestion({ className }: { className?: string }) {
           </Form>
           <DialogFooter>
             <Button
+              disabled={sending}
               onClick={() => {
-                setFormModalOpen(false);
-                setSuccessModalOpen(true);
+                form.submit();
               }}
             >
-              Закрыть
+              Задать вопрос
             </Button>
           </DialogFooter>
         </DialogContent>

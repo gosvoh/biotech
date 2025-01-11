@@ -59,7 +59,13 @@ export default function ContactsPage() {
         </div>
       </section>
 
-      {/* <YandexMap className="w-full aspect-square max-h-[600px] mt-16" /> */}
+      <div className="w-full aspect-square max-h-[600px] md:mt-10">
+        <iframe
+          src="https://yandex.ru/map-widget/v1/?um=constructor%3Aaadb8904b02c2439c51fe38432e39166b1b9e6c346898a684f3c51b9858c544b&amp;source=constructor"
+          width="100%"
+          height="100%"
+        ></iframe>
+      </div>
     </main>
   );
 }
