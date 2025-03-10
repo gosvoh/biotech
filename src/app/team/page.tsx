@@ -58,8 +58,8 @@ const Card = ({
           alt={name}
           className={cn(
             imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",
-            "rounded-full aspect-square object-cover transition-shadow duration-300",
-            "group-hover:shadow-[0px_0px_0px_1px_hsl(var(--brand3))]"
+            "rounded-full aspect-square object-cover border-2 border-day-base-static-bg&stroke-30",
+            "group-hover:border-accent transition-colors"
           )}
           width={500}
           height={500}
@@ -68,14 +68,14 @@ const Card = ({
       <div className="space-y-2 text-center">
         <Link
           href={`/team/${member.id}`}
-          className="text-lg font-bold text-center link-hover-underline-compact"
+          className="text-lg font-bold text-center"
         >
-          <span className="text-xl text-brand3">{member.firstName}</span>
+          {member.firstName}
           <br />
           {[member.middleName, member.lastName].join(" ")}
         </Link>
         <p>{member.position}</p>
-        <div className="[&>*]:block [&>*]:mx-auto">
+        <div className="*:block *:mx-auto">
           {member.phone && (
             <Link
               href={`tel:${member.phone}`}
@@ -98,7 +98,7 @@ const Card = ({
 
 const DevelopmentDepartment = ({ members }: { members: Member[] }) => (
   <>
-    <p className="text-special-dark-gray text-base lg:max-w-3/5 lg:mb-20">
+    <p className="text-day-base-static-text&icons-20 text-base lg:max-w-3/5 lg:mb-20">
       {removeHangingPrepositionsAndConjunctions(
         <>
           Отдел развития факультета занимается стратегическим планированием,

@@ -26,29 +26,24 @@ export default function ContactsPage() {
             <h1 className="md:mb-6 xl:mb-10">Контакты</h1>
             <AskQuestion className="md:hidden mt-10 mb-6" />
             <div className="flex flex-col gap-4 xl:gap-6 text-lg">
-              <p className="font-bold text-xl md:text-2xl xl:text-3xl mb-2">
-                Факультет биотехнологий
-              </p>
+              <h2 className="mb-2">Факультет биотехнологий</h2>
               <div className="space-y-2">
-                <p className="text-2xl xl:text-3xl">191002</p>
+                <h3>191002</h3>
                 <p className="text-sm xl:text-lg">{contacts.address}</p>
               </div>
               <div className="space-y-2">
-                <Link
-                  className="block text-2xl xl:text-3xl w-fit link-hover-underline-compact"
-                  href={`mailto:${contacts.email}`}
-                >
-                  {contacts.email}
+                <Link className="block w-fit" href={`mailto:${contacts.email}`}>
+                  <h3>{contacts.email}</h3>
                 </Link>
                 <Link
                   href={`tel:${contacts.development}`}
-                  className="block text-sm xl:text-lg w-fit link-hover-underline-compact"
+                  className="block text-sm xl:text-lg w-fit"
                 >
                   {`${contacts.development} (отдел развития)`}
                 </Link>
                 <Link
                   href={`tel:${contacts.dean}`}
-                  className="block text-sm xl:text-lg w-fit link-hover-underline-compact"
+                  className="block text-sm xl:text-lg w-fit"
                 >
                   {`${contacts.dean} (декан)`}
                 </Link>

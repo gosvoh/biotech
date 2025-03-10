@@ -38,11 +38,13 @@ const CarouselImage = ({
   date,
   title,
   className,
+  href,
 }: {
   src: React.ComponentProps<typeof Image>["src"];
   date: string;
   title: string;
   className?: string;
+  href?: string;
 }) => (
   <CarouselItem
     className={cn(
@@ -50,7 +52,7 @@ const CarouselImage = ({
       className
     )}
   >
-    <NewsCard date={date} imageSrc={src} title={title} />
+    <NewsCard date={date} imageSrc={src} title={title} href={href} />
   </CarouselItem>
 );
 
@@ -83,20 +85,15 @@ export default async function NewsCarousel({
             src={`/uploads/news/${x.images[0]?.id}.webp`}
             date={dayjs(x.date).format("LL")}
             title={x.title}
+            href={`/news/${x.id}`}
           />
         ))}
       </CarouselContent>
       <div className="flex flex-row justify-center gap-4 items-center md:justify-between">
         {children}
         <div className="flex flex-row justify-center gap-4 items-center">
-          <CarouselPrevious
-            variant={"default"}
-            className="disabled:bg-card disabled:text-foreground disabled:opacity-100"
-          />
-          <CarouselNext
-            variant={"default"}
-            className="disabled:bg-card disabled:text-foreground disabled:opacity-100"
-          />
+          <CarouselPrevious variant={"default"} className="" />
+          <CarouselNext variant={"default"} className="" />
         </div>
       </div>
     </EmblaCarousel>

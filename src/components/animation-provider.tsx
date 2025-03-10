@@ -1,13 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 
 export default function AnimationProvider({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: React.PropsWithChildren) {
   const pathname = usePathname();
   const [elements, setElements] = useState<Element[]>([]);
 
@@ -44,5 +42,5 @@ export default function AnimationProvider({
     return () => observers.forEach((observer) => observer.disconnect());
   }, [pathname, elements, elements.length]);
 
-  return <>{children}</>;
+  return children;
 }

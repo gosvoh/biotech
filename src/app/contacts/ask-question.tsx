@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Form } from "antd";
+import { ConfigProvider, Form, Input } from "antd";
 import { useEffect, useState } from "react";
 import { sendMail } from "./actions";
 
@@ -30,7 +30,7 @@ export default function AskQuestion({ className }: { className?: string }) {
 
   return (
     <div className={cn("space-y-4 md:space-y-6", className)}>
-      <p className="font-bold text-xl xl:text-2xl text-accent-carbon">
+      <p className="font-bold text-m_xl md:text-t_xl xl:text-s_xl">
         Задать вопрос декану
       </p>
       <Dialog
@@ -42,54 +42,60 @@ export default function AskQuestion({ className }: { className?: string }) {
         </DialogTrigger>
         <DialogContent className="max-md:max-w-11/12">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-center">
-              Задать вопрос декану
+            <DialogTitle asChild className="text-center">
+              <h3>Задать вопрос декану</h3>
             </DialogTitle>
           </DialogHeader>
-          <Form
-            form={form}
-            onFinish={(values) => {
-              setSending(true);
-              sendMail(values)
-                .then((isSent) => {
-                  if (!isSent) return;
-                  form.resetFields();
-                  setFormModalOpen(false);
-                  setSuccessModalOpen(true);
-                })
-                .finally(() => setSending(false));
+          <ConfigProvider
+            theme={{
+              token: { colorPrimary: "hsl(270 100% 50%)" },
             }}
           >
-            <Form.Item
-              name="name"
-              rules={[
-                { required: true, message: "Пожалуйста, введите ваше ФИО" },
-              ]}
+            <Form
+              form={form}
+              onFinish={(values) => {
+                setSending(true);
+                sendMail(values)
+                  .then((isSent) => {
+                    if (!isSent) return;
+                    form.resetFields();
+                    setFormModalOpen(false);
+                    setSuccessModalOpen(true);
+                  })
+                  .finally(() => setSending(false));
+              }}
             >
-              <input className="form-input" type="text" placeholder="ФИО" />
-            </Form.Item>
-            <Form.Item
-              name="Email"
-              rules={[
-                { type: "email", message: "Некорректный email" },
-                { required: true, message: "Пожалуйста, введите ваш email" },
-              ]}
-            >
-              <input className="form-input" type="email" placeholder="Email" />
-            </Form.Item>
-            <Form.Item
-              name="question"
-              rules={[
-                { required: true, message: "Пожалуйста, введите ваш вопрос" },
-              ]}
-            >
-              <textarea
-                className="form-input resize-none"
-                placeholder="Ваш вопрос"
-                rows={6}
-              />
-            </Form.Item>
-          </Form>
+              <Form.Item
+                name="name"
+                rules={[
+                  { required: true, message: "Пожалуйста, введите ваше ФИО" },
+                ]}
+              >
+                <Input placeholder="ФИО" />
+              </Form.Item>
+              <Form.Item
+                name="Email"
+                rules={[
+                  { type: "email", message: "Некорректный email" },
+                  { required: true, message: "Пожалуйста, введите ваш email" },
+                ]}
+              >
+                <Input placeholder="Email" type="email" />
+              </Form.Item>
+              <Form.Item
+                name="question"
+                rules={[
+                  { required: true, message: "Пожалуйста, введите ваш вопрос" },
+                ]}
+              >
+                <Input.TextArea
+                  placeholder="Ваш вопрос"
+                  rows={6}
+                  className="!resize-none"
+                />
+              </Form.Item>
+            </Form>
+          </ConfigProvider>
           <DialogFooter>
             <Button
               disabled={sending}
@@ -108,8 +114,8 @@ export default function AskQuestion({ className }: { className?: string }) {
           className="max-md:max-w-11/12 rounded-full border border-black yellow-gradient p-10"
         >
           <DialogHeader>
-            <DialogTitle className="text-2xl text-center">
-              Спасибо за ваш вопрос!
+            <DialogTitle className="text-center" asChild>
+              <h3>Спасибо за ваш вопрос!</h3>
             </DialogTitle>
           </DialogHeader>
         </DialogContent>

@@ -25,7 +25,6 @@ export const rehypeRewrite: React.ComponentProps<
       node.properties = {
         ...node.properties,
         target: "_blank",
-        className: "link-hover-underline-compact",
       };
     }
   }

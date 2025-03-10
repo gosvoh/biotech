@@ -14,10 +14,82 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        golos: "var(--font-golos)",
+        gorizont: "var(--font-gorizont)",
+      },
       screens: {
-        "2xl": "1440px",
+        sm: "576px",
+        md: "768px",
+        lg: "992px",
+        xl: "1200px",
+        xxl: "1400px",
+        "2xl": "1400px",
       },
       colors: {
+        "day-secondary-violet-light": {
+          10: "#F2E6FF",
+          20: "#E5CCFF",
+          30: "#D8B2FF",
+          40: "#CC99FF",
+          50: "#BF7FFF",
+          60: "#B266FF",
+          70: "#A64DFF",
+          80: "#9933FF",
+        },
+        "day-secondary-violet-dark": {
+          10: "#7200E6",
+          20: "#6600CC",
+          30: "#5900B2",
+          40: "#4C0099",
+          50: "#400080",
+          60: "#330066",
+          70: "#26004D",
+          80: "#190033",
+        },
+        "day-base-static-text&icons": {
+          10: "#000000",
+          20: "#37394B",
+          30: "rgba(27,31,59,0.8)",
+          40: "rgba(27,31,59,0.6)",
+          50: "rgba(27,31,59,0.4)",
+          60: "rgba(27,31,59,0.24)",
+          70: "rgba(255,255,255,0.4)",
+          80: "rgba(255,255,255,0.7)",
+          90: "#FFFFFF",
+        },
+        "day-base-static-bg&stroke": {
+          10: "#FFFFFF",
+          20: "#F6F6F6",
+          30: "#EDEDED",
+          40: "#D7D7D7",
+          50: "#B0B0B0",
+          60: "#959595",
+          70: "#808080",
+          80: "#333333",
+          90: "#000000",
+        },
+        "night-base-static-text&icons": {
+          10: "#FFFFFF",
+          20: "rgba(255,255,255,0.9)",
+          30: "rgba(255,255,255,0.8)",
+          40: "rgba(255,255,255,0.6)",
+          50: "rgba(255,255,255,0.4)",
+          60: "rgba(255,255,255,0.24)",
+          70: "#C7C9CC",
+          80: "#9299A2",
+          90: "#333333",
+        },
+        "night-base-static-bg&stroke": {
+          10: "#F6F7F8",
+          20: "#EAECEE",
+          30: "#DDDFE0",
+          40: "#C7C9CC",
+          50: "#9299A2",
+          60: "#5C636B",
+          70: "#333333",
+          80: "#000000",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -61,23 +133,21 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
-        brand: {
-          DEFAULT: "hsl(var(--brand))",
+        brand: { DEFAULT: "hsl(var(--brand))" },
+        brand3: { DEFAULT: "hsl(var(--brand3))" },
+        "typo-secondary": { DEFAULT: "hsl(var(--typo-secondary))" },
+        "accent-carbon": { DEFAULT: "hsl(var(--accent-carbon))" },
+        "special-dark-gray": { DEFAULT: "hsl(var(--special-dark-gray))" },
+        "news-carousel-button": { DEFAULT: "hsl(var(--news-carousel-button))" },
+        "day-primary-violet": {
+          DEFAULT: "var(--day-primary-violet-default)",
+          hover: "var(--day-primary-violet-hover)",
+          active: "var(--day-primary-violet-active)",
         },
-        brand3: {
-          DEFAULT: "hsl(var(--brand3))",
-        },
-        "typo-secondary": {
-          DEFAULT: "hsl(var(--typo-secondary))",
-        },
-        "accent-carbon": {
-          DEFAULT: "hsl(var(--accent-carbon))",
-        },
-        "special-dark-gray": {
-          DEFAULT: "hsl(var(--special-dark-gray))",
-        },
-        "news-carousel-button": {
-          DEFAULT: "hsl(var(--news-carousel-button))",
+        "night-primary-violet": {
+          DEFAULT: "var(--night-primary-violet-default)",
+          hover: "var(--night-primary-violet-hover)",
+          active: "var(--night-primary-violet-active)",
         },
       },
       borderRadius: {
@@ -99,6 +169,21 @@ const config: Config = {
         "4xl": ["3rem", "3.6rem"],
         "5xl": ["4.5rem", "5.4rem"],
         "6xl": ["6rem", "7.2rem"],
+        m_xl: ["18px", "28px"],
+        m_lg: ["18px", "28px"],
+        m_md: ["16px", "24px"],
+        m_sm: ["14px", "20px"],
+        m_xs: ["12px", "16px"],
+        t_xl: ["18px", "28px"],
+        t_lg: ["18px", "28px"],
+        t_md: ["16px", "24px"],
+        t_sm: ["14px", "20px"],
+        t_xs: ["12px", "16px"],
+        s_xl: ["20px", "28px"],
+        s_lg: ["18px", "28px"],
+        s_md: ["16px", "24px"],
+        s_sm: ["14px", "20px"],
+        s_xs: ["12px", "16px"],
       },
       maxWidth: {
         "1/4": "25%",
@@ -146,20 +231,12 @@ const config: Config = {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
@@ -176,6 +253,7 @@ const config: Config = {
         "utf8"
       );
       const root = parse(css);
+      // @ts-expect-error TS2345
       const jss = objectify(root);
 
       if ("@layer components" in jss) addComponents(jss["@layer components"]);

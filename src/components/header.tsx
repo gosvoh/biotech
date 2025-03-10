@@ -32,7 +32,7 @@ const MobileMenu = () => (
           </Link>
         </SheetTitle>
         <SheetDescription asChild>
-          <nav className="flex flex-col gap-8 items-start text-xl">
+          <nav className="flex flex-col gap-8 items-start text-lg">
             {headerFooterLinks.map(({ href, text }, i) => (
               <SheetClose asChild key={`link-${i}`}>
                 <Link className="text-left" href={href}>
@@ -50,7 +50,7 @@ const MobileMenu = () => (
 const DesktopMenu = () => (
   <nav className="hidden md:inline-flex gap-6 text-left text-lg">
     {headerFooterLinks.map(({ href, text }, i) => (
-      <Link key={`link-${i}`} href={href} className="link-hover-underline">
+      <Link key={`link-${i}`} href={href}>
         {text}
       </Link>
     ))}

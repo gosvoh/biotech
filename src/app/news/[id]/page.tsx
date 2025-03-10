@@ -91,17 +91,9 @@ export default async function News({
             className="px-6 lg:max-w-3/4 mx-auto w-full max-lg:overflow-hidden"
           />
           <div className="lg:max-w-3/4 mx-auto w-full space-y-6 md:space-y-10 max-md:section-padding max-md:py-0">
-            <p className="text-brand3">{dayjs(news.date).format("LL")}</p>
-            <h2 className="text-2xl lg:text-4xl text-accent-carbon !mt-4">
-              {news.title}
-            </h2>
-            <MarkdownRender
-              source={news.text}
-              className={cn(
-                "!text-base md:!text-lg",
-                "[&>h3]:!text-lg [&>h3]:md:!text-xl"
-              )}
-            />
+            <p>{dayjs(news.date).format("LL")}</p>
+            <h2 className="!mt-4">{news.title}</h2>
+            <MarkdownRender source={news.text} className={cn("md:!text-lg")} />
             {socialLinks && (
               <div className="flex gap-6">
                 {socialLinks.vkLink && (

@@ -28,8 +28,8 @@ function PdfLink({
     <Link
       {...props}
       className={cn(
-        "px-3 py-2 flex flex-row gap-3 border border-black",
-        "w-fit rounded-lg card-hover-effect",
+        "px-3 py-2 flex flex-row gap-3 border-2 border-black",
+        "w-fit rounded-lg hover:border-accent transition-colors",
         className
       )}
     >
@@ -65,7 +65,7 @@ export default function Vkr() {
         <div className="wrapper">
           <Accordion
             type="multiple"
-            className="lg:max-w-3/4 lg:ml-auto lg:mr-0 w-full [&_p]:text-base [&_p.font-bold]:md:text-2xl"
+            className="lg:max-w-3/4 lg:ml-auto lg:mr-0 w-full"
             defaultValue={["1"]}
           >
             <AccordionItem value="1">
@@ -119,7 +119,7 @@ export default function Vkr() {
                 </p>
                 <div className="px-7 space-y-4">
                   <div className="space-y-4">
-                    <p className="font-bold">Что такое индустриальный проект</p>
+                    <h3>Что такое индустриальный проект</h3>
                     <p>
                       Проектная работа по заказу индустриального партнера,
                       которую выполняют обучающиеся бакалавриата или
@@ -135,10 +135,10 @@ export default function Vkr() {
                   </div>
 
                   <div className="space-y-4">
-                    <p className="font-bold">
+                    <h3>
                       Как подать заявку выполнение индустриального проекта от
                       компании-партнера факультета:
-                    </p>
+                    </h3>
                     <ol className="list-decimal pl-5">
                       <li>
                         Изучите витрину заданий: 1 лист соответствует 1
@@ -157,12 +157,7 @@ export default function Vkr() {
                         Подготовьте резюме (если хотите его улучшить —
                         обращайтесь к карьерному консультанту ФБТ Надежде
                         Серовой{" "}
-                        <Link
-                          href="mailto:serova@itmo.ru"
-                          className="link-hover-underline-compact"
-                        >
-                          serova@itmo.ru
-                        </Link>
+                        <Link href="mailto:serova@itmo.ru">serova@itmo.ru</Link>
                         ). Подготовьте мотивационное письмо, если необходимо
                         (указано в столбце «Условия отбора»).
                       </li>
@@ -188,10 +183,10 @@ export default function Vkr() {
                   </div>
 
                   <div className="space-y-4">
-                    <p className="font-bold">
+                    <h3>
                       Даты конкурса на ВКР в формате индустриального проекта
                       (для проектов с витрины):
-                    </p>
+                    </h3>
                     <p>Заявки от студентов принимаются до 1 июня; </p>
                     <p>Компании отбирают кандидатов до 15 июня;</p>
                     <p>
@@ -217,7 +212,7 @@ export default function Vkr() {
                   </div>
 
                   <div className="space-y-4 [&>*:not(:first-child)]:underline">
-                    <p className="font-bold !text-base">
+                    <p className="font-bold">
                       Чему может быть посвящен индустриальный проект на ФБТ:
                     </p>
                     <p>Пищевые системы</p>
@@ -295,14 +290,11 @@ export default function Vkr() {
 
         <div className="wrapper">
           <div className="flex flex-col gap-4 lg:max-w-3/4 ml-auto mr-0 w-full">
-            <p className="font-bold text-xl lg:text-3xl lg:mb-2">Контакты</p>
+            <h2 className="font-bold lg:mb-2">Контакты</h2>
             <div>
               <p>по вопросам ВКР 2025</p>
-              <p className="text-2xl lg:text-3xl">Кира Соловьева</p>
-              <Link
-                href="mailto:kvsoloveva@itmo.ru"
-                className="link-hover-underline-compact w-fit"
-              >
+              <h3>Кира Соловьева</h3>
+              <Link href="mailto:kvsoloveva@itmo.ru" className="w-fit">
                 kvsoloveva@itmo.ru
               </Link>
             </div>

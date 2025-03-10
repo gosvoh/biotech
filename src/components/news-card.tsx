@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 
 export default function NewsCard({
   imageSrc,
@@ -7,6 +9,8 @@ export default function NewsCard({
   title,
   className,
   classNames,
+  href,
+  headerLevel = 3,
 }: {
   imageSrc?: React.ComponentProps<typeof Image>["src"];
   date: string;
@@ -18,16 +22,11 @@ export default function NewsCard({
     date?: string;
     title?: string;
   };
+  href?: string;
+  headerLevel?: 1 | 2 | 3 | 4 | 5 | 6;
 }) {
-  return (
-    <div
-      className={cn(
-        "border border-border rounded-2.75xl p-10 space-y-6 w-full",
-        "news-card-hover-effect",
-        className,
-        classNames?.root
-      )}
-    >
+  const content = (
+    <>
       {imageSrc && (
         <Image
           src={imageSrc}
@@ -41,11 +40,41 @@ export default function NewsCard({
         />
       )}
       <div className="space-y-4">
-        <p className={cn("text-brand3 text-xl", classNames?.date)}>{date}</p>
-        <h3 className={cn("text-2xl text-accent-carbon", classNames?.title)}>
-          {title}
-        </h3>
+        <p className={classNames?.date}>{date}</p>
+        {React.createElement(
+          `h${headerLevel}`,
+          { className: classNames?.title },
+          title
+        )}
       </div>
+    </>
+  );
+
+  if (href)
+    return (
+      <Link
+        className={cn(
+          "border-2 border-border rounded-2.75xl p-10 space-y-6 w-full transition-border",
+          "hover:border-accent block",
+          className,
+          classNames?.root
+        )}
+        href={href}
+      >
+        {content}
+      </Link>
+    );
+
+  return (
+    <div
+      className={cn(
+        "border-2 border-border rounded-2.75xl p-10 space-y-6 w-full transition-border",
+        "hover:border-accent",
+        className,
+        classNames?.root
+      )}
+    >
+      {content}
     </div>
   );
 }

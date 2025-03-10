@@ -49,11 +49,14 @@ const getPublications = cache(
 );
 
 const Publications = async () => {
-  const publications = (await getPublications()).reduce((acc, publication) => {
-    if (!acc[publication.year]) acc[publication.year] = [];
-    acc[publication.year].push(publication);
-    return acc;
-  }, {} as Record<Publication["year"], Publication[]>);
+  const publications = (await getPublications()).reduce(
+    (acc, publication) => {
+      if (!acc[publication.year]) acc[publication.year] = [];
+      acc[publication.year].push(publication);
+      return acc;
+    },
+    {} as Record<Publication["year"], Publication[]>
+  );
 
   return (
     <Accordion type="multiple">
@@ -66,10 +69,7 @@ const Publications = async () => {
             <ul>
               {publications.map((publication) => (
                 <li key={publication.id}>
-                  <Link
-                    href={publication.link}
-                    className="hover:underline text-brand3"
-                  >
+                  <Link href={publication.link} className="hover:underline">
                     {publication.authors}
                   </Link>{" "}
                   {publication.title}
@@ -117,11 +117,11 @@ export default function Research() {
         />
         <div className="wrapper">
           <div className="space-y-4 md:max-w-3/4 md:pl-6 md:ml-auto md:mr-0">
-            <h2 className="text-2xl xl:text-4xl text-brand3">БиоТех ИТМО</h2>
-            <div className="space-y-2 md:space-y-6 xl:[&>p]:text-2xl">
-              <p className="font-bold text-xl md:mb-6 xl:!text-3xl">
+            <h2>БиоТех ИТМО</h2>
+            <div className="space-y-2 md:space-y-6">
+              <h3 className="font-bold md:mb-6">
                 Инновации и передовые исследования в науке и промышленности
-              </p>
+              </h3>
               <p>
                 На факультете биотехнологий Университета ИТМО ведутся передовые
                 исследования, направленные на решение актуальных задач науки
@@ -203,10 +203,7 @@ export default function Research() {
                 key={project}
                 date={`[${(i + 1).toString().padStart(2, "0")}]`}
                 title={project}
-                classNames={{
-                  date: "text-xl",
-                  title: "text-2xl",
-                }}
+                classNames={{ date: "text-lg" }}
               />
             ))}
           </div>
@@ -222,10 +219,7 @@ export default function Research() {
                 key={project}
                 date={`[${(i + 1).toString().padStart(2, "0")}]`}
                 title={project}
-                classNames={{
-                  date: "text-xl",
-                  title: "text-2xl",
-                }}
+                classNames={{ date: "text-lg" }}
               />
             ))}
           </div>
@@ -275,10 +269,10 @@ export default function Research() {
             />
           </div>
           <div className="flex flex-col gap-6 lg:max-w-1/2 xl:max-w-3/4">
-            <p className="font-bold text-2xl md:text-3xl lg:text-4xl max-md:text-center md:mb-4">
+            <h2 className="font-bold max-md:text-center md:mb-4">
               На странице «Команда»
-            </p>
-            <p className="max-md:text-center md:text-balance md:text-2xl">
+            </h2>
+            <p className="max-md:text-center md:text-balance">
               вы можете узнать больше о проектах факультета, выбрать научного
               руководителя и связаться с сотрудниками для получения
               дополнительной информации о текущих исследованиях
@@ -294,7 +288,7 @@ export default function Research() {
 
       <section className="max-md:hidden">
         <div className="wrapper">
-          <h2>Проекты ЭФФИ</h2>
+          <h2>Публикации</h2>
           <Suspense fallback={<div>Загрузка...</div>}>
             <Publications />
           </Suspense>

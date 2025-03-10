@@ -11,11 +11,11 @@ export default function Tag({
   return (
     <div
       className={cn(
-        "text-base md:text-xl",
+        "text-base md:text-lg xl:text-xl",
         "border rounded-lg cursor-pointer transition-colors",
-        "p-[10px] border-typo-secondary text-typo-secondary",
-        active ? "text-black border-brand3" : "",
-        "hover:border-brand3",
+        "p-[10px] border-day-base-static-bg&stroke-60 text-day-base-static-bg&stroke-60",
+        active ? "text-black border-accent" : "",
+        "hover:border-accent",
         className
       )}
       {...props}

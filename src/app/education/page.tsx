@@ -31,7 +31,7 @@ const OpenDoors = ({
   className?: string;
 }) => (
   <div className={cn("flex flex-col gap-[14px]", className)}>
-    <p className="text-xl max-md:text-center">
+    <p className="text-lg max-md:text-center">
       Подробное описание программ и записи дней открытых дверей
     </p>
     <Link href="/#" className="card justify-center text-center md:w-fit">
@@ -44,7 +44,7 @@ const BachelorContent = () => (
   <>
     <div className="space-y-4 [&>p:not(.font-bold)]:text-base">
       <p>Образовательная программа бакалавриата</p>
-      <p className="font-bold md:text- mb-6">
+      <p className="font-bold md:text-lg mb-6">
         «Биотехнология» (направление подготовки 19.03.01 Биотехнология)
       </p>
     </div>
@@ -179,7 +179,7 @@ const MasterContent = () => (
     <Divider />
     <div className="space-y-[14px]">
       <OpenDoors className="md:hidden" title="Индустриальная биотехнология" />
-      <p className="text-xl">
+      <p className="text-lg xl:text-xl">
         Подробное описание программ и записи дней открытых дверей
       </p>
       <div className="flex flex-row gap-6">
@@ -197,7 +197,7 @@ const MasterContent = () => (
 const PhDContent = () => (
   <>
     <p className="md:text-lg">Аспирантура (научная специальность)</p>
-    <div className="space-y-4 font-bold [&>p]:md:text-xl">
+    <div className="space-y-4 font-bold [&>p]:md:text-lg [&>p]:xl:text-xl">
       <p>
         2.7.1. Биотехнологии пищевых продуктов, лекарственных и биологически
         активных веществ (технические науки), обучение 4 года
@@ -214,9 +214,9 @@ const PhDContent = () => (
 
 const VKRContent = () => (
   <>
-    <p className="text-center text-xl md:text-2xl">
+    <h3 className="text-center">
       Полезная информация о выпускной квалификационной работе
-    </p>
+    </h3>
     <Button className="md:w-fit" asChild>
       <Link href="/education/vkr">Перейти</Link>
     </Button>
@@ -338,13 +338,13 @@ export default function Education() {
             alt=""
           />
           <div className="flex flex-col gap-6 md:max-w-1/2">
-            <p className="font-bold text-2xl md:text-3xl lg:text-4xl max-md:text-center md:mb-4">
+            <h2 className="font-bold max-md:text-center md:mb-4">
               Переводами и восстановлениями на все программы занимается
               Студенческий офис
-            </p>
-            <p className="max-md:text-center md:text-balance md:text-2xl">
+            </h2>
+            <h3 className="max-md:text-center md:text-balance">
               Вы можете ознакомиться с порядком перевода здесь
-            </p>
+            </h3>
             <Button variant="outline" className="md:w-fit">
               Перейти
             </Button>

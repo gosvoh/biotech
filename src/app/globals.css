@@ -2,43 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Montserrat Alternates, Montserrat Alternates Fallback, Arial,
-    Helvetica, sans-serif;
-}
-
-.wmde-markdown {
-  --color-fg-default: hsl(var(--accent-carbon)) !important;
-  font-family: Montserrat Alternates, Montserrat Alternates Fallback !important;
-
-  & p {
-    font-size: inherit !important;
-    line-height: inherit !important;
-  }
-
-  & h3 {
-    font-weight: 700 !important;
-    margin-top: 0 !important;
-    margin-bottom: 8px !important;
-  }
-
-  & ul,
-  & ol {
-    list-style-type: revert !important;
-    margin: 0 !important;
-    font-size: inherit !important;
-
-    & * {
-      font-size: inherit !important;
-    }
-  }
-
-  & a {
-    text-decoration: none !important;
-    color: hsl(var(--accent-carbon)) !important;
-  }
-}
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -59,7 +22,7 @@ body {
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
 
-    --accent: 260 72% 54%;
+    --accent: 270 100% 50%;
     --accent-foreground: 0 0% 100%;
 
     --accent-alternate: 80 93% 77%;
@@ -78,13 +41,21 @@ body {
     --radius: 0.5rem;
 
     --brand: 259 61% 19%;
-    --brand3: 260 72% 54%;
+    --brand3: 270 100% 50%;
 
     --typo-secondary: 0 0% 60%;
     --accent-carbon: 223 16% 22%;
     --special-dark-gray: 223 14% 44%;
 
     --news-carousel-button: 254 86% 81%;
+
+    --day-primary-violet-default: #7f00ff;
+    --day-primary-violet-hover: #9635f6;
+    --day-primary-violet-active: #5d00bb;
+
+    --night-primary-violet-default: #8a15ff;
+    --night-primary-violet-hover: #a168da;
+    --night-primary-violet-active: #7020c0;
   }
 }
 
@@ -95,6 +66,7 @@ body {
   body {
     @apply bg-background text-foreground;
     @apply text-pretty flex flex-col;
+    @apply font-golos;
   }
   html {
     @apply scroll-smooth;
@@ -109,19 +81,28 @@ body {
   h4,
   h5,
   h6 {
-    @apply font-bold;
+    @apply font-gorizont;
   }
   h1 {
-    @apply text-3xl xl:text-5xl;
+    @apply font-bold;
+    @apply text-[30px] leading-[40px];
+    @apply md:text-[36px] md:leading-[46px];
+    @apply xl:text-[50px] xl:leading-[60px] xl:font-normal;
   }
   h2 {
-    @apply text-3xl xl:text-4xl;
+    @apply text-[26px] leading-[36px];
+    @apply md:text-[28px] md:leading-[38px];
+    @apply xl:text-[40px] xl:leading-[50px];
   }
   h3 {
-    @apply text-2xl xl:text-3xl;
+    @apply text-[22px] leading-[32px];
+    @apply xl:text-[28px] xl:leading-[38px];
   }
   p {
     @apply text-base xl:text-xl;
+  }
+  a {
+    @apply text-day-base-static-text&icons-10 hover:text-day-primary-violet-hover active:text-day-primary-violet-active transition-colors;
   }
   header,
   footer,
@@ -134,7 +115,18 @@ body {
   }
   footer {
     @apply py-20;
-    @apply text-secondary-foreground;
+    &,
+    a {
+      @apply text-secondary-foreground;
+    }
+
+    & a {
+      @apply inline-flex items-center gap-3;
+      @apply hover:text-night-primary-violet-hover active:text-night-primary-violet-active;
+      & > svg {
+        @apply w-4 h-4 flex-shrink-0;
+      }
+    }
   }
 
   section {
@@ -166,7 +158,7 @@ body {
   }
 
   .wrapper {
-    @apply w-full max-w-[1400px] mx-auto;
+    @apply w-full sm:max-w-[516px] md:max-w-[696px] lg:max-w-[936px] xl:max-w-[1116px] xxl:max-w-[1296px] mx-auto;
   }
 
   .main-block {
@@ -174,71 +166,12 @@ body {
   }
 
   .card {
-    @apply border border-black rounded-2.75xl;
+    @apply border-2 border-black rounded-2.75xl;
     @apply px-10 py-6;
 
-    @apply card-hover-effect;
+    @apply hover:border-accent transition-colors;
 
-    &:any-link {
-      @apply flex items-center font-bold text-xl md:text-2xl;
-    }
-  }
-
-  .card-hover-effect {
-    @apply hover:ring-2 ring-accent transition-shadow duration-300 ease-in-out;
-  }
-
-  .footer-link {
-    @apply inline-flex items-center gap-3;
-    @apply md:opacity-60 md:hover:opacity-100 transition-opacity duration-300;
-
-    svg {
-      @apply w-4 h-4 flex-shrink-0;
-    }
-  }
-
-  .link-hover-underline {
-    @apply relative block w-fit;
-
-    &::after {
-      @apply content-[""] absolute -bottom-2 left-0 w-0 h-[2px] bg-accent transition-width duration-300 ease-in-out;
-    }
-
-    &:hover::after {
-      @apply w-full;
-    }
-  }
-
-  .link-hover-underline-compact {
-    @apply w-fit;
-    @apply bg-gradient-to-r from-accent to-accent bg-no-repeat bg-left-bottom bg-[length:0%_2px] transition-background-size duration-300 ease-in-out;
-
-    &:hover {
-      @apply bg-[length:100%_2px];
-    }
-  }
-
-  .news-card-hover-effect {
-    @apply relative bg-background;
-
-    &::before {
-      @apply content-[""] absolute inset-0 bg-accent transition-inset duration-150 ease-in-out -z-[1] rounded-3xl;
-      @apply bg-gradient-to-r from-[#C0A2FF] to-[#6C35DE];
-    }
-
-    &:hover {
-      @apply border-transparent transition-colors duration-150 ease-in-out;
-
-      &::before {
-        @apply -inset-[5px];
-      }
-    }
-  }
-
-  .form-input {
-    @apply text-lg main-font border-b border-black w-full;
-    @apply focus:outline-none focus:border-brand3 focus:ring-0;
-    @apply transition-colors duration-300 ease-in-out;
+    @apply flex items-center font-bold text-m_xl md:text-m_xl xl:text-s_xl;
   }
 }
 
@@ -265,7 +198,38 @@ body {
   }
 
   .main-font {
-    font-family: Montserrat Alternates, Montserrat Alternates Fallback, Arial,
-      Helvetica, sans-serif;
+    font-family: var(--font-golos);
+  }
+}
+
+.wmde-markdown {
+  --color-fg-default: hsl(var(--accent-carbon)) !important;
+  font-family: var(--font-golos) !important;
+
+  & p {
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+
+  & h3 {
+    font-weight: 700 !important;
+    margin-top: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  & ul,
+  & ol {
+    list-style-type: revert !important;
+    margin: 0 !important;
+    font-size: inherit !important;
+
+    & * {
+      font-size: inherit !important;
+    }
+  }
+
+  & a {
+    @apply !no-underline;
+    @apply !text-day-base-static-text&icons-10 hover:!text-day-primary-violet-hover active:!text-day-primary-violet-active transition-colors;
   }
 }

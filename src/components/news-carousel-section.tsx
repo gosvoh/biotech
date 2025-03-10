@@ -22,10 +22,10 @@ export default function NewsCarouselSection({
             fallback={
               <NewsSkeleton>
                 <Button
-                  className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden"
+                  className="md:text-lg xl:text-xl gap-[10px] md:gap-4 max-md:hidden"
                   disabled
                 >
-                  Все новости <ArrowUpRight />
+                  <ArrowUpRight /> Все новости
                 </Button>
               </NewsSkeleton>
             }
@@ -33,17 +33,20 @@ export default function NewsCarouselSection({
             <NewsCarousel>
               <Button
                 asChild
-                className="xl:text-2xl gap-[10px] md:gap-4 max-md:hidden"
+                className="md:text-lg xl:text-xl gap-[10px] md:gap-4 max-md:hidden"
               >
                 <Link href="/news">
-                  Все новости <ArrowUpRight />
+                  <ArrowUpRight /> Все новости
                 </Link>
               </Button>
             </NewsCarousel>
           </Suspense>
-          <Button asChild className="xl:text-2xl gap-[10px] md:gap-4 md:hidden">
+          <Button
+            asChild
+            className="md:text-lg xl:text-xl gap-[10px] md:gap-4 md:hidden"
+          >
             <Link href="/news">
-              Все новости <ArrowUpRight />
+              <ArrowUpRight /> Все новости
             </Link>
           </Button>
         </div>

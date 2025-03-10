@@ -20,10 +20,18 @@ export default function Breadcrumbs({
     >
       {items.map((item, i) => (
         <div className="group contents" key={`breadcrumb-${i}`}>
+          <div
+            className={cn(
+              "bg-foreground rounded-full w-2 h-2",
+              item.href
+                ? "opacity-50 group-hover:opacity-100 group-hover:bg-day-primary-violet-hover group-active:bg-day-primary-violet-active transition-all duration-300 bg-opacity-[.04]"
+                : ""
+            )}
+          />
           {item.href ? (
             <Link
               className={cn(
-                "opacity-50 group-hover:opacity-100 transition-opacity duration-300 min-w-fit",
+                "opacity-50 group-hover:opacity-100 group-hover:text-day-primary-violet-hover group-active:text-day-primary-violet-active transition-all duration-300 min-w-fit",
                 "peer"
               )}
               href={item.href}
@@ -33,14 +41,6 @@ export default function Breadcrumbs({
           ) : (
             <p>{item.title}</p>
           )}
-          <div
-            className={cn(
-              "bg-brand3 rounded-full w-2 h-2",
-              item.href
-                ? "opacity-50 group-hover:opacity-100 transition-opacity duration-300"
-                : ""
-            )}
-          />
         </div>
       ))}
     </div>

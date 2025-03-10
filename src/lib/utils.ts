@@ -22,7 +22,8 @@ export function removeHangingPrepositionsAndConjunctions(
     return text.join("").replace(/(\s[а-яё]{1,3})\s/gi, "$1\u00A0");
   }
   if (typeof text === "object" && "props" in text) {
-    const textString = text.props.children as string;
+    const textString = (text.props as React.PropsWithChildren)
+      .children as string;
     return textString.replace(/(\s[а-яё]{1,3})\s/gi, "$1\u00A0");
   }
   return "ERROR REMOVE HANGING PREPOSITIONS AND CONJUNCTIONS";

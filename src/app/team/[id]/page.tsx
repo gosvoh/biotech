@@ -84,29 +84,23 @@ export default async function Member({
               className="rounded-full aspect-square object-cover w-1/2 xl:w-1/4"
             />
             <div className="md:space-y-4">
-              <h1 className="text-brand3 font-bold text-2xl md:text-4xl xl:text-5xl">
-                {member.firstName}
-              </h1>
-              <p className="font-bold text-xl md:text-2xl xl:text-3xl">
-                {[member.middleName, member.lastName].join(" ")}
-              </p>
-              {member.position && (
-                <p className="md:text-xl xl:text-2xl">{member.position}</p>
-              )}
+              <h1>{member.firstName}</h1>
+              <h2>{[member.middleName, member.lastName].join(" ")}</h2>
+              {member.position && <h3>{member.position}</h3>}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="md:text-xl">
+      <section className="xl:text-xl">
         <div className="wrapper">
           {member.disciplines.length > 0 && (
             <div className="space-y-4 md:space-y-6">
-              <p className="font-bold md:text-3xl">
+              <h3>
                 {removeHangingPrepositionsAndConjunctions(
                   <>Преподаваемые дисциплины в 2024–2025 гг:</>
                 )}
-              </p>
+              </h3>
               <ul className="list-disc ml-8">
                 {member.disciplines.map((x) => (
                   <li key={`discipline-${x.id}`}>
@@ -119,7 +113,7 @@ export default async function Member({
 
           {member.scientificWorks.length > 0 && (
             <div className="space-y-4">
-              <p className="font-bold md:text-3xl">Темы научных работ:</p>
+              <h3>Темы научных работ:</h3>
               <ul className="list-disc ml-8">
                 {member.scientificWorks.map((x) => (
                   <li key={`scientific-work-${x.id}`}>
@@ -132,21 +126,15 @@ export default async function Member({
 
           {(member.phone || member.email) && (
             <div className="space-y-4 md:space-y-6">
-              <p className="font-bold md:text-3xl">Контакты</p>
+              <h3>Контакты</h3>
               <div>
                 {member.phone && (
-                  <Link
-                    href={`tel:${member.phone}`}
-                    className="link-hover-underline-compact block"
-                  >
+                  <Link href={`tel:${member.phone}`} className="block">
                     {member.phone}
                   </Link>
                 )}
                 {member.email && (
-                  <Link
-                    href={`mailto:${member.email}`}
-                    className="link-hover-underline-compact block"
-                  >
+                  <Link href={`mailto:${member.email}`} className="block">
                     {member.email}
                   </Link>
                 )}

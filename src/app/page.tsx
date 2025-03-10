@@ -19,13 +19,17 @@ export default function Home() {
   return (
     <main className="overflow-hidden">
       <section className="accent-gradient max-md:rounded-b-[60px] max-w-none section-home-padding">
-        <div className="wrapper flex flex-col gap-6 md:flex-row-reverse items-center">
-          <FigureImage />
+        <div className="wrapper flex flex-col gap-6 md:flex-row-reverse items-center justify-between xxl:justify-around">
+          <FigureImage className="md:max-w-1/2" />
           <div className="space-y-6 md:space-y-[42px]">
-            <h1 className="text-5xl xl:text-6xl">Биотех ИТМО</h1>
-            <p className="text-xl xl:text-2xl">
-              Факультет биотехнологий университета ИТМО
-            </p>
+            <h1>
+              Биотех <br className="max-md:hidden" />
+              ИТМО
+            </h1>
+            <h3>
+              Факультет биотехнологий <br className="max-md:hidden" />
+              университета ИТМО
+            </h3>
           </div>
         </div>
       </section>
@@ -138,25 +142,13 @@ export default function Home() {
       <section className="section-home-padding">
         <div className="wrapper">
           <h2>Жизнь на Биотехе</h2>
-          <div className="flex flex-col gap-6 lg:flex-row lg:flex-wrap [&>*]:lg:flex-[1_1_45%]">
-            <Link href="#" className="card">
-              Food Biotechnology Lab
-            </Link>
-            <Link href="#" className="card">
-              Стажировки
-            </Link>
-            <Link href="#" className="card">
-              Проект «Амбассадоры науки»
-            </Link>
-            <Link href="#" className="card">
-              BioTech Careers
-            </Link>
-            <Link href="#" className="card">
-              Сообщество факультета в ВК
-            </Link>
-            <Link href="#" className="card">
-              Интенсив «Проектная деятельность»
-            </Link>
+          <div className="flex flex-col gap-6 lg:flex-row lg:flex-wrap *:lg:flex-[1_1_45%]">
+            <div className="card">Food Biotechnology Lab</div>
+            <div className="card">Стажировки</div>
+            <div className="card">Проект «Амбассадоры науки»</div>
+            <div className="card">BioTech Careers</div>
+            <div className="card">Сообщество факультета в ВК</div>
+            <div className="card">Интенсив «Проектная деятельность»</div>
           </div>
         </div>
       </section>
