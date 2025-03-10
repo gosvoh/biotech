@@ -1,6 +1,6 @@
 "use server";
 
-import { dbAction } from "@/lib/utils";
+import { dbAction } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import sharp from "sharp";

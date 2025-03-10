@@ -2,7 +2,7 @@
 
 import { prisma } from "@/prisma";
 import type { News } from "@/lib/db/client";
-import { dbAction } from "@/lib/utils";
+import { dbAction } from "@/lib/utils.server";
 import sharp from "sharp";
 import fs from "fs/promises";
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { dbAction } from "@/lib/utils";
+import { dbAction } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 
 export async function changeRole(userId: string, role: string) {
