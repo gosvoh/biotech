@@ -25,7 +25,7 @@ import {
   duplicateMember,
   updateMember,
 } from "./actions";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ArrowLeftOutlined,
   CopyOutlined,
@@ -55,6 +55,8 @@ function EditModal({
   close: () => void;
 }) {
   const [form] = Form.useForm();
+
+  useEffect(() => () => form.resetFields(), [member?.id, form]);
 
   return (
     <Modal
