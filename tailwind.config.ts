@@ -253,7 +253,6 @@ const config: Config = {
         "utf8"
       );
       const root = parse(css);
-      // @ts-expect-error TS2345
       const jss = objectify(root);
 
       if ("@layer components" in jss) addComponents(jss["@layer components"]);
