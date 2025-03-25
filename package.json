@@ -17,7 +17,7 @@
     "@ant-design/nextjs-registry": "^1.0.2",
     "@auth/prisma-adapter": "^2.7.4",
     "@icons-pack/react-simple-icons": "^10.2.0",
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^6.5.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.2",
@@ -54,7 +54,7 @@
     "eslint-config-next": "^15.1.7",
     "postcss": "^8.5.3",
     "postcss-js": "^4.0.1",
-    "prisma": "^5.22.0",
+    "prisma": "^6.5.0",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3"
   }
