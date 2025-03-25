@@ -38,7 +38,7 @@ export default function AskQuestion({ className }: { className?: string }) {
         onOpenChange={(open) => (sending ? undefined : setFormModalOpen(open))}
       >
         <DialogTrigger asChild>
-          <Button variant="secondary">Задать вопрос</Button>
+          <Button variant="outline">Задать вопрос</Button>
         </DialogTrigger>
         <DialogContent className="max-md:max-w-11/12">
           <DialogHeader>

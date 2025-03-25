@@ -90,6 +90,9 @@ const config: Config = {
           70: "#333333",
           80: "#000000",
         },
+        "day-base-dynamic-transparrent": "rgb(228, 228, 228)",
+        "day-base-dynamic-transparrent-hover": "rgb(218, 218, 218)",
+        "day-base-dynamic-transparrent-active": "rgb(213, 213, 213)",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
