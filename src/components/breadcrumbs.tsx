@@ -25,14 +25,14 @@ export default function Breadcrumbs({
             className="group flex flex-row items-center gap-1"
             key={`breadcrumb-${i}`}
           >
-            <div
+            {/* <div
               className={cn(
                 "bg-foreground rounded-full w-2 h-2",
                 item.href
                   ? "opacity-50 group-hover:opacity-100 group-hover:bg-day-primary-violet-hover group-active:bg-day-primary-violet-active transition-all duration-300 bg-opacity-[.04]"
                   : ""
               )}
-            />
+            /> */}
             {item.href ? (
               <Link
                 className={cn(
