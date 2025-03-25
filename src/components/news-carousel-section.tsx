@@ -6,6 +6,28 @@ import NewsCarousel from "./news-carousel";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+const Btn = ({
+  className,
+  disabled,
+  isLink,
+}: React.ComponentProps<typeof Button> & { isLink?: boolean }) => (
+  <Button
+    asChild
+    className={cn("font-bold gap-2", className)}
+    disabled={disabled}
+  >
+    {isLink ? (
+      <Link href="/news">
+        <ArrowUpRight className="!size-6" /> Все новости
+      </Link>
+    ) : (
+      <>
+        <ArrowUpRight className="!size-6" /> Все новости
+      </>
+    )}
+  </Button>
+);
+
 export default function NewsCarouselSection({
   className,
   ...props
@@ -21,34 +43,15 @@ export default function NewsCarouselSection({
           <Suspense
             fallback={
               <NewsSkeleton>
-                <Button
-                  className="md:text-lg xl:text-xl gap-[10px] md:gap-4 max-md:hidden"
-                  disabled
-                >
-                  <ArrowUpRight /> Все новости
-                </Button>
+                <Btn disabled className="max-md:hidden" />
               </NewsSkeleton>
             }
           >
             <NewsCarousel>
-              <Button
-                asChild
-                className="md:text-lg xl:text-xl gap-[10px] md:gap-4 max-md:hidden"
-              >
-                <Link href="/news">
-                  <ArrowUpRight /> Все новости
-                </Link>
-              </Button>
+              <Btn isLink className="max-md:hidden" />
             </NewsCarousel>
           </Suspense>
-          <Button
-            asChild
-            className="md:text-lg xl:text-xl gap-[10px] md:gap-4 md:hidden"
-          >
-            <Link href="/news">
-              <ArrowUpRight /> Все новости
-            </Link>
-          </Button>
+          <Btn isLink className="md:hidden rounded" />
         </div>
       </div>
     </section>
