@@ -9,7 +9,8 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") await signIn();
+  if (!session || session.user.role !== "admin")
+    await signIn(undefined, { redirectTo: "/admin" });
 
   return (
     <AntdRegistry>

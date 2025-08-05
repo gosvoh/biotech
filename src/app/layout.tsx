@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import AnimationProvider from "@/components/animation-provider";
+import { SessionProvider } from "next-auth/react";
 
 const golosFont = localFont({
   src: "./fonts/Golos-Text_Regular.ttf",
@@ -26,7 +27,9 @@ export default function RootLayout({
       <body
         className={`${golosFont.variable} ${gorizontFont.variable} antialiased`}
       >
-        <Header />
+        <SessionProvider>
+          <Header />
+        </SessionProvider>
         <AnimationProvider>{children}</AnimationProvider>
         <Footer />
       </body>

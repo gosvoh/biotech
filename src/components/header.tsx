@@ -16,6 +16,8 @@ import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { headerFooterLinks } from "@/lib/links";
+import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 const MobileMenu = () => (
   <Sheet>
@@ -47,15 +49,24 @@ const MobileMenu = () => (
   </Sheet>
 );
 
-const DesktopMenu = () => (
-  <nav className="hidden md:inline-flex gap-6 text-left text-lg">
-    {headerFooterLinks.map(({ href, text }, i) => (
-      <Link key={`link-${i}`} href={href}>
-        {text}
-      </Link>
-    ))}
-  </nav>
-);
+const DesktopMenu = () => {
+  const { data: session } = useSession();
+
+  return (
+    <nav className="hidden md:inline-flex gap-6 text-left text-lg">
+      {headerFooterLinks.map(({ href, text }, i) => (
+        <Link key={`link-${i}`} href={href}>
+          {text}
+        </Link>
+      ))}
+      {session && (
+        <Link href="#" onClick={() => signOut()}>
+          Выйти
+        </Link>
+      )}
+    </nav>
+  );
+};
 
 export default function Header() {
   return (
