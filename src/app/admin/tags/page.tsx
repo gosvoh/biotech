@@ -14,6 +14,7 @@ export default async function NewsTags() {
     <main>
       <section>
         <div className="wrapper">
+          <h1 className="text-2xl font-bold">Теги новостей</h1>
           <NewsTagsClient newsTags={newsTags} />
         </div>
       </section>

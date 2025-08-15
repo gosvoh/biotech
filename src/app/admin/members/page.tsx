@@ -48,6 +48,7 @@ export default async function Members() {
     <main>
       <section>
         <div className="wrapper">
+          <h1 className="text-2xl font-bold">Члены команды</h1>
           <MembersClient
             members={members}
             departments={departments}

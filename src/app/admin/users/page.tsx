@@ -16,6 +16,7 @@ export default async function Users() {
     <main>
       <section>
         <div className="wrapper">
+          <h1 className="text-2xl font-bold">Пользователи</h1>
           <UsersClient users={users} userId={session?.user.id} />
         </div>
       </section>

@@ -18,6 +18,7 @@ export default async function ScientificWorks() {
     <main>
       <section>
         <div className="wrapper">
+          <h1 className="text-2xl font-bold">Научные работы</h1>
           <ScientificWorksClient scientificWorks={scientificWorks} />
         </div>
       </section>

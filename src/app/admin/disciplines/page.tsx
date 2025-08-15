@@ -18,6 +18,7 @@ export default async function Disciplines() {
     <main>
       <section>
         <div className="wrapper">
+          <h1 className="text-2xl font-bold">Дисциплины</h1>
           <DisciplinesClient disciplines={disciplines} />
         </div>
       </section>

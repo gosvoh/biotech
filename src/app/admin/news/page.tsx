@@ -29,6 +29,7 @@ export default async function News() {
     <main>
       <section>
         <div className="wrapper">
+          <h1 className="text-2xl font-bold">Новости</h1>
           <NewsClient news={news} />
         </div>
       </section>
