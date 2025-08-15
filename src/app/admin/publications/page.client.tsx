@@ -45,7 +45,7 @@ function EditModal({
       title={publication ? "Edit publication" : "Create publication"}
       onOk={() => form.submit()}
       onCancel={close}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         preserve={false}
