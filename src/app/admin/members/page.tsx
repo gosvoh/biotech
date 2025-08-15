@@ -6,6 +6,7 @@ const getMembers = cache(
   () =>
     prisma.member.findMany({
       include: { disciplines: true, scientificWorks: true },
+      orderBy: { lastName: "asc" },
     }),
   ["members"],
   {

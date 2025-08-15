@@ -21,10 +21,14 @@ export const metadata: Metadata = generateMeta(
   "/team"
 );
 
-const getMembers = cache(() => prisma.member.findMany(), ["members"], {
-  revalidate: 60,
-  tags: ["members"],
-});
+const getMembers = cache(
+  () => prisma.member.findMany({ orderBy: { lastName: "asc" } }),
+  ["members"],
+  {
+    revalidate: 60,
+    tags: ["members"],
+  }
+);
 const getDepartments = cache(
   () => prisma.department.findMany(),
   ["departments"],
