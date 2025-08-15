@@ -72,7 +72,7 @@ const Card = ({
       <div className="space-y-2 text-center">
         <Link
           href={`/team/${member.id}`}
-          className="text-lg font-bold text-center"
+          className="text-xl font-bold text-center"
         >
           {member.firstName}
           <br />
