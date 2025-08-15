@@ -20,6 +20,7 @@ export default function DisciplinesClient({
 }) {
   const [currentItem, setCurrentItem] = useState<Discipline>();
   const [form] = Form.useForm();
+  const input = Form.useWatch("title", form) as string | undefined;
 
   return (
     <Space direction="vertical" className="w-full">
@@ -36,7 +37,21 @@ export default function DisciplinesClient({
           addDiscipline(values.title).then(() => form.resetFields())
         }
       >
-        <Form.Item name="title" label="Title" className="!flex-1">
+        <Form.Item
+          name="title"
+          label="Title"
+          className="!flex-1"
+          rules={[
+            { required: true, message: "Title is required" },
+            {
+              validator: (_, value) => {
+                if (disciplines.some((d) => d.title === value))
+                  return Promise.reject(new Error("Title must be unique"));
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
           <Input />
         </Form.Item>
         <Button htmlType="submit" type="primary">
@@ -44,7 +59,9 @@ export default function DisciplinesClient({
         </Button>
       </Form>
       <List
-        dataSource={disciplines}
+        dataSource={disciplines.filter((d) =>
+          d.title.toLowerCase().includes(input?.toLowerCase() ?? "")
+        )}
         renderItem={(item) => {
           const isEditing =
             (currentItem && currentItem.id === item.id) ?? false;

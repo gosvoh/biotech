@@ -24,6 +24,7 @@ export default function ScientificWorksClient({
 }) {
   const [currentItem, setCurrentItem] = useState<ScientificWork>();
   const [form] = Form.useForm();
+  const input = Form.useWatch("title", form) as string | undefined;
 
   return (
     <Space direction="vertical" className="w-full">
@@ -40,7 +41,21 @@ export default function ScientificWorksClient({
           addScientificWork(values.title).then(() => form.resetFields())
         }
       >
-        <Form.Item name="title" label="Title" className="!flex-1">
+        <Form.Item
+          name="title"
+          label="Title"
+          className="!flex-1"
+          rules={[
+            { required: true, message: "Title is required" },
+            {
+              validator: (_, value) => {
+                if (scientificWorks.some((d) => d.title === value))
+                  return Promise.reject(new Error("Title must be unique"));
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
           <Input />
         </Form.Item>
         <Button htmlType="submit" type="primary">
@@ -48,7 +63,9 @@ export default function ScientificWorksClient({
         </Button>
       </Form>
       <List
-        dataSource={scientificWorks}
+        dataSource={scientificWorks.filter((d) =>
+          d.title.toLowerCase().includes(input?.toLowerCase() ?? "")
+        )}
         renderItem={(item) => {
           const isEditing =
             (currentItem && currentItem.id === item.id) ?? false;

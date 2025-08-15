@@ -16,6 +16,7 @@ import Link from "next/link";
 export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
   const [currentItem, setCurrentItem] = useState<NewsTags>();
   const [form] = Form.useForm();
+  const input = Form.useWatch("title", form);
 
   return (
     <Space direction="vertical" className="w-full">
@@ -32,7 +33,21 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
           addNewsTags(values.title).then(() => form.resetFields())
         }
       >
-        <Form.Item name="title" label="Title" className="!flex-1">
+        <Form.Item
+          name="title"
+          label="Title"
+          className="!flex-1"
+          rules={[
+            { required: true, message: "Title is required" },
+            {
+              validator: (_, value) => {
+                if (newsTags.some((d) => d.title === value))
+                  return Promise.reject(new Error("Title must be unique"));
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
           <Input maxLength={30} />
         </Form.Item>
         <Button htmlType="submit" type="primary">
@@ -40,7 +55,9 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
         </Button>
       </Form>
       <List
-        dataSource={newsTags}
+        dataSource={newsTags.filter((d) =>
+          d.title.toLowerCase().includes(input?.toLowerCase() ?? "")
+        )}
         renderItem={(item) => {
           const isEditing =
             (currentItem && currentItem.id === item.id) ?? false;
