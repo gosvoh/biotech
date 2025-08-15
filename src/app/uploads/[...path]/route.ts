@@ -6,7 +6,6 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   const url = decodeURIComponent((await params).path.join("/"));
-  console.error("PARAMS", url);
 
   if (!fs.existsSync(`./uploads/${url}`))
     return NextResponse.json({ error: "Image not found" }, { status: 404 });
