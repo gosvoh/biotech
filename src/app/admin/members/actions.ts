@@ -31,7 +31,7 @@ export async function addMember(formData: FormData) {
 
   const phoneNumber = phone
     ? parsePhoneNumber(phone)?.formatInternational()
-    : undefined;
+    : null;
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
@@ -77,7 +77,7 @@ export async function updateMember(formData: FormData) {
 
   const phoneNumber = phone
     ? parsePhoneNumber(phone)?.formatInternational()
-    : undefined;
+    : null;
 
   return dbAction(
     prisma.$transaction(async (prisma) => {

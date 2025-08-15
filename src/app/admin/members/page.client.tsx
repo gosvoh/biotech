@@ -64,7 +64,7 @@ function EditModal({
       title={member ? "Edit Member" : "Add Member"}
       onOk={() => form.submit()}
       onCancel={close}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form
         preserve={false}
@@ -199,6 +199,9 @@ export default function MembersClient({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [member, setMember] = useState<(typeof members)[number]>();
+  const [trigger, setTrigger] = useState(false);
+
+  useEffect(() => setTrigger((prev) => !prev), [members]);
 
   return (
     <>
@@ -231,6 +234,7 @@ export default function MembersClient({
             width: 100,
             render: (id, record) => (
               <Image
+                key={`member-image-${id}-${trigger}`}
                 width={100}
                 height={100}
                 src={`/uploads/members/${id}.webp`}
