@@ -20,11 +20,8 @@ export default function Breadcrumbs({
       )}
     >
       {items.map((item, i) => (
-        <>
-          <div
-            className="group flex flex-row items-center gap-1"
-            key={`breadcrumb-${i}`}
-          >
+        <React.Fragment key={`breadcrumb-${i}`}>
+          <div className="group flex flex-row items-center gap-1">
             {/* <div
               className={cn(
                 "bg-foreground rounded-full w-2 h-2",
@@ -50,7 +47,7 @@ export default function Breadcrumbs({
           {i !== items.length - 1 && (
             <ChevronRight className="opacity-50 w-4 h-4" />
           )}
-        </>
+        </React.Fragment>
       ))}
     </div>
   );
