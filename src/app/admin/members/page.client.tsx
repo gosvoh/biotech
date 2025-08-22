@@ -56,7 +56,23 @@ function EditModal({
 }) {
   const [form] = Form.useForm();
 
-  useEffect(() => () => form.resetFields(), [member?.id, form]);
+  useEffect(() => {
+    if (member?.id)
+      form.setFieldsValue({
+        lastName: member.lastName,
+        firstName: member.firstName,
+        middleName: member.middleName,
+        position: member.position,
+        email: member.email,
+        phone: member.phone,
+        departmentId: member.departmentId ?? departments[0].id,
+        disciplines: member.disciplines.map((d) => d.id) ?? [],
+        scientificWorks: member.scientificWorks.map((d) => d.id) ?? [],
+      });
+    else form.resetFields();
+
+    return () => form.resetFields();
+  }, [member?.id, form]);
 
   return (
     <Modal
@@ -87,17 +103,6 @@ function EditModal({
         form={form}
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
-        initialValues={{
-          lastName: member?.lastName,
-          firstName: member?.firstName,
-          middleName: member?.middleName,
-          position: member?.position,
-          email: member?.email,
-          phone: member?.phone,
-          departmentId: member?.departmentId ?? departments[0]?.id,
-          disciplines: member?.disciplines.map((d) => d.id) ?? [],
-          scientificWorks: member?.scientificWorks.map((d) => d.id) ?? [],
-        }}
       >
         <Form.Item
           label="Last Name"
@@ -213,7 +218,7 @@ export default function MembersClient({
         open={modalOpen}
         close={() => {
           setModalOpen(false);
-          setMember(undefined);
+          setMember(() => undefined);
         }}
       />
       <Table

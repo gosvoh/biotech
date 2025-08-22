@@ -23,7 +23,7 @@ import {
   EditOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Publication } from "@/lib/db/client";
 import type { getPublications } from "./page";
 import dayjs from "@/lib/dayjs";
@@ -38,6 +38,17 @@ function EditModal({
   close: () => void;
 }) {
   const [form] = Form.useForm();
+
+  useEffect(() => {
+    if (publication?.id) {
+      form.setFieldsValue({
+        ...publication,
+        year: dayjs(publication.year),
+      });
+    } else form.resetFields();
+
+    return () => form.resetFields();
+  }, [publication?.id, form]);
 
   return (
     <Modal
@@ -66,10 +77,6 @@ function EditModal({
         form={form}
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
-        initialValues={{
-          ...publication,
-          year: publication ? dayjs(publication.year) : undefined,
-        }}
       >
         <Form.Item label="Year" name="year" rules={[{ required: true }]}>
           <DatePicker picker="year" className="w-full" />
