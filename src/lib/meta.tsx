@@ -50,9 +50,11 @@ export const generateOGImage = async (
             }}
           >
             <img
-              src="https://biotech.cedne.ru/Biotech-Logotype.png"
+              src="https://biotech.cedne.ru/Biotech-Logotype.svg"
               alt="Biotech"
               style={{ filter: "invert(1)" }}
+              width={300}
+              height={98}
             />
           </picture>
           <p
