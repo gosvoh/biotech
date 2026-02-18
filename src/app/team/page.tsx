@@ -14,7 +14,6 @@ import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import { type Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
-import { connection } from "next/server";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Команда факультета",
@@ -179,7 +178,6 @@ const DesktopLayout = ({
 );
 
 export default async function Team() {
-  await connection();
   const members = await getMembers();
   const departments = await getDepartments();
 

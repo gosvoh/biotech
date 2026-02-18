@@ -13,7 +13,7 @@ import Image from "next/image";
 import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
 import { type Metadata, type ResolvingMetadata } from "next";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 export async function getNews(id: string) {
   "use cache";
@@ -44,12 +44,11 @@ export async function generateMetadata(
   };
 }
 
-export default async function News({
+async function NewsContent({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await connection();
   const id = (await params).id;
   const news = await getNews(id);
 
@@ -133,5 +132,17 @@ export default async function News({
 
       <NewsCarouselSection className="max-md:hidden" />
     </main>
+  );
+}
+
+export default function News({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <NewsContent params={params} />
+    </Suspense>
   );
 }

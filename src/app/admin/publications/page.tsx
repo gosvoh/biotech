@@ -1,7 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import ProjectsClient from "./page.client";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 export async function getPublications() {
   "use cache";
@@ -11,7 +11,6 @@ export async function getPublications() {
 }
 
 export default async function Publications() {
-  await connection();
   const publications = await getPublications();
 
   return (
@@ -19,7 +18,9 @@ export default async function Publications() {
       <section>
         <div className="wrapper">
           <h1 className="text-2xl font-bold">Публикации</h1>
-          <ProjectsClient publications={publications} />
+          <Suspense fallback={null}>
+            <ProjectsClient publications={publications} />
+          </Suspense>
         </div>
       </section>
     </main>

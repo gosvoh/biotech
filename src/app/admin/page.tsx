@@ -1,5 +1,5 @@
 import { generateMeta } from "@/lib/meta";
-import { Button, Space } from "antd";
+import { Button } from "@/components/ui/button";
 import { type Metadata } from "next";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ export default function Admin() {
     <main>
       <section>
         <div className="wrapper">
-          <Space direction="vertical">
+          <div className="flex flex-col gap-3 w-fit">
             <Link href="/admin/users">
               <Button>Пользователи</Button>
             </Link>
@@ -36,7 +36,7 @@ export default function Admin() {
             <Link href="/admin/publications">
               <Button>Публикации</Button>
             </Link>
-          </Space>
+          </div>
         </div>
       </section>
     </main>

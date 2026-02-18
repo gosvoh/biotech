@@ -7,7 +7,7 @@ import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import Link from "next/link";
 import { type Metadata, type ResolvingMetadata } from "next";
 import type { Member } from "@/lib/db/client";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 export async function getMember(id: string) {
   "use cache";
@@ -44,12 +44,11 @@ export async function generateMetadata(
   };
 }
 
-export default async function Member({
+async function MemberContent({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await connection();
   const member = await getMember((await params).id);
 
   if (!member) notFound();
@@ -145,5 +144,17 @@ export default async function Member({
         </div>
       </section>
     </main>
+  );
+}
+
+export default function Member({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <MemberContent params={params} />
+    </Suspense>
   );
 }

@@ -5,7 +5,6 @@ import NewsClient from "./news.client";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
-import { connection } from "next/server";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Новости",
@@ -21,7 +20,6 @@ async function getNewsTags() {
 }
 
 export default async function News() {
-  await connection();
   const newsTags = await getNewsTags();
 
   return (

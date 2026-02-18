@@ -5,7 +5,6 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import AnimationProvider from "@/components/animation-provider";
 import { SessionProvider } from "next-auth/react";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://biotech.cedne.ru"),
@@ -33,13 +32,12 @@ export default function RootLayout({
       <body
         className={`${golosFont.variable} ${gorizontFont.variable} antialiased`}
       >
-        <AntdRegistry>
-          <SessionProvider>
-            <Header />
-          </SessionProvider>
-          <AnimationProvider>{children}</AnimationProvider>
-          <Footer />
-        </AntdRegistry>
+        <SessionProvider>
+          <Header />
+        </SessionProvider>
+        {children}
+        <AnimationProvider />
+        <Footer />
       </body>
     </html>
   );

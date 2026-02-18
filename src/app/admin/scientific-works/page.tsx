@@ -1,7 +1,7 @@
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
 import ScientificWorksClient from "./page.client";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 async function getScientificWorks() {
   "use cache";
@@ -11,7 +11,6 @@ async function getScientificWorks() {
 }
 
 export default async function ScientificWorks() {
-  await connection();
   const scientificWorks = await getScientificWorks();
 
   return (
@@ -19,7 +18,9 @@ export default async function ScientificWorks() {
       <section>
         <div className="wrapper">
           <h1 className="text-2xl font-bold">Научные работы</h1>
-          <ScientificWorksClient scientificWorks={scientificWorks} />
+          <Suspense fallback={null}>
+            <ScientificWorksClient scientificWorks={scientificWorks} />
+          </Suspense>
         </div>
       </section>
     </main>

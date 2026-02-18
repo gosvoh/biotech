@@ -1,7 +1,7 @@
 import DisciplinesClient from "./page.client";
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 async function getDisciplines() {
   "use cache";
@@ -11,7 +11,6 @@ async function getDisciplines() {
 }
 
 export default async function Disciplines() {
-  await connection();
   const disciplines = await getDisciplines();
 
   return (
@@ -19,7 +18,9 @@ export default async function Disciplines() {
       <section>
         <div className="wrapper">
           <h1 className="text-2xl font-bold">Дисциплины</h1>
-          <DisciplinesClient disciplines={disciplines} />
+          <Suspense fallback={null}>
+            <DisciplinesClient disciplines={disciplines} />
+          </Suspense>
         </div>
       </section>
     </main>

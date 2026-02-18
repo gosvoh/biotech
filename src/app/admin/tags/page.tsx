@@ -1,7 +1,7 @@
 import NewsTagsClient from "./page.client";
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 async function getNewsTags() {
   "use cache";
@@ -11,7 +11,6 @@ async function getNewsTags() {
 }
 
 export default async function NewsTags() {
-  await connection();
   const newsTags = await getNewsTags();
 
   return (
@@ -19,7 +18,9 @@ export default async function NewsTags() {
       <section>
         <div className="wrapper">
           <h1 className="text-2xl font-bold">Теги новостей</h1>
-          <NewsTagsClient newsTags={newsTags} />
+          <Suspense fallback={null}>
+            <NewsTagsClient newsTags={newsTags} />
+          </Suspense>
         </div>
       </section>
     </main>

@@ -1,7 +1,7 @@
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
 import MembersClient from "./page.client";
-import { connection } from "next/server";
+import { Suspense } from "react";
 
 async function getMembers() {
   "use cache";
@@ -35,7 +35,6 @@ async function getScientificWorks() {
 }
 
 export default async function Members() {
-  await connection();
   const members = await getMembers();
   const departments = await getDepartments();
   const disciplines = await getDisciplines();
@@ -46,12 +45,14 @@ export default async function Members() {
       <section>
         <div className="wrapper">
           <h1 className="text-2xl font-bold">Члены команды</h1>
-          <MembersClient
-            members={members}
-            departments={departments}
-            disciplines={disciplines}
-            scientificWorks={scientificWorks}
-          />
+          <Suspense fallback={null}>
+            <MembersClient
+              members={members}
+              departments={departments}
+              disciplines={disciplines}
+              scientificWorks={scientificWorks}
+            />
+          </Suspense>
         </div>
       </section>
     </main>

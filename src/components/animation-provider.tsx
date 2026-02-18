@@ -1,7 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import React, { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 const STAGGER_STEP_MS = 25;
 const STAGGER_MAX_MS = 400;
@@ -75,65 +74,61 @@ function animateMain(main: HTMLElement) {
   });
 
   mutationObserver.observe(main, { childList: true, subtree: true });
-  const stopObservingTimer = window.setTimeout(() => {
-    mutationObserver.disconnect();
-  }, 3000);
 
   return () => {
-    window.clearTimeout(stopObservingTimer);
     observer.disconnect();
     mutationObserver.disconnect();
     animations.forEach((animation) => animation.cancel());
   };
 }
 
-export default function AnimationProvider({
-  children,
-}: React.PropsWithChildren) {
-  const pathname = usePathname();
-  const isFirstRender = useRef(true);
-
+export default function AnimationProvider() {
   useEffect(() => {
-    if (pathname.startsWith("/admin")) return;
-
     let cleanupAnimation: (() => void) | undefined;
-    let raf1 = 0;
-    let raf2 = 0;
+    let observedMain: HTMLElement | null = null;
+    let raf = 0;
 
-    const startAnimation = () => {
+    const attachAnimation = () => {
+      if (window.location.pathname.startsWith("/admin")) {
+        cleanupAnimation?.();
+        cleanupAnimation = undefined;
+        observedMain = null;
+        return;
+      }
+
       const main = document.querySelector<HTMLElement>("main");
-      if (!main) return;
+      if (!main || main === observedMain) return;
+
+      cleanupAnimation?.();
+      observedMain = main;
       cleanupAnimation = animateMain(main);
     };
 
     const scheduleAnimation = () => {
-      raf1 = window.requestAnimationFrame(() => {
-        raf2 = window.requestAnimationFrame(startAnimation);
-      });
+      window.cancelAnimationFrame(raf);
+      raf = window.requestAnimationFrame(attachAnimation);
     };
 
-    const onWindowLoad = () => {
+    if (document.readyState === "complete") {
       scheduleAnimation();
-    };
-
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      if (document.readyState === "complete") {
-        onWindowLoad();
-      } else {
-        window.addEventListener("load", onWindowLoad, { once: true });
-      }
     } else {
-      scheduleAnimation();
+      window.addEventListener("load", scheduleAnimation, { once: true });
     }
 
+    const documentObserver = new MutationObserver(() => {
+      scheduleAnimation();
+    });
+    documentObserver.observe(document.body, { childList: true, subtree: true });
+
+    window.addEventListener("popstate", scheduleAnimation);
+
     return () => {
-      window.removeEventListener("load", onWindowLoad);
-      window.cancelAnimationFrame(raf1);
-      window.cancelAnimationFrame(raf2);
+      documentObserver.disconnect();
+      window.removeEventListener("load", scheduleAnimation);
+      window.removeEventListener("popstate", scheduleAnimation);
+      window.cancelAnimationFrame(raf);
       cleanupAnimation?.();
     };
-  }, [pathname]);
-
-  return children;
+  }, []);
+  return null;
 }

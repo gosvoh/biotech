@@ -13,7 +13,6 @@ import { prisma } from "@/prisma";
 
 import dayjs from "@/lib/dayjs";
 import NewsCard from "./news-card";
-import { connection } from "next/server";
 
 async function getNews() {
   "use cache";
@@ -58,7 +57,6 @@ export default async function NewsCarousel({
   children,
   className,
 }: React.PropsWithChildren<{ className?: string }>) {
-  await connection();
   const news = await getNews();
 
   return (
