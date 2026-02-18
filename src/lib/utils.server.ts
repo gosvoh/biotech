@@ -8,8 +8,8 @@ export function dbAction<T>(
   return action
     .then((data) => {
       if (Array.isArray(tagToRevalidate))
-        tagToRevalidate.forEach((tag) => revalidateTag(tag));
-      else revalidateTag(tagToRevalidate);
+        tagToRevalidate.forEach((tag) => revalidateTag(tag, "max"));
+      else revalidateTag(tagToRevalidate, "max");
       return data;
     })
     .then((data) => (returnValue ? data : true));
