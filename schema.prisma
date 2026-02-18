@@ -67,6 +67,7 @@ model VerificationToken {
 
 model Member {
     id         String  @id @default(cuid())
+    image      String?
     firstName  String
     lastName   String
     middleName String?

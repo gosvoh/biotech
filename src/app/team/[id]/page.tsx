@@ -73,7 +73,7 @@ async function MemberContent({
           />
           <div className="wrapper flex flex-col md:flex-row gap-6 md:gap-10 md:items-center">
             <Image
-              src={`/uploads/members/${member.id}.webp`}
+              src={`/uploads/members/${member.image ?? member.id}.webp`}
               alt={[member.firstName, member.middleName, member.lastName].join(
                 " "
               )}

@@ -56,7 +56,7 @@ const Card = ({
     >
       <Link href={`/team/${member.id}`} className="contents">
         <Image
-          src={`/uploads/members/${member.id}.webp`}
+          src={`/uploads/members/${member.image ?? member.id}.webp`}
           alt={name}
           className={cn(
             imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",

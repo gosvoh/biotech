@@ -40,14 +40,14 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
       columns={[
         {
           title: "Image",
-          dataIndex: "id",
+          dataIndex: "image",
           width: 100,
-          render: (id, record: MemberWithRelations) => (
+          render: (image: string | null, record: MemberWithRelations) => (
             <Image
-              key={`member-image-${id}-${trigger}`}
+              key={`member-image-${record.id}-${trigger}`}
               width={100}
               height={100}
-              src={`/uploads/members/${id}.webp`}
+              src={`/uploads/members/${image ?? record.id}.webp`}
               className="object-cover rounded-full"
               alt={[
                 record.firstName,

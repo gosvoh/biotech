@@ -6,10 +6,32 @@ import type { Member } from "@/lib/db/client";
 import sharp from "sharp";
 import fs from "fs/promises";
 import parsePhoneNumber from "libphonenumber-js";
+import { randomUUID } from "crypto";
+
+function getMemberImageKey(member: Pick<Member, "id" | "image">) {
+  return member.image ?? member.id;
+}
+
+function getMemberImagePath(imageKey: string) {
+  return `uploads/members/${imageKey}.webp`;
+}
+
+async function saveMemberImage(image: File, imageKey: string) {
+  await fs.mkdir("uploads/members", { recursive: true });
+  await sharp(await image.arrayBuffer())
+    .resize({
+      width: 1000,
+      height: 1000,
+      fit: "cover",
+      position: "center",
+      withoutEnlargement: true,
+    })
+    .toFile(getMemberImagePath(imageKey));
+}
 
 export async function addMember(formData: FormData) {
   await requireAdmin();
-  const member: Omit<Member, "id" | "phone"> = {
+  const member: Omit<Member, "id" | "phone" | "image"> = {
     lastName: formData.get("lastName") as string,
     firstName: formData.get("firstName") as string,
     middleName: formData.get("middleName") as string,
@@ -36,24 +58,19 @@ export async function addMember(formData: FormData) {
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
+      const imageKey = randomUUID();
+
       const newMember = await prisma.member.create({
         data: {
           ...member,
+          image: imageKey,
           phone: phoneNumber,
           disciplines: { connect: disciplines.map((id) => ({ id })) },
           scientificWorks: { connect: scientificWorks.map((id) => ({ id })) },
         },
       });
-      await fs.mkdir("uploads/members", { recursive: true });
-      await sharp(await image.arrayBuffer())
-        .resize({
-          width: 1000,
-          height: 1000,
-          fit: "cover",
-          position: "center",
-          withoutEnlargement: true,
-        })
-        .toFile(`./uploads/members/${newMember.id}.webp`);
+
+      await saveMemberImage(image, newMember.image ?? newMember.id);
     }),
     "members"
   );
@@ -61,7 +78,7 @@ export async function addMember(formData: FormData) {
 
 export async function updateMember(formData: FormData) {
   await requireAdmin();
-  const member: Omit<Member, "phone"> = {
+  const member: Omit<Member, "phone" | "image"> = {
     id: formData.get("id") as string,
     lastName: formData.get("lastName") as string,
     firstName: formData.get("firstName") as string,
@@ -89,25 +106,31 @@ export async function updateMember(formData: FormData) {
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
-      await prisma.member.update({
+      const currentMember = await prisma.member.findUnique({
         where: { id: member.id },
+        select: { id: true, image: true },
+      });
+
+      if (!currentMember) throw new Error("Member not found");
+
+      const currentImageKey = getMemberImageKey(currentMember);
+      const nextImageKey = image ? randomUUID() : undefined;
+      const { id: memberId, ...memberData } = member;
+
+      await prisma.member.update({
+        where: { id: memberId },
         data: {
-          ...member,
+          ...memberData,
+          ...(nextImageKey ? { image: nextImageKey } : {}),
           phone: phoneNumber,
           disciplines: { set: disciplines.map((id) => ({ id })) },
           scientificWorks: { set: scientificWorks.map((id) => ({ id })) },
         },
       });
-      if (image) {
-        await sharp(await image.arrayBuffer())
-          .resize({
-            width: 1000,
-            height: 1000,
-            fit: "cover",
-            position: "center",
-            withoutEnlargement: true,
-          })
-          .toFile(`uploads/members/${member.id}.webp`);
+
+      if (image && nextImageKey) {
+        await saveMemberImage(image, nextImageKey);
+        await fs.unlink(getMemberImagePath(currentImageKey)).catch(() => null);
       }
     }),
     "members"
@@ -118,8 +141,17 @@ export async function deleteMember(memberId: string) {
   await requireAdmin();
   return dbAction(
     prisma.$transaction(async (prisma) => {
+      const member = await prisma.member.findUnique({
+        where: { id: memberId },
+        select: { id: true, image: true },
+      });
+
+      if (!member) throw new Error("Member not found");
+
       await prisma.member.delete({ where: { id: memberId } });
-      await fs.unlink(`uploads/members/${memberId}.webp`);
+      await fs
+        .unlink(getMemberImagePath(getMemberImageKey(member)))
+        .catch(() => null);
     }),
     "members"
   );
@@ -142,15 +174,20 @@ export async function duplicateMember(memberId: string) {
 
       const memberToCreate: Optional<
         typeof member,
-        "id" | "disciplines" | "scientificWorks"
+        "id" | "image" | "disciplines" | "scientificWorks"
       > = { ...member };
       delete memberToCreate.id;
+      delete memberToCreate.image;
       delete memberToCreate.disciplines;
       delete memberToCreate.scientificWorks;
+
+      const sourceImageKey = getMemberImageKey(member);
+      const newImageKey = randomUUID();
 
       const newMember = await prisma.member.create({
         data: {
           ...memberToCreate,
+          image: newImageKey,
           disciplines: { connect: disciplines.map((d) => ({ id: d.id })) },
           scientificWorks: {
             connect: scientificWorks.map((sw) => ({ id: sw.id })),
@@ -158,8 +195,8 @@ export async function duplicateMember(memberId: string) {
         },
       });
       await fs.copyFile(
-        `uploads/members/${member.id}.webp`,
-        `uploads/members/${newMember.id}.webp`
+        getMemberImagePath(sourceImageKey),
+        getMemberImagePath(newMember.image ?? newMember.id)
       );
     }),
     "members"
