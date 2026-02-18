@@ -45,9 +45,8 @@ export async function addMember(formData: FormData) {
         },
       });
       await fs.mkdir("uploads/members", { recursive: true });
-      await sharp(await image.arrayBuffer()).toFile(
-        `./uploads/members/${newMember.id}.webp`
-      );
+      await sharp(await image.arrayBuffer())
+        .toFile(`./uploads/members/${newMember.id}.webp`);
     }),
     "members"
   );
@@ -94,7 +93,6 @@ export async function updateMember(formData: FormData) {
       });
       if (image) {
         await sharp(await image.arrayBuffer())
-          .resize(200, 200)
           .toFile(`uploads/members/${member.id}.webp`);
       }
     }),

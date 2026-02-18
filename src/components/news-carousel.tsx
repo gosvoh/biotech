@@ -40,7 +40,7 @@ const CarouselImage = ({
   className,
   href,
 }: {
-  src: React.ComponentProps<typeof Image>["src"];
+  src?: React.ComponentProps<typeof Image>["src"];
   date: string;
   title: string;
   className?: string;
@@ -82,7 +82,7 @@ export default async function NewsCarousel({
         {news.map((x) => (
           <CarouselImage
             key={`news-${x.id}`}
-            src={`/uploads/news/${x.images[0]?.id}.webp`}
+            src={x.images[0]?.id ? `/uploads/news/${x.images[0].id}.webp` : undefined}
             date={dayjs(x.date).format("LL")}
             title={x.title}
             href={`/news/${x.id}`}

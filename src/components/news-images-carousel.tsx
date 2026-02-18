@@ -54,13 +54,16 @@ export default function NewsImageCarousel({
             key={`news-image-${image.id}`}
             className="max-md:basis-3/4"
           >
-            <Image
-              src={`/uploads/news/${image.id}.webp`}
-              alt={`${newsTitle} image ${index + 1}`}
-              width={1000}
-              height={800}
-              className="object-cover rounded-2.75xl aspect-square md:aspect-video w-full max-md:max-h-[350px]"
-            />
+            <div className="relative rounded-2.75xl aspect-square md:aspect-video w-full max-md:max-h-[350px] overflow-hidden">
+              <Image
+                src={`/uploads/news/${image.id}.webp`}
+                alt={`${newsTitle} image ${index + 1}`}
+                fill
+                sizes="(min-width: 1280px) 65vw, (min-width: 768px) 75vw, 85vw"
+                quality={90}
+                className="object-cover"
+              />
+            </div>
           </CarouselItem>
         ))}
       </CarouselContent>

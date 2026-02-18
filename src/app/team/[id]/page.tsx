@@ -81,6 +81,8 @@ export default async function Member({
               priority
               width={350}
               height={350}
+              sizes="(min-width: 1280px) 25vw, (min-width: 768px) 38vw, 50vw"
+              quality={90}
               className="rounded-full aspect-square object-cover w-1/2 xl:w-1/4"
             />
             <div className="md:space-y-4">

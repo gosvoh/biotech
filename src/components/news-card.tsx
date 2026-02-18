@@ -28,16 +28,16 @@ export default function NewsCard({
   const content = (
     <>
       {imageSrc && (
-        <Image
-          src={imageSrc}
-          alt={`Изображение новости ${title}`}
-          className={cn(
-            "object-cover rounded-2.75xl aspect-square md:aspect-video w-full max-md:max-h-[300px]",
-            classNames?.image
-          )}
-          width={385}
-          height={240}
-        />
+        <div className="relative rounded-2.75xl aspect-square md:aspect-video w-full max-md:max-h-[300px] overflow-hidden">
+          <Image
+            src={imageSrc}
+            alt={`Изображение новости ${title}`}
+            className={cn("object-cover", classNames?.image)}
+            fill
+            sizes="(min-width: 1280px) 40vw, (min-width: 1024px) 48vw, (min-width: 768px) 70vw, 92vw"
+            quality={88}
+          />
+        </div>
       )}
       <div className="space-y-4">
         <p className={classNames?.date}>{date}</p>

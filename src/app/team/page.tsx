@@ -67,6 +67,8 @@ const Card = ({
           )}
           width={500}
           height={500}
+          sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 26vw, (min-width: 768px) 38vw, 50vw"
+          quality={90}
         />
       </Link>
       <div className="space-y-2 text-center">
