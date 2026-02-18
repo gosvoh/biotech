@@ -8,23 +8,35 @@ export const generateOGImage = async (
   title: string,
   textStyle?: React.CSSProperties
 ) => {
-  const Montserrat_Alternates = readFile(
-    join(process.cwd(), "public/MontserratAlternates-Black.ttf")
-  ).then((res) => Uint8Array.from(res).buffer);
+  const gorizontFont = readFile(
+    join(process.cwd(), "public/ALS Gorizont Variable.ttf")
+  )
+    .catch(() =>
+      readFile(join(process.cwd(), "src/app/fonts/ALS Gorizont Variable.ttf"))
+    )
+    .then((res) => Uint8Array.from(res).buffer);
+  const logoDataUrl = readFile(
+    join(process.cwd(), "public/Biotech-Logotype.svg"),
+    "utf8"
+  ).then((svg) => `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`);
+  const [fontData, logoSrc] = await Promise.all([
+    gorizontFont,
+    logoDataUrl,
+  ]);
 
   return new ImageResponse(
     (
       <div
         style={{
           fontSize: 64,
-          backgroundColor: "hsl(0, 0%, 15%)",
+          backgroundColor: "hsl(0, 0%, 100%)",
           width: "100%",
           height: "100%",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          color: "white",
+          color: "hsl(0, 0%, 0%)",
           marginInline: "auto",
         }}
       >
@@ -50,9 +62,8 @@ export const generateOGImage = async (
             }}
           >
             <img
-              src="https://biotech.cedne.ru/Biotech-Logotype.svg"
+              src={logoSrc}
               alt="Biotech"
-              style={{ filter: "invert(1)" }}
               width={300}
               height={98}
             />
@@ -61,8 +72,7 @@ export const generateOGImage = async (
             style={{
               textAlign: "center",
               marginInline: "auto",
-              color: "hsl(156, 99%, 41%)",
-              outline: "2px solid red",
+              color: "hsl(270, 100%, 50%)",
               alignSelf: "center",
               ...textStyle,
             }}
@@ -77,10 +87,10 @@ export const generateOGImage = async (
       height: 960,
       fonts: [
         {
-          name: "Montserrat Alternates",
-          data: await Montserrat_Alternates,
+          name: "ALS Gorizont",
+          data: fontData,
           style: "normal",
-          weight: 900,
+          weight: 400,
         },
       ],
     }
