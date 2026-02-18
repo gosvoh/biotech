@@ -1,4 +1,12 @@
 import { revalidateTag } from "next/cache";
+import { auth } from "@/auth";
+
+export async function requireAdmin() {
+  const session = await auth();
+  if (!session || session.user.role !== "admin") {
+    throw new Error("Unauthorized");
+  }
+}
 
 export function dbAction<T>(
   action: Promise<T>,

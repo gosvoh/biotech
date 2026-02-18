@@ -2,11 +2,12 @@
 
 import { prisma } from "@/prisma";
 import type { News } from "@/lib/db/client";
-import { dbAction } from "@/lib/utils.server";
+import { dbAction, requireAdmin } from "@/lib/utils.server";
 import sharp from "sharp";
 import fs from "fs/promises";
 
 export async function addNews(formData: FormData) {
+  await requireAdmin();
   const news: Omit<News, "id"> = {
     title: formData.get("title") as string,
     text: formData.get("text") as string,
@@ -50,6 +51,7 @@ export async function addNews(formData: FormData) {
 }
 
 export async function updateNews(formData: FormData) {
+  await requireAdmin();
   const news: News = {
     id: formData.get("id") as string,
     title: formData.get("title") as string,

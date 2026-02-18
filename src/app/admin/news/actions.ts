@@ -1,10 +1,11 @@
 "use server";
 
-import { dbAction } from "@/lib/utils.server";
+import { dbAction, requireAdmin } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import fs from "fs/promises";
 
 export async function deleteNews(id: string) {
+  await requireAdmin();
   return dbAction(
     prisma.$transaction(async (prisma) => {
       const deleted = await prisma.news.delete({
@@ -20,6 +21,7 @@ export async function deleteNews(id: string) {
 }
 
 export async function changeVisibility(id: string, hidden: boolean) {
+  await requireAdmin();
   return dbAction(
     prisma.news.update({
       where: { id },
@@ -30,6 +32,7 @@ export async function changeVisibility(id: string, hidden: boolean) {
 }
 
 export async function duplicateNews(id: string) {
+  await requireAdmin();
   return dbAction(
     prisma.$transaction(async (prisma) => {
       const news = await prisma.news.findUnique({

@@ -1,6 +1,6 @@
 "use server";
 
-import { dbAction } from "@/lib/utils.server";
+import { dbAction, requireAdmin } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import sharp from "sharp";
@@ -8,6 +8,7 @@ import fs from "fs/promises";
 import parsePhoneNumber from "libphonenumber-js";
 
 export async function addMember(formData: FormData) {
+  await requireAdmin();
   const member: Omit<Member, "id" | "phone"> = {
     lastName: formData.get("lastName") as string,
     firstName: formData.get("firstName") as string,
@@ -53,6 +54,7 @@ export async function addMember(formData: FormData) {
 }
 
 export async function updateMember(formData: FormData) {
+  await requireAdmin();
   const member: Omit<Member, "phone"> = {
     id: formData.get("id") as string,
     lastName: formData.get("lastName") as string,
@@ -101,6 +103,7 @@ export async function updateMember(formData: FormData) {
 }
 
 export async function deleteMember(memberId: string) {
+  await requireAdmin();
   return dbAction(
     prisma.$transaction(async (prisma) => {
       await prisma.member.delete({ where: { id: memberId } });
@@ -111,6 +114,7 @@ export async function deleteMember(memberId: string) {
 }
 
 export async function duplicateMember(memberId: string) {
+  await requireAdmin();
   return dbAction(
     prisma.$transaction(async (prisma) => {
       const member = await prisma.member.findUnique({

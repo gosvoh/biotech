@@ -1,10 +1,11 @@
 "use server";
 
-import { dbAction } from "@/lib/utils.server";
+import { dbAction, requireAdmin } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import type { NewsTags } from "@/lib/db/client";
 
 export async function addNewsTags(title: string) {
+  await requireAdmin();
   return dbAction(
     prisma.newsTags.create({ data: { title } }),
     ["newsTags", "news"],
@@ -13,6 +14,7 @@ export async function addNewsTags(title: string) {
 }
 
 export async function updateNewsTags(newsTags: NewsTags) {
+  await requireAdmin();
   return dbAction(
     prisma.newsTags.update({
       where: { id: newsTags.id },
@@ -24,6 +26,7 @@ export async function updateNewsTags(newsTags: NewsTags) {
 }
 
 export async function deleteNewsTags(id: string) {
+  await requireAdmin();
   return dbAction(prisma.newsTags.delete({ where: { id } }), [
     "newsTags",
     "news",
