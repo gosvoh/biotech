@@ -1,13 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect } from "react";
 
 export default function AnimationProvider({
   children,
 }: React.PropsWithChildren) {
   const pathname = usePathname();
-  const [elements, setElements] = useState<Element[]>([]);
 
   useLayoutEffect(() => {
     const main = document.querySelector("main");
@@ -18,11 +17,6 @@ export default function AnimationProvider({
     );
 
     elements.forEach((el) => el.classList.add("opacity-0"));
-
-    setElements(elements);
-  }, [pathname]);
-
-  useEffect(() => {
     const observers = elements.map((el) => {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -40,7 +34,7 @@ export default function AnimationProvider({
     });
 
     return () => observers.forEach((observer) => observer.disconnect());
-  }, [pathname, elements, elements.length]);
+  }, [pathname]);
 
   return children;
 }

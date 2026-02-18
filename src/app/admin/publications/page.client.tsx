@@ -48,7 +48,7 @@ function EditModal({
     } else form.resetFields();
 
     return () => form.resetFields();
-  }, [publication?.id, form]);
+  }, [form, publication]);
 
   return (
     <Modal

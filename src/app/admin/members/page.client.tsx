@@ -72,7 +72,7 @@ function EditModal({
     else form.resetFields();
 
     return () => form.resetFields();
-  }, [member?.id, form]);
+  }, [departments, form, member]);
 
   return (
     <Modal
@@ -204,9 +204,7 @@ export default function MembersClient({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [member, setMember] = useState<(typeof members)[number]>();
-  const [trigger, setTrigger] = useState(false);
-
-  useEffect(() => setTrigger((prev) => !prev), [members]);
+  const trigger = members.map(({ id }) => id).join(":");
 
   return (
     <>
