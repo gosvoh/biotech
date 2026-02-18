@@ -1,24 +1,24 @@
 import NewsClient from "./page.client";
 import { prisma } from "@/prisma";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 
-const getNews = cache(
-  (id: string) =>
-    prisma.news.findFirst({
-      where: { id },
-      include: { tags: true, images: true },
-    }),
-  ["news"],
-  {
-    revalidate: 60,
-    tags: ["news"],
-  }
-);
-const getNewsTags = cache(() => prisma.newsTags.findMany(), ["newsTags"], {
-  revalidate: 60,
-  tags: ["newsTags"],
-});
+async function getNews(id: string) {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("news");
+  return prisma.news.findFirst({
+    where: { id },
+    include: { tags: true, images: true },
+  });
+}
+
+async function getNewsTags() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("newsTags");
+  return prisma.newsTags.findMany();
+}
 
 export default async function News({
   params,

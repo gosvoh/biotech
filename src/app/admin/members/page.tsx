@@ -1,43 +1,37 @@
 import { prisma } from "@/prisma";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import MembersClient from "./page.client";
 
-const getMembers = cache(
-  () =>
-    prisma.member.findMany({
-      include: { disciplines: true, scientificWorks: true },
-      orderBy: { lastName: "asc" },
-    }),
-  ["members"],
-  {
-    revalidate: 60,
-    tags: ["members"],
-  }
-);
-const getDepartments = cache(
-  () => prisma.department.findMany(),
-  ["departments"],
-  {
-    revalidate: 60,
-    tags: ["departments"],
-  }
-);
-const getDisciplines = cache(
-  () => prisma.discipline.findMany(),
-  ["disciplines"],
-  {
-    revalidate: 60,
-    tags: ["disciplines"],
-  }
-);
-const getScientificWorks = cache(
-  () => prisma.scientificWork.findMany(),
-  ["scientificWorks"],
-  {
-    revalidate: 60,
-    tags: ["scientificWorks"],
-  }
-);
+async function getMembers() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("members");
+  return prisma.member.findMany({
+    include: { disciplines: true, scientificWorks: true },
+    orderBy: { lastName: "asc" },
+  });
+}
+
+async function getDepartments() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("departments");
+  return prisma.department.findMany();
+}
+
+async function getDisciplines() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("disciplines");
+  return prisma.discipline.findMany();
+}
+
+async function getScientificWorks() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("scientificWorks");
+  return prisma.scientificWork.findMany();
+}
 
 export default async function Members() {
   const members = await getMembers();

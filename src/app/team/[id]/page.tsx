@@ -1,4 +1,4 @@
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import Breadcrumbs from "@/components/breadcrumbs";
 import Image from "next/image";
@@ -8,18 +8,15 @@ import Link from "next/link";
 import { type Metadata, type ResolvingMetadata } from "next";
 import type { Member } from "@/lib/db/client";
 
-export const getMember = cache(
-  (id: string) =>
-    prisma.member.findUnique({
-      where: { id },
-      include: { disciplines: true, scientificWorks: true },
-    }),
-  ["members"],
-  {
-    revalidate: 60,
-    tags: ["members"],
-  }
-);
+export async function getMember(id: string) {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("members");
+  return prisma.member.findUnique({
+    where: { id },
+    include: { disciplines: true, scientificWorks: true },
+  });
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },

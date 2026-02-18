@@ -4,7 +4,7 @@ import Tag from "@/components/tag";
 import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 import { prisma } from "@/prisma";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import vkLogo from "@public/vkLogo.svg";
 import tgLogo from "@public/tgLogo.svg";
@@ -14,18 +14,15 @@ import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
 import { type Metadata, type ResolvingMetadata } from "next";
 
-export const getNews = cache(
-  (id: string) =>
-    prisma.news.findUnique({
-      where: { id },
-      include: { tags: true, images: true },
-    }),
-  ["news"],
-  {
-    revalidate: 60,
-    tags: ["news"],
-  }
-);
+export async function getNews(id: string) {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("news");
+  return prisma.news.findUnique({
+    where: { id },
+    include: { tags: true, images: true },
+  });
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },

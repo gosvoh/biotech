@@ -1,6 +1,6 @@
 import Breadcrumbs from "@/components/breadcrumbs";
 import { prisma } from "@/prisma";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import NewsClient from "./news.client";
 import { Suspense } from "react";
 import type { Metadata } from "next";
@@ -12,10 +12,12 @@ export const metadata: Metadata = generateMeta(
   "/news"
 );
 
-const getNewsTags = cache(() => prisma.newsTags.findMany(), ["newsTags"], {
-  revalidate: 60,
-  tags: ["newsTags"],
-});
+async function getNewsTags() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("newsTags");
+  return prisma.newsTags.findMany();
+}
 
 export default async function News() {
   const newsTags = await getNewsTags();

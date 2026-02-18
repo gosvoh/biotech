@@ -1,15 +1,13 @@
 import { prisma } from "@/prisma";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import ScientificWorksClient from "./page.client";
 
-const getScientificWorks = cache(
-  () => prisma.scientificWork.findMany(),
-  ["scientificWorks"],
-  {
-    revalidate: 60,
-    tags: ["scientificWorks"],
-  }
-);
+async function getScientificWorks() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("scientificWorks");
+  return prisma.scientificWork.findMany();
+}
 
 export default async function ScientificWorks() {
   const scientificWorks = await getScientificWorks();

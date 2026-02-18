@@ -1,11 +1,13 @@
 import NewsTagsClient from "./page.client";
 import { prisma } from "@/prisma";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
-const getNewsTags = cache(() => prisma.newsTags.findMany(), ["newsTags"], {
-  revalidate: 60,
-  tags: ["newsTags"],
-});
+async function getNewsTags() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("newsTags");
+  return prisma.newsTags.findMany();
+}
 
 export default async function NewsTags() {
   const newsTags = await getNewsTags();

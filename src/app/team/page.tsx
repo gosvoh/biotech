@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FigureImage from "@/components/figure-image";
 import Breadcrumbs from "@/components/breadcrumbs";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import { type Metadata } from "next";
@@ -21,22 +21,19 @@ export const metadata: Metadata = generateMeta(
   "/team"
 );
 
-const getMembers = cache(
-  () => prisma.member.findMany({ orderBy: { lastName: "asc" } }),
-  ["members"],
-  {
-    revalidate: 60,
-    tags: ["members"],
-  }
-);
-const getDepartments = cache(
-  () => prisma.department.findMany(),
-  ["departments"],
-  {
-    revalidate: 60,
-    tags: ["departments"],
-  }
-);
+async function getMembers() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("members");
+  return prisma.member.findMany({ orderBy: { lastName: "asc" } });
+}
+
+async function getDepartments() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("departments");
+  return prisma.department.findMany();
+}
 
 const Card = ({
   member,

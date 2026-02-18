@@ -6,7 +6,7 @@ import {
   Carousel as EmblaCarousel,
 } from "@/components/ui/carousel";
 import Image from "next/image";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { cn } from "@/lib/utils";
 import { prisma } from "@/prisma";
@@ -14,24 +14,21 @@ import { prisma } from "@/prisma";
 import dayjs from "@/lib/dayjs";
 import NewsCard from "./news-card";
 
-const getNews = cache(
-  () =>
-    prisma.news.findMany({
-      select: {
-        id: true,
-        date: true,
-        title: true,
-        images: { select: { id: true } },
-      },
-      where: { hidden: false },
-      take: 10,
-    }),
-  ["news"],
-  {
-    revalidate: 60,
-    tags: ["news"],
-  }
-);
+async function getNews() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("news");
+  return prisma.news.findMany({
+    select: {
+      id: true,
+      date: true,
+      title: true,
+      images: { select: { id: true } },
+    },
+    where: { hidden: false },
+    take: 10,
+  });
+}
 
 const CarouselImage = ({
   src,

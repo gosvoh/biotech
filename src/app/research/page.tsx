@@ -3,7 +3,7 @@ import FigureImage from "@/components/figure-image";
 import SoftStar from "@public/Soft Star.svg";
 import SoftStarBig from "@public/Soft Star Big.svg";
 import Image from "next/image";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import type { Publication } from "@/lib/db/client";
 import {
@@ -39,14 +39,12 @@ const EFFIProjects: string[] = [
   "Получение бактериоцинов пробиотических штаммов лактобацилл и изучение их структуры, функций и свойств для использования в качестве пищевых биоконсервантов.",
 ];
 
-const getPublications = cache(
-  () => prisma.publication.findMany(),
-  ["publications"],
-  {
-    revalidate: 60,
-    tags: ["publications"],
-  }
-);
+async function getPublications() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("publications");
+  return prisma.publication.findMany();
+}
 
 const Publications = async () => {
   const publications = (await getPublications()).reduce(

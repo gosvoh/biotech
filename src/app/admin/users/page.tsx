@@ -1,12 +1,14 @@
 import { prisma } from "@/prisma";
 import { auth } from "@/auth";
 import UsersClient from "./page.client";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
-const getUsers = cache(() => prisma.user.findMany(), ["users"], {
-  revalidate: 60,
-  tags: ["users"],
-});
+async function getUsers() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("users");
+  return prisma.user.findMany();
+}
 
 export default async function Users() {
   const session = await auth();
