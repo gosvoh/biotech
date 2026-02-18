@@ -16,8 +16,8 @@ export function dbAction<T>(
   return action
     .then((data) => {
       if (Array.isArray(tagToRevalidate))
-        tagToRevalidate.forEach((tag) => revalidateTag(tag, "max"));
-      else revalidateTag(tagToRevalidate, "max");
+        tagToRevalidate.forEach((tag) => revalidateTag(tag, { expire: 0 }));
+      else revalidateTag(tagToRevalidate, { expire: 0 });
       return data;
     })
     .then((data) => (returnValue ? data : true));
