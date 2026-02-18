@@ -2,6 +2,7 @@ import NewsClient from "./page.client";
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 async function getNews(id: string) {
   "use cache";
@@ -25,6 +26,7 @@ export default async function News({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const id = (await params).id;
   const tags = await getNewsTags();
 

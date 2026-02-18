@@ -7,6 +7,7 @@ import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import Link from "next/link";
 import { type Metadata, type ResolvingMetadata } from "next";
 import type { Member } from "@/lib/db/client";
+import { connection } from "next/server";
 
 export async function getMember(id: string) {
   "use cache";
@@ -48,6 +49,7 @@ export default async function Member({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const member = await getMember((await params).id);
 
   if (!member) notFound();

@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import { type Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
+import { connection } from "next/server";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Исследования",
@@ -81,7 +82,8 @@ const Publications = async () => {
   );
 };
 
-export default function Research() {
+export default async function Research() {
+  await connection();
   return (
     <main className="md:flex md:flex-col">
       <section className="md:pb-20">

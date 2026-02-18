@@ -13,6 +13,7 @@ import Image from "next/image";
 import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
 import { type Metadata, type ResolvingMetadata } from "next";
+import { connection } from "next/server";
 
 export async function getNews(id: string) {
   "use cache";
@@ -48,6 +49,7 @@ export default async function News({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await connection();
   const id = (await params).id;
   const news = await getNews(id);
 

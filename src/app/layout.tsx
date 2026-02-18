@@ -1,10 +1,15 @@
 import localFont from "next/font/local";
+import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import AnimationProvider from "@/components/animation-provider";
 import { SessionProvider } from "next-auth/react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://biotech.cedne.ru"),
+};
 
 const golosFont = localFont({
   src: "./fonts/Golos-Text_Regular.ttf",

@@ -1,6 +1,7 @@
 import DisciplinesClient from "./page.client";
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
+import { connection } from "next/server";
 
 async function getDisciplines() {
   "use cache";
@@ -10,6 +11,7 @@ async function getDisciplines() {
 }
 
 export default async function Disciplines() {
+  await connection();
   const disciplines = await getDisciplines();
 
   return (

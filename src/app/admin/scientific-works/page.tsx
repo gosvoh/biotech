@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
 import ScientificWorksClient from "./page.client";
+import { connection } from "next/server";
 
 async function getScientificWorks() {
   "use cache";
@@ -10,6 +11,7 @@ async function getScientificWorks() {
 }
 
 export default async function ScientificWorks() {
+  await connection();
   const scientificWorks = await getScientificWorks();
 
   return (

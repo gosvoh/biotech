@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma";
 import { cacheLife, cacheTag } from "next/cache";
 import MembersClient from "./page.client";
+import { connection } from "next/server";
 
 async function getMembers() {
   "use cache";
@@ -34,6 +35,7 @@ async function getScientificWorks() {
 }
 
 export default async function Members() {
+  await connection();
   const members = await getMembers();
   const departments = await getDepartments();
   const disciplines = await getDisciplines();

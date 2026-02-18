@@ -1,6 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import ProjectsClient from "./page.client";
+import { connection } from "next/server";
 
 export async function getPublications() {
   "use cache";
@@ -10,6 +11,7 @@ export async function getPublications() {
 }
 
 export default async function Publications() {
+  await connection();
   const publications = await getPublications();
 
   return (
