@@ -2,7 +2,6 @@ import { auth, signIn } from "@/auth";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider, App } from "antd";
 import ruRU from "antd/locale/ru_RU";
-import "@ant-design/v5-patch-for-react-19";
 
 export default async function AdminLayout({
   children,

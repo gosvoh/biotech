@@ -5,7 +5,6 @@ import Footer from "@/components/footer";
 import AnimationProvider from "@/components/animation-provider";
 import { SessionProvider } from "next-auth/react";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import "@ant-design/v5-patch-for-react-19";
 
 const golosFont = localFont({
   src: "./fonts/Golos-Text_Regular.ttf",
