@@ -1,38 +1,33 @@
-FROM node:20-alpine AS base
+FROM oven/bun:1 AS base
 
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci --force
+FROM base AS deps
+COPY package.json bun.lock* ./
+RUN bun install --no-save --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN apk add --no-cache openssl
-
 ARG DATABASE_URL
-ENV DATABASE_URL ${DATABASE_URL}
+ENV DATABASE_URL=${DATABASE_URL}
 
-RUN npm run db:deploy
-RUN npm run db:generate
-RUN npm run build
+RUN bun run db:deploy
+RUN bun run db:generate
+RUN bun run build
 
 FROM base AS runner
 WORKDIR /app
 
-RUN apk add --no-cache openssl
 
-ENV NODE_ENV production
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME="0.0.0.0"
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --no-log-init -g nodejs nextjs
 
 RUN mkdir uploads
 RUN chown -R nextjs:nodejs uploads
@@ -48,9 +43,10 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 VOLUME /app/database
 VOLUME /app/uploads
 
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD ["bun", "./server.js"]
