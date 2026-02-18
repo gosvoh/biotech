@@ -8,6 +8,7 @@ import Link from "next/link";
 import { type Metadata, type ResolvingMetadata } from "next";
 import type { Member } from "@/lib/db/client";
 import { Suspense } from "react";
+import RevealSection from "@/components/reveal-section";
 
 export async function getMember(id: string) {
   "use cache";
@@ -55,7 +56,7 @@ async function MemberContent({
 
   return (
     <main>
-      <section className="max-md:pb-0">
+      <RevealSection className="max-md:pb-0">
         <div>
           <Breadcrumbs
             items={[
@@ -90,9 +91,9 @@ async function MemberContent({
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="xl:text-xl">
+      <RevealSection className="xl:text-xl">
         <div className="wrapper">
           {member.disciplines.length > 0 && (
             <div className="space-y-4 md:space-y-6">
@@ -142,7 +143,7 @@ async function MemberContent({
             </div>
           )}
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

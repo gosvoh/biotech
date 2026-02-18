@@ -5,6 +5,7 @@ import NewsClient from "./news.client";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
+import RevealSection from "@/components/reveal-section";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Новости",
@@ -24,22 +25,22 @@ export default async function News() {
 
   return (
     <main>
-      <section>
+      <RevealSection>
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Новости" }]}
         />
         <div className="wrapper">
           <h1>Новости</h1>
         </div>
-      </section>
+      </RevealSection>
 
-      <section>
+      <RevealSection>
         <div className="wrapper">
           <Suspense>
             <NewsClient newsTags={newsTags} />
           </Suspense>
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

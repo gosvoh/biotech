@@ -6,6 +6,7 @@ import Image from "next/image";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import type { Publication } from "@/lib/db/client";
+import RevealSection from "@/components/reveal-section";
 import {
   Accordion,
   AccordionContent,
@@ -84,7 +85,7 @@ const Publications = async () => {
 export default async function Research() {
   return (
     <main className="md:flex md:flex-col">
-      <section className="md:pb-20">
+      <RevealSection className="md:pb-20">
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Исследования" }]}
         />
@@ -92,9 +93,9 @@ export default async function Research() {
           <h1 className="flex-1">Исследования</h1>
           <FigureImage className="flex-1" />
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="relative flex flex-col gap-10">
+      <RevealSection className="relative flex flex-col gap-10">
         <Image
           src={SoftStar}
           height={138}
@@ -141,9 +142,9 @@ export default async function Research() {
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="pt-0 md:hidden">
+      <RevealSection className="pt-0 md:hidden">
         <div className="wrapper gap-4">
           <Accordion type="multiple">
             <AccordionItem value="rnf">
@@ -190,9 +191,9 @@ export default async function Research() {
             </AccordionItem>
           </Accordion>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden">
+      <RevealSection className="max-md:hidden">
         <div className="wrapper flex-row gap-6">
           <h2 className="basis-1/4">Проекты РНФ</h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -206,9 +207,9 @@ export default async function Research() {
             ))}
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden">
+      <RevealSection className="max-md:hidden">
         <div className="wrapper flex-row gap-6">
           <h2 className="basis-1/4">Проекты ЭФФИ</h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -222,9 +223,9 @@ export default async function Research() {
             ))}
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="accent-gradient md:py-20">
+      <RevealSection className="accent-gradient md:py-20">
         <div className="wrapper gap-6 md:relative">
           <div
             className={cn(
@@ -282,16 +283,16 @@ export default async function Research() {
             </Link>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden">
+      <RevealSection className="max-md:hidden">
         <div className="wrapper">
           <h2>Публикации</h2>
           <Suspense fallback={<div>Загрузка...</div>}>
             <Publications />
           </Suspense>
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

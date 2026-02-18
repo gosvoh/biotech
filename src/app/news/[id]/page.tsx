@@ -14,6 +14,7 @@ import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
 import { type Metadata, type ResolvingMetadata } from "next";
 import { Suspense } from "react";
+import RevealSection from "@/components/reveal-section";
 
 export async function getNews(id: string) {
   "use cache";
@@ -61,7 +62,7 @@ async function NewsContent({
 
   return (
     <main>
-      <section>
+      <RevealSection>
         <Breadcrumbs
           items={[
             { title: "Главная", href: "/" },
@@ -72,9 +73,9 @@ async function NewsContent({
         <div className="wrapper">
           <h1>Новости</h1>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:px-0">
+      <RevealSection className="max-md:px-0">
         <div className="wrapper">
           <div className="flex gap-2 md:gap-4 flex-wrap justify-center max-md:section-padding max-md:py-0">
             {news.tags.map((tag) => (
@@ -128,7 +129,7 @@ async function NewsContent({
             )}
           </div>
         </div>
-      </section>
+      </RevealSection>
 
       <NewsCarouselSection className="max-md:hidden" />
     </main>

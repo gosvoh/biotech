@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
 import { ChevronRight } from "lucide-react";
+import Reveal from "./reveal";
 
 export default function Breadcrumbs({
   items,
@@ -12,7 +13,7 @@ export default function Breadcrumbs({
   }[];
 }) {
   return (
-    <div
+    <Reveal
       className={cn(
         "text-sm lg:text-base wrapper w-full",
         "hidden md:flex flex-row gap-2 items-center",
@@ -49,6 +50,6 @@ export default function Breadcrumbs({
           )}
         </React.Fragment>
       ))}
-    </div>
+    </Reveal>
   );
 }

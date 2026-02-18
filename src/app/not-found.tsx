@@ -1,10 +1,11 @@
 import Link from "next/link";
+import RevealSection from "@/components/reveal-section";
 
 export default async function NotFound() {
 
   return (
     <main>
-      <section>
+      <RevealSection>
         <div className="wrapper space-y-6">
           <h1>Страница не найдена</h1>
           <p>Проверьте адрес или вернитесь на главную страницу.</p>
@@ -12,7 +13,7 @@ export default async function NotFound() {
             На главную
           </Link>
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

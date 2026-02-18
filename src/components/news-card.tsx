@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+import Reveal from "./reveal";
 
 export default function NewsCard({
   imageSrc,
@@ -44,7 +45,7 @@ export default function NewsCard({
         {React.createElement(
           `h${headerLevel}`,
           { className: classNames?.title },
-          title
+          title,
         )}
       </div>
     </>
@@ -52,29 +53,33 @@ export default function NewsCard({
 
   if (href)
     return (
-      <Link
-        className={cn(
-          "border-2 border-border rounded-2.75xl p-10 space-y-6 w-full transition-border",
-          "hover:border-accent block",
-          className,
-          classNames?.root
-        )}
-        href={href}
-      >
-        {content}
-      </Link>
+      <Reveal className="w-full contents">
+        <Link
+          className={cn(
+            "border-2 border-border rounded-2.75xl p-10 space-y-6 w-full transition-border",
+            "hover:border-accent block",
+            className,
+            classNames?.root,
+          )}
+          href={href}
+        >
+          {content}
+        </Link>
+      </Reveal>
     );
 
   return (
-    <div
-      className={cn(
-        "border-2 border-border rounded-2.75xl p-10 space-y-6 w-full transition-border",
-        "hover:border-accent",
-        className,
-        classNames?.root
-      )}
-    >
-      {content}
-    </div>
+    <Reveal className="w-full contents">
+      <div
+        className={cn(
+          "border-2 border-border rounded-2.75xl p-10 space-y-6 w-full transition-border",
+          "hover:border-accent",
+          className,
+          classNames?.root,
+        )}
+      >
+        {content}
+      </div>
+    </Reveal>
   );
 }

@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import AnimationProvider from "@/components/animation-provider";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
@@ -36,7 +35,6 @@ export default function RootLayout({
           <Header />
         </SessionProvider>
         {children}
-        <AnimationProvider />
         <Footer />
       </body>
     </html>

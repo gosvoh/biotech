@@ -5,6 +5,7 @@ import Mvk from "@public/mvk.png";
 import Link from "next/link";
 import { generateMeta } from "@/lib/meta";
 import type { Metadata } from "next";
+import RevealSection from "@/components/reveal-section";
 // import Timeline from "@/components/timeline";
 import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import FigureImage from "@/components/figure-image";
@@ -18,7 +19,7 @@ export const metadata: Metadata = generateMeta(
 export default function Home() {
   return (
     <main className="overflow-hidden">
-      <section className="accent-gradient max-md:rounded-b-[60px] max-w-none section-home-padding">
+      <RevealSection className="accent-gradient max-md:rounded-b-[60px] max-w-none section-home-padding">
         <div className="wrapper flex flex-col gap-6 md:flex-row-reverse items-center justify-between xxl:justify-around">
           <FigureImage className="md:max-w-1/2" />
           <div className="space-y-6 md:space-y-[42px]">
@@ -32,11 +33,11 @@ export default function Home() {
             </h3>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
       <NewsCarouselSection />
 
-      <section className="main-block section-home-padding">
+      <RevealSection className="main-block section-home-padding">
         <div className="wrapper md:flex-row-reverse items-center justify-between">
           <Image src={Bag} alt="" className="md:max-w-3/8" />
           <div className="space-y-6 md:max-w-1/2">
@@ -102,9 +103,9 @@ export default function Home() {
             ]}
           />
         </div> */}
-      </section>
+      </RevealSection>
 
-      <section className="section-home-padding max-md:p-0">
+      <RevealSection className="section-home-padding max-md:p-0">
         <div className="wrapper">
           <div className="accent-gradient md:rounded-3xl section-padding section-home-padding gap-6 main-block xl:flex-row md:gap-[48px] items-center justify-center">
             <Image
@@ -137,9 +138,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="section-home-padding">
+      <RevealSection className="section-home-padding">
         <div className="wrapper">
           <h2>Жизнь на Биотехе</h2>
           <div className="flex flex-col gap-6 lg:flex-row lg:flex-wrap *:lg:flex-[1_1_45%]">
@@ -151,7 +152,7 @@ export default function Home() {
             <div className="card">Интенсив «Проектная деятельность»</div>
           </div>
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

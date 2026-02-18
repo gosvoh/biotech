@@ -5,6 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import NewsCarousel from "./news-carousel";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import RevealSection from "./reveal-section";
 
 const Btn = ({
   className,
@@ -31,9 +32,9 @@ const Btn = ({
 export default function NewsCarouselSection({
   className,
   ...props
-}: React.ComponentProps<"section">) {
+}: Omit<React.ComponentProps<typeof RevealSection>, "children">) {
   return (
-    <section
+    <RevealSection
       className={cn("section-home-padding overflow-hidden", className)}
       {...props}
     >
@@ -54,6 +55,6 @@ export default function NewsCarouselSection({
           <Btn isLink className="md:hidden rounded" />
         </div>
       </div>
-    </section>
+    </RevealSection>
   );
 }

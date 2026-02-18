@@ -1,6 +1,7 @@
 import Breadcrumbs from "@/components/breadcrumbs";
 import Divider from "@/components/divider";
 import FigureImage from "@/components/figure-image";
+import RevealSection from "@/components/reveal-section";
 import {
   Accordion,
   AccordionContent,
@@ -226,7 +227,7 @@ const VKRContent = () => (
 export default function Education() {
   return (
     <main className="md:flex md:flex-col">
-      <section className="md:pb-20">
+      <RevealSection className="md:pb-20">
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Образование" }]}
         />
@@ -234,9 +235,9 @@ export default function Education() {
           <h1 className="flex-1">Образование</h1>
           <FigureImage className="flex-1" />
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="md:hidden">
+      <RevealSection className="md:hidden">
         <div className="wrapper">
           <Accordion type="multiple">
             <AccordionItem value="bachleor">
@@ -265,9 +266,9 @@ export default function Education() {
             </AccordionItem>
           </Accordion>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden relative py-20">
+      <RevealSection className="max-md:hidden relative py-20">
         <Image
           src={EduPirple}
           height={227}
@@ -282,9 +283,9 @@ export default function Education() {
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden">
+      <RevealSection className="max-md:hidden">
         <div
           className={cn(
             "wrapper brand2-gradient items-center gap-6 section-padding rounded-full",
@@ -294,9 +295,9 @@ export default function Education() {
           <h2>Виды ВКР</h2>
           <VKRContent />
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden relative py-20 mb-10">
+      <RevealSection className="max-md:hidden relative py-20 mb-10">
         <Image
           src={EduGreen}
           height={227}
@@ -311,9 +312,9 @@ export default function Education() {
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="max-md:hidden order-last relative py-[120px]">
+      <RevealSection className="max-md:hidden order-last relative py-[120px]">
         <Image
           src={EduPirple}
           height={227}
@@ -328,9 +329,9 @@ export default function Education() {
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="accent-gradient md:py-20">
+      <RevealSection className="accent-gradient md:py-20">
         <div className="wrapper gap-6 md:relative">
           <Image
             src={EduWhite}
@@ -350,7 +351,7 @@ export default function Education() {
             </Button>
           </div>
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

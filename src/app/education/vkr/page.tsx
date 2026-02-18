@@ -1,4 +1,5 @@
 import Breadcrumbs from "@/components/breadcrumbs";
+import RevealSection from "@/components/reveal-section";
 import {
   Accordion,
   AccordionContent,
@@ -42,7 +43,7 @@ function PdfLink({
 export default function Vkr() {
   return (
     <main>
-      <section>
+      <RevealSection>
         <Breadcrumbs
           items={[
             { title: "Главная", href: "/" },
@@ -53,9 +54,9 @@ export default function Vkr() {
         <div className="wrapper">
           <h1>Виды ВКР</h1>
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="space-y-10 lg:space-y-20 relative">
+      <RevealSection className="space-y-10 lg:space-y-20 relative">
         <Image
           src={Lightning}
           alt=""
@@ -300,7 +301,7 @@ export default function Vkr() {
             </div>
           </div>
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }

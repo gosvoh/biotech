@@ -14,6 +14,7 @@ import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import { type Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
+import RevealSection from "@/components/reveal-section";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Команда факультета",
@@ -191,7 +192,7 @@ export default async function Team() {
 
   return (
     <main>
-      <section>
+      <RevealSection>
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Команда" }]}
         />
@@ -199,9 +200,9 @@ export default async function Team() {
           <h1 className="flex-1">Команда факультета</h1>
           <FigureImage className="flex-1 max-lg:hidden" />
         </div>
-      </section>
+      </RevealSection>
 
-      <section className="">
+      <RevealSection className="">
         <div className="wrapper">
           <MobileLayout className="lg:hidden" members={membersByDepartment} />
           <DesktopLayout
@@ -209,7 +210,7 @@ export default async function Team() {
             members={membersByDepartment}
           />
         </div>
-      </section>
+      </RevealSection>
     </main>
   );
 }
