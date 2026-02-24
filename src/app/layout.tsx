@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import PageTransition from "@/components/page-transition";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
@@ -35,7 +34,7 @@ export default function RootLayout({
         <SessionProvider>
           <Header />
         </SessionProvider>
-        <PageTransition>{children}</PageTransition>
+        {children}
         <Footer />
       </body>
     </html>
