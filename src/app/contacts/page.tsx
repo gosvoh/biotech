@@ -4,7 +4,6 @@ import { contacts } from "@/lib/links";
 import type { Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
 import AskQuestion from "./ask-question";
-import RevealSection from "@/components/reveal-section";
 // import dynamic from "next/dynamic";
 
 // const YandexMap = dynamic(async () => import("@/components/yandex.map"), {});
@@ -12,13 +11,13 @@ import RevealSection from "@/components/reveal-section";
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Контакты",
   "Контакты факультета биотехнологий университета ИТМО",
-  "/contacts"
+  "/contacts",
 );
 
 export default function ContactsPage() {
   return (
     <main>
-      <RevealSection>
+      <section>
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Контакты" }]}
         />
@@ -53,7 +52,7 @@ export default function ContactsPage() {
           </div>
           <AskQuestion className="max-md:hidden" />
         </div>
-      </RevealSection>
+      </section>
 
       <div className="w-full aspect-square max-h-[600px] md:mt-10">
         <iframe

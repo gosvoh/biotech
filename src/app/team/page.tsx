@@ -14,12 +14,11 @@ import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import { type Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
-import RevealSection from "@/components/reveal-section";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Команда факультета",
   "Команда факультета биотехнологий университета ИТМО",
-  "/team"
+  "/team",
 );
 
 async function getMembers() {
@@ -51,7 +50,7 @@ const Card = ({
     <div
       className={cn(
         "text-base flex flex-col items-center gap-4 group",
-        className
+        className,
       )}
     >
       <Link href={`/team/${member.id}`} className="contents">
@@ -61,7 +60,7 @@ const Card = ({
           className={cn(
             imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",
             "rounded-full aspect-square object-cover border-2 border-day-base-static-bg&stroke-30",
-            "group-hover:border-accent transition-colors"
+            "group-hover:border-accent transition-colors",
           )}
           width={500}
           height={500}
@@ -109,7 +108,7 @@ const DevelopmentDepartment = ({ members }: { members: Member[] }) => (
           улучшением образовательных программ, проектной деятельностью и
           налаживанием партнёрств для повышения конкурентоспособности и роста
           факультета.
-        </>
+        </>,
       )}
     </p>
     <div className="flex flex-col gap-6 lg:grid lg:gap-y-10 grid-cols-4">
@@ -183,16 +182,16 @@ export default async function Team() {
   const departments = await getDepartments();
 
   const development = members.filter(
-    (member) => member.departmentId === departments[0]?.id
+    (member) => member.departmentId === departments[0]?.id,
   );
   const research = members.filter(
-    (member) => member.departmentId === departments[1]?.id
+    (member) => member.departmentId === departments[1]?.id,
   );
   const membersByDepartment = { development, research };
 
   return (
     <main>
-      <RevealSection>
+      <section>
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Команда" }]}
         />
@@ -200,9 +199,9 @@ export default async function Team() {
           <h1 className="flex-1">Команда факультета</h1>
           <FigureImage className="flex-1 max-lg:hidden" />
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="">
+      <section className="">
         <div className="wrapper">
           <MobileLayout className="lg:hidden" members={membersByDepartment} />
           <DesktopLayout
@@ -210,7 +209,7 @@ export default async function Team() {
             members={membersByDepartment}
           />
         </div>
-      </RevealSection>
+      </section>
     </main>
   );
 }

@@ -14,7 +14,6 @@ import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
 import { type Metadata, type ResolvingMetadata } from "next";
 import { Suspense } from "react";
-import RevealSection from "@/components/reveal-section";
 
 export async function getNews(id: string) {
   "use cache";
@@ -28,7 +27,7 @@ export async function getNews(id: string) {
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const id = (await params).id;
   const news = await getNews(id);
@@ -45,11 +44,7 @@ export async function generateMetadata(
   };
 }
 
-async function NewsContent({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+async function NewsContent({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
   const news = await getNews(id);
 
@@ -62,7 +57,7 @@ async function NewsContent({
 
   return (
     <main>
-      <RevealSection>
+      <section>
         <Breadcrumbs
           items={[
             { title: "Главная", href: "/" },
@@ -73,9 +68,9 @@ async function NewsContent({
         <div className="wrapper">
           <h1>Новости</h1>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="max-md:px-0">
+      <section className="max-md:px-0">
         <div className="wrapper">
           <div className="flex gap-2 md:gap-4 flex-wrap justify-center max-md:section-padding max-md:py-0">
             {news.tags.map((tag) => (
@@ -129,18 +124,14 @@ async function NewsContent({
             )}
           </div>
         </div>
-      </RevealSection>
+      </section>
 
       <NewsCarouselSection className="max-md:hidden" />
     </main>
   );
 }
 
-export default function News({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function News({ params }: { params: Promise<{ id: string }> }) {
   return (
     <Suspense fallback={null}>
       <NewsContent params={params} />

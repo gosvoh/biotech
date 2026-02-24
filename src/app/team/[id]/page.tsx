@@ -8,7 +8,6 @@ import Link from "next/link";
 import { type Metadata, type ResolvingMetadata } from "next";
 import type { Member } from "@/lib/db/client";
 import { Suspense } from "react";
-import RevealSection from "@/components/reveal-section";
 
 export async function getMember(id: string) {
   "use cache";
@@ -22,7 +21,7 @@ export async function getMember(id: string) {
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
-  parent: ResolvingMetadata
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const id = (await params).id;
   const member = await getMember(id);
@@ -45,18 +44,14 @@ export async function generateMetadata(
   };
 }
 
-async function MemberContent({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+async function MemberContent({ params }: { params: Promise<{ id: string }> }) {
   const member = await getMember((await params).id);
 
   if (!member) notFound();
 
   return (
     <main>
-      <RevealSection className="max-md:pb-0">
+      <section className="max-md:pb-0">
         <div>
           <Breadcrumbs
             items={[
@@ -75,7 +70,7 @@ async function MemberContent({
             <Image
               src={`/uploads/members/${member.image ?? member.id}.webp`}
               alt={[member.firstName, member.middleName, member.lastName].join(
-                " "
+                " ",
               )}
               priority
               width={350}
@@ -91,15 +86,15 @@ async function MemberContent({
             </div>
           </div>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="xl:text-xl">
+      <section className="xl:text-xl">
         <div className="wrapper">
           {member.disciplines.length > 0 && (
             <div className="space-y-4 md:space-y-6">
               <h3>
                 {removeHangingPrepositionsAndConjunctions(
-                  <>Преподаваемые дисциплины в 2024–2025 гг:</>
+                  <>Преподаваемые дисциплины в 2024–2025 гг:</>,
                 )}
               </h3>
               <ul className="list-disc ml-8">
@@ -143,7 +138,7 @@ async function MemberContent({
             </div>
           )}
         </div>
-      </RevealSection>
+      </section>
     </main>
   );
 }

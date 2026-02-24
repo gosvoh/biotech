@@ -1,5 +1,4 @@
 import Breadcrumbs from "@/components/breadcrumbs";
-import RevealSection from "@/components/reveal-section";
 import {
   Accordion,
   AccordionContent,
@@ -17,7 +16,7 @@ import { generateMeta } from "@/lib/meta";
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Виды ВКР",
   "Виды ВКР на факультете биотехнологий университета ИТМО",
-  "/education/vkr"
+  "/education/vkr",
 );
 
 function PdfLink({
@@ -31,7 +30,7 @@ function PdfLink({
       className={cn(
         "px-3 py-2 flex flex-row gap-3 border-2 border-black",
         "w-fit rounded-lg hover:border-accent transition-colors",
-        className
+        className,
       )}
     >
       <Image src={PdfIcon} alt="PDF" width={24} height={24} />
@@ -43,7 +42,7 @@ function PdfLink({
 export default function Vkr() {
   return (
     <main>
-      <RevealSection>
+      <section>
         <Breadcrumbs
           items={[
             { title: "Главная", href: "/" },
@@ -54,9 +53,9 @@ export default function Vkr() {
         <div className="wrapper">
           <h1>Виды ВКР</h1>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="space-y-10 lg:space-y-20 relative">
+      <section className="space-y-10 lg:space-y-20 relative">
         <Image
           src={Lightning}
           alt=""
@@ -301,7 +300,7 @@ export default function Vkr() {
             </div>
           </div>
         </div>
-      </RevealSection>
+      </section>
     </main>
   );
 }

@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
 import { ChevronRight } from "lucide-react";
-import Reveal from "./reveal";
 
 export default function Breadcrumbs({
   items,
@@ -13,11 +12,11 @@ export default function Breadcrumbs({
   }[];
 }) {
   return (
-    <Reveal
+    <div
       className={cn(
         "text-sm lg:text-base wrapper w-full",
         "hidden md:flex flex-row gap-2 items-center",
-        "mb-6"
+        "mb-6",
       )}
     >
       {items.map((item, i) => (
@@ -35,7 +34,7 @@ export default function Breadcrumbs({
               <Link
                 className={cn(
                   "opacity-50 group-hover:opacity-100 group-hover:text-day-primary-violet-hover group-active:text-day-primary-violet-active transition-all duration-300 min-w-fit",
-                  "peer"
+                  "peer",
                 )}
                 href={item.href}
               >
@@ -50,6 +49,6 @@ export default function Breadcrumbs({
           )}
         </React.Fragment>
       ))}
-    </Reveal>
+    </div>
   );
 }

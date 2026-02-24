@@ -6,7 +6,6 @@ import Image from "next/image";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import type { Publication } from "@/lib/db/client";
-import RevealSection from "@/components/reveal-section";
 import {
   Accordion,
   AccordionContent,
@@ -25,7 +24,7 @@ import { generateMeta } from "@/lib/meta";
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Исследования",
   "Исследования факультета биотехнологий университета ИТМО",
-  "/research"
+  "/research",
 );
 
 const RNFProjects: string[] = [
@@ -54,7 +53,7 @@ const Publications = async () => {
       acc[publication.year].push(publication);
       return acc;
     },
-    {} as Record<Publication["year"], Publication[]>
+    {} as Record<Publication["year"], Publication[]>,
   );
 
   return (
@@ -85,7 +84,7 @@ const Publications = async () => {
 export default async function Research() {
   return (
     <main className="md:flex md:flex-col">
-      <RevealSection className="md:pb-20">
+      <section className="md:pb-20">
         <Breadcrumbs
           items={[{ title: "Главная", href: "/" }, { title: "Исследования" }]}
         />
@@ -93,9 +92,9 @@ export default async function Research() {
           <h1 className="flex-1">Исследования</h1>
           <FigureImage className="flex-1" />
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="relative flex flex-col gap-10">
+      <section className="relative flex flex-col gap-10">
         <Image
           src={SoftStar}
           height={138}
@@ -142,9 +141,9 @@ export default async function Research() {
             </div>
           </div>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="pt-0 md:hidden">
+      <section className="pt-0 md:hidden">
         <div className="wrapper gap-4">
           <Accordion type="multiple">
             <AccordionItem value="rnf">
@@ -191,9 +190,9 @@ export default async function Research() {
             </AccordionItem>
           </Accordion>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="max-md:hidden">
+      <section className="max-md:hidden">
         <div className="wrapper flex-row gap-6">
           <h2 className="basis-1/4">Проекты РНФ</h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -207,9 +206,9 @@ export default async function Research() {
             ))}
           </div>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="max-md:hidden">
+      <section className="max-md:hidden">
         <div className="wrapper flex-row gap-6">
           <h2 className="basis-1/4">Проекты ЭФФИ</h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -223,35 +222,35 @@ export default async function Research() {
             ))}
           </div>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="accent-gradient md:py-20">
+      <section className="accent-gradient md:py-20">
         <div className="wrapper gap-6 md:relative">
           <div
             className={cn(
               "max-lg:hidden",
               "absolute top-0 bottom-0 right-0",
               "h-full w-auto",
-              "group"
+              "group",
             )}
           >
             <div
               className={cn(
                 "rounded-full aspect-square h-10/12 bg-card",
-                "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
               )}
             />
             <div
               className={cn(
                 "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
-                "w-full h-11/12"
+                "w-full h-11/12",
               )}
             >
               <div
                 className={cn(
                   "rounded-full aspect-square h-full bg-white",
                   "group-hover:transform group-hover:-translate-x-1/10",
-                  "transition-transform duration-300"
+                  "transition-transform duration-300",
                 )}
               />
             </div>
@@ -262,7 +261,7 @@ export default async function Research() {
                 "border-2 border-white",
                 "h-full w-auto relative",
                 "group-hover:transform group-hover:-translate-x-3/10",
-                "transition-transform duration-300"
+                "transition-transform duration-300",
               )}
               alt=""
             />
@@ -283,16 +282,16 @@ export default async function Research() {
             </Link>
           </div>
         </div>
-      </RevealSection>
+      </section>
 
-      <RevealSection className="max-md:hidden">
+      <section className="max-md:hidden">
         <div className="wrapper">
           <h2>Публикации</h2>
           <Suspense fallback={<div>Загрузка...</div>}>
             <Publications />
           </Suspense>
         </div>
-      </RevealSection>
+      </section>
     </main>
   );
 }
