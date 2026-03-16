@@ -17,7 +17,9 @@ export default async function Publications() {
     <main>
       <section>
         <div className="wrapper">
-          <h1 className="text-2xl font-bold">Публикации</h1>
+          <h1 className="text-2xl font-bold">
+            Список публикаций в научных журналах
+          </h1>
           <Suspense fallback={null}>
             <ProjectsClient publications={publications} />
           </Suspense>
