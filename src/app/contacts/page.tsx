@@ -3,14 +3,14 @@ import Breadcrumbs from "@/components/breadcrumbs";
 import { contacts } from "@/lib/links";
 import type { Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
-import AskQuestion from "./ask-question";
+// import AskQuestion from "./ask-question";
 // import dynamic from "next/dynamic";
 
 // const YandexMap = dynamic(async () => import("@/components/yandex.map"), {});
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Контакты",
-  "Контакты факультета биотехнологий университета ИТМО",
+  "Контакты факультета биотехнологий Университета ИТМО",
   "/contacts",
 );
 
@@ -24,7 +24,7 @@ export default function ContactsPage() {
         <div className="wrapper md:flex-row md:gap-6">
           <div className="md:max-w-5/8 w-full">
             <h1 className="md:mb-6 xl:mb-10">Контакты</h1>
-            <AskQuestion className="md:hidden mt-10 mb-6" />
+            {/* <AskQuestion className="md:hidden mt-10 mb-6" /> */}
             <div className="flex flex-col gap-4 xl:gap-6 text-lg">
               <h2 className="mb-2">Факультет биотехнологий</h2>
               <div className="space-y-2">
@@ -39,18 +39,12 @@ export default function ContactsPage() {
                   href={`tel:${contacts.development}`}
                   className="block text-sm xl:text-lg w-fit"
                 >
-                  {`${contacts.development} (отдел развития)`}
-                </Link>
-                <Link
-                  href={`tel:${contacts.dean}`}
-                  className="block text-sm xl:text-lg w-fit"
-                >
-                  {`${contacts.dean} (декан)`}
+                  {contacts.development}
                 </Link>
               </div>
             </div>
           </div>
-          <AskQuestion className="max-md:hidden" />
+          {/* <AskQuestion className="max-md:hidden" /> */}
         </div>
       </section>
 

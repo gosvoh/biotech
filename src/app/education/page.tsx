@@ -19,22 +19,24 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Образование",
-  "Образование на факультете биотехнологий университета ИТМО",
+  "Образование на факультете биотехнологий Университета ИТМО",
   "/education",
 );
 
 const OpenDoors = ({
   title,
   className,
+  href,
 }: {
   title: string;
   className?: string;
+  href: string;
 }) => (
   <div className={cn("flex flex-col gap-[14px]", className)}>
     <p className="text-lg max-md:text-center">
       Подробное описание программ и записи дней открытых дверей
     </p>
-    <Link href="/#" className="card justify-center text-center md:w-fit">
+    <Link href={href} className="card justify-center text-center md:w-fit">
       {title}
     </Link>
   </div>
@@ -75,7 +77,11 @@ const BachelorContent = () => (
         конкретной сферы биотехнологий и работе по специальности.
       </p>
     </div>
-    <Divider /> <OpenDoors title="Биотехнология" />
+    <Divider />{" "}
+    <OpenDoors
+      title="Биотехнология"
+      href="https://abit.itmo.ru/program/bachelor/biotechnology"
+    />
   </>
 );
 
@@ -122,7 +128,11 @@ const MasterContent = () => (
       </p>
     </div>
     <Divider className="md:hidden" />
-    <OpenDoors className="md:hidden" title="ФудТех" />
+    <OpenDoors
+      className="md:hidden"
+      title="ФудТех"
+      href="https://abit.itmo.ru/program/master/foodtech"
+    />
     <div className="space-y-4 mt-4 [&>p:not(.font-bold)]:text-base">
       <p>Образовательная программа магистратуры</p>
       <p className="font-bold mb-6">
@@ -178,7 +188,11 @@ const MasterContent = () => (
     </div>
     <Divider />
     <div className="space-y-[14px]">
-      <OpenDoors className="md:hidden" title="Индустриальная биотехнология" />
+      <OpenDoors
+        className="md:hidden"
+        title="Индустриальная биотехнология"
+        href="https://abit.itmo.ru/program/master/industrial_biotechnology"
+      />
       <p className="text-lg xl:text-xl">
         Подробное описание программ и записи дней открытых дверей
       </p>
@@ -313,7 +327,7 @@ export default function Education() {
         </div>
       </section>
 
-      <section className="max-md:hidden order-last relative py-[120px]">
+      <section className="max-md:hidden relative py-[120px]">
         <Image
           src={EduPirple}
           height={227}

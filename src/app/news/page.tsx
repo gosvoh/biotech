@@ -8,7 +8,7 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Новости",
-  "Новости факультета биотехнологий университета ИТМО",
+  "Новости факультета биотехнологий Университета ИТМО",
   "/news",
 );
 

@@ -1,18 +1,15 @@
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import Bag from "@public/bag.png";
-import Mvk from "@public/mvk.png";
-import Link from "next/link";
 import { generateMeta } from "@/lib/meta";
+import Mvk from "@public/mvk.jpg";
 import type { Metadata } from "next";
+import Image from "next/image";
 // import Timeline from "@/components/timeline";
-import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import FigureImage from "@/components/figure-image";
 import NewsCarouselSection from "@/components/news-carousel-section";
+import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО",
-  "Факультет биотехнологий университета ИТМО",
+  "Факультет биотехнологий Университета ИТМО",
 );
 
 export default function Home() {
@@ -28,7 +25,7 @@ export default function Home() {
             </h1>
             <h3>
               Факультет биотехнологий <br className="max-md:hidden" />
-              университета ИТМО
+              Университета ИТМО
             </h3>
           </div>
         </div>
@@ -38,10 +35,11 @@ export default function Home() {
 
       <section className="main-block section-home-padding">
         <div className="wrapper md:flex-row-reverse items-center justify-between">
-          <Image src={Bag} alt="" className="md:max-w-3/8" />
+          {/* <Image src={Bag} alt="" className="md:max-w-3/8" /> */}
+          <Image src={Mvk} alt="" className="md:max-w-3/8 rounded-full" />
           <div className="space-y-6 md:max-w-1/2">
             <div className="space-y-2 md:space-y-4">
-              <h2>Биотех ИТМО</h2>
+              {/* <h2>Биотех ИТМО</h2>
               <p>
                 {removeHangingPrepositionsAndConjunctions(
                   <>
@@ -50,11 +48,29 @@ export default function Home() {
                     взаимосвязи с индустрией
                   </>,
                 )}
+              </p> */}
+              <h2>Приветствие декана</h2>
+              <p>
+                {removeHangingPrepositionsAndConjunctions(
+                  <>
+                    Биотех Университета ИТМО рад открыть для вас свои двери.
+                    Здесь, в самом сердце Санкт-Петербурга, под одним флагом
+                    объединены фуд-, эко-, агро- и геномные биотехнологии.
+                    Развиваемая на факультете экосистема создаст атмосферу
+                    успеха и для обучающихся, заинтересованных в инжиниринге
+                    собственного будущего, и для экспертов, стремящихся
+                    реализовать своё самое смелое, часто опережающее время
+                    видение. Индустриально-образовательное партнёрство и
+                    интернационализация, образование, отвечающее потребностям
+                    реального сектора экономики — фундамент, на котором твёрдо
+                    стоит Биотех сегодня.
+                  </>,
+                )}
               </p>
             </div>
-            <Button asChild>
+            {/* <Button asChild>
               <Link href="/education">Образование</Link>
-            </Button>
+            </Button> */}
           </div>
         </div>
         {/* <div className="wrapper">
@@ -104,7 +120,7 @@ export default function Home() {
         </div> */}
       </section>
 
-      <section className="section-home-padding max-md:p-0">
+      {/* <section className="section-home-padding max-md:p-0">
         <div className="wrapper">
           <div className="accent-gradient md:rounded-3xl section-padding section-home-padding gap-6 main-block xl:flex-row md:gap-[48px] items-center justify-center">
             <Image
@@ -137,9 +153,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <section className="section-home-padding">
+      {/* <section className="section-home-padding">
         <div className="wrapper">
           <h2>Жизнь на Биотехе</h2>
           <div className="flex flex-col gap-6 lg:flex-row lg:flex-wrap *:lg:flex-[1_1_45%]">
@@ -151,7 +167,7 @@ export default function Home() {
             <div className="card">Интенсив «Проектная деятельность»</div>
           </div>
         </div>
-      </section>
+      </section> */}
     </main>
   );
 }

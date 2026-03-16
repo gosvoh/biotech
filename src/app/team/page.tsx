@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { cn, removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import FigureImage from "@/components/figure-image";
@@ -17,7 +17,7 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Команда факультета",
-  "Команда факультета биотехнологий университета ИТМО",
+  "Команда факультета биотехнологий Университета ИТМО",
   "/team",
 );
 
@@ -38,11 +38,9 @@ async function getDepartments() {
 const Card = ({
   member,
   className,
-  imgBlock,
 }: {
   member: Member;
   className?: string;
-  imgBlock?: boolean;
 }) => {
   const name = [member.firstName, member.middleName, member.lastName].join(" ");
 
@@ -58,7 +56,7 @@ const Card = ({
           src={`/uploads/members/${member.image ?? member.id}.webp`}
           alt={name}
           className={cn(
-            imgBlock ? "max-lg:max-w-1/2" : "max-w-1/2",
+            "max-w-3/4",
             "rounded-full aspect-square object-cover border-2 border-day-base-static-bg&stroke-30",
             "group-hover:border-accent transition-colors",
           )}
@@ -101,7 +99,7 @@ const Card = ({
 
 const DevelopmentDepartment = ({ members }: { members: Member[] }) => (
   <>
-    <p className="text-day-base-static-text&icons-20 text-base lg:max-w-3/5 lg:mb-20">
+    {/* <p className="text-day-base-static-text&icons-20 text-base lg:max-w-3/5 lg:mb-20">
       {removeHangingPrepositionsAndConjunctions(
         <>
           Отдел развития факультета занимается стратегическим планированием,
@@ -110,10 +108,10 @@ const DevelopmentDepartment = ({ members }: { members: Member[] }) => (
           факультета.
         </>,
       )}
-    </p>
+    </p> */}
     <div className="flex flex-col gap-6 lg:grid lg:gap-y-10 grid-cols-4">
       {members.map((member) => (
-        <Card member={member} imgBlock key={member.id} />
+        <Card member={member} key={member.id} />
       ))}
     </div>
   </>
@@ -139,15 +137,13 @@ const MobileLayout = ({
 }) => (
   <Accordion type="multiple" className={className}>
     <AccordionItem value="item-1">
-      <AccordionTrigger>Отдел развития</AccordionTrigger>
+      <AccordionTrigger>Деканат</AccordionTrigger>
       <AccordionContent>
         <DevelopmentDepartment members={members.development} />
       </AccordionContent>
     </AccordionItem>
     <AccordionItem value="item-2">
-      <AccordionTrigger>
-        Преподаватели/Руководители научных групп
-      </AccordionTrigger>
+      <AccordionTrigger>Научно-педагогические работники</AccordionTrigger>
       <AccordionContent>
         <ResearchDepartment members={members.research} />
       </AccordionContent>
@@ -167,11 +163,11 @@ const DesktopLayout = ({
 }) => (
   <div className={cn("text-center flex flex-col gap-4", className)}>
     <div className="flex flex-col gap-4 py-20 items-center">
-      <h2>Отдел развития</h2>
+      <h2 className="mb-10">Деканат</h2>
       <DevelopmentDepartment members={members.development} />
     </div>
     <div className="flex flex-col gap-4 py-20">
-      <h2 className="mb-20">Преподаватели/Руководители научных групп</h2>
+      <h2 className="mb-10">Научно-педагогические работники</h2>
       <ResearchDepartment members={members.research} />
     </div>
   </div>

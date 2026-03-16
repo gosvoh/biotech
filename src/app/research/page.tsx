@@ -23,12 +23,15 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Исследования",
-  "Исследования факультета биотехнологий университета ИТМО",
+  "Исследования факультета биотехнологий Университета ИТМО",
   "/research",
 );
 
-const RNFProjects: string[] = [
-  "Интеллектуальный биоразлагаемый упаковочный материал для пищевых продуктов",
+const RNFProjects: (string | string[])[] = [
+  [
+    "23-26-00056",
+    "Интеллектуальный биоразлагаемый упаковочный материал для пищевых продуктов",
+  ],
   "Разработка научно-технических основ контроля качества и безопасности мясных продуктов с помощью гиперспектрального анализа и терагерцового излучения",
   "Разработка биоактивного функционального пищевого ингредиента на основе арахидоновой кислоты и пробиотических штаммов лактобактерий для профилактики сахарного диабета второго типа",
   "Применение биопотенциала адаптогенных БАВ из растительного сырья для создания новых функциональных продуктов питания с пробиотическим эффектом для активного долголетия и здоровья",
@@ -147,13 +150,19 @@ export default async function Research() {
         <div className="wrapper gap-4">
           <Accordion type="multiple">
             <AccordionItem value="rnf">
-              <AccordionTrigger>Проекты РНФ</AccordionTrigger>
+              <AccordionTrigger>
+                Молодежная лаборатория Минобрнауки
+              </AccordionTrigger>
               <AccordionContent>
                 {RNFProjects.map((project, i) => (
                   <NewsCard
-                    key={project}
-                    date={`[${(i + 1).toString().padStart(2, "0")}]`}
-                    title={project}
+                    key={`project-${i}`}
+                    date={
+                      typeof project === "string"
+                        ? undefined
+                        : `[${project[0]}]`
+                    }
+                    title={typeof project === "string" ? project : project[1]}
                     className="p-6"
                     classNames={{
                       date: "text-lg",
@@ -164,12 +173,12 @@ export default async function Research() {
               </AccordionContent>
             </AccordionItem>
             <AccordionItem value="effi">
-              <AccordionTrigger>Проекты ЭФФИ</AccordionTrigger>
+              <AccordionTrigger>Проекты РНФ</AccordionTrigger>
               <AccordionContent>
-                {EFFIProjects.map((project, i) => (
+                {EFFIProjects.map((project) => (
                   <NewsCard
                     key={project}
-                    date={`[${(i + 1).toString().padStart(2, "0")}]`}
+                    // date={`[${(i + 1).toString().padStart(2, "0")}]`}
                     title={project}
                     className="p-6"
                     classNames={{
@@ -198,9 +207,11 @@ export default async function Research() {
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
             {RNFProjects.map((project, i) => (
               <NewsCard
-                key={project}
-                date={`[${(i + 1).toString().padStart(2, "0")}]`}
-                title={project}
+                key={`project-${i}`}
+                date={
+                  typeof project === "string" ? undefined : `[${project[0]}]`
+                }
+                title={typeof project === "string" ? project : project[1]}
                 classNames={{ date: "text-lg" }}
               />
             ))}
@@ -212,10 +223,10 @@ export default async function Research() {
         <div className="wrapper flex-row gap-6">
           <h2 className="basis-1/4">Проекты ЭФФИ</h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {EFFIProjects.map((project, i) => (
+            {EFFIProjects.map((project) => (
               <NewsCard
                 key={project}
-                date={`[${(i + 1).toString().padStart(2, "0")}]`}
+                // date={`[${(i + 1).toString().padStart(2, "0")}]`}
                 title={project}
                 classNames={{ date: "text-lg" }}
               />
@@ -284,14 +295,14 @@ export default async function Research() {
         </div>
       </section>
 
-      <section className="max-md:hidden">
+      {/* <section className="max-md:hidden">
         <div className="wrapper">
           <h2>Публикации</h2>
           <Suspense fallback={<div>Загрузка...</div>}>
             <Publications />
           </Suspense>
         </div>
-      </section>
+      </section> */}
     </main>
   );
 }

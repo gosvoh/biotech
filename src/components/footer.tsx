@@ -29,9 +29,9 @@ export default function Footer() {
           </Link>
         </div>
         <div className="flex flex-col gap-6 text-base">
-          <Link href="/">
+          {/* <Link href="/">
             <ArrowUpRight />О факультете
-          </Link>
+          </Link> */}
           {headerFooterLinks.map(({ href, text }, i) => (
             <Link key={`footer-link-${i}`} href={href} className="w-fit">
               <ArrowUpRight />
@@ -49,10 +49,7 @@ export default function Footer() {
               <h3>{contacts.email}</h3>
             </Link>
             <Link href={`tel:${contacts.development}`} className="w-fit">
-              {`${contacts.development} (отдел развития)`}
-            </Link>
-            <Link href={`tel:${contacts.dean}`} className="w-fit">
-              {`${contacts.dean} (декан)`}
+              {contacts.development}
             </Link>
           </div>
         </div>

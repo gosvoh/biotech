@@ -38,7 +38,7 @@ export async function generateMetadata(
   return {
     ...(parentMeta as Metadata),
     title: `Биотех ИТМО | ${memberName}`,
-    description: `Команда факультета биотехнологий университета ИТМО: ${memberName}`,
+    description: `Команда факультета биотехнологий Университета ИТМО: ${memberName}`,
     openGraph: { images: { url: `https://biotech.cedne.ru/team/${id}` } },
     twitter: { images: { url: `https://biotech.cedne.ru/team/${id}` } },
   };
@@ -46,6 +46,10 @@ export async function generateMetadata(
 
 async function MemberContent({ params }: { params: Promise<{ id: string }> }) {
   const member = await getMember((await params).id);
+  const memberNameClassName =
+    "font-gorizont text-[30px] leading-[40px] md:text-[36px] md:leading-[46px] xl:text-[50px] xl:leading-[60px] xl:font-normal";
+  const sectionHeadingClassName =
+    "text-[22px] leading-[32px] xl:text-[28px] xl:leading-[38px]";
 
   if (!member) notFound();
 
@@ -80,9 +84,15 @@ async function MemberContent({ params }: { params: Promise<{ id: string }> }) {
               className="rounded-full aspect-square object-cover w-1/2 xl:w-1/4"
             />
             <div className="md:space-y-4">
-              <h1>{member.firstName}</h1>
-              <h2>{[member.middleName, member.lastName].join(" ")}</h2>
-              {member.position && <h3>{member.position}</h3>}
+              <h1 className={memberNameClassName}>
+                <span className="block">{member.firstName}</span>
+                <span className="block">
+                  {[member.middleName, member.lastName].join(" ")}
+                </span>
+              </h1>
+              {member.position && (
+                <p className={sectionHeadingClassName}>{member.position}</p>
+              )}
             </div>
           </div>
         </div>
@@ -92,11 +102,11 @@ async function MemberContent({ params }: { params: Promise<{ id: string }> }) {
         <div className="wrapper">
           {member.disciplines.length > 0 && (
             <div className="space-y-4 md:space-y-6">
-              <h3>
+              <h2 className={sectionHeadingClassName}>
                 {removeHangingPrepositionsAndConjunctions(
                   <>Преподаваемые дисциплины в 2024–2025 гг:</>,
                 )}
-              </h3>
+              </h2>
               <ul className="list-disc ml-8">
                 {member.disciplines.map((x) => (
                   <li key={`discipline-${x.id}`}>
@@ -109,7 +119,7 @@ async function MemberContent({ params }: { params: Promise<{ id: string }> }) {
 
           {member.scientificWorks.length > 0 && (
             <div className="space-y-4">
-              <h3>Темы научных работ:</h3>
+              <h2 className={sectionHeadingClassName}>Темы научных работ:</h2>
               <ul className="list-disc ml-8">
                 {member.scientificWorks.map((x) => (
                   <li key={`scientific-work-${x.id}`}>
@@ -122,7 +132,7 @@ async function MemberContent({ params }: { params: Promise<{ id: string }> }) {
 
           {(member.phone || member.email) && (
             <div className="space-y-4 md:space-y-6">
-              <h3>Контакты</h3>
+              <h2 className={sectionHeadingClassName}>Контакты</h2>
               <div>
                 {member.phone && (
                   <Link href={`tel:${member.phone}`} className="block">

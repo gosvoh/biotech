@@ -15,7 +15,7 @@ import { generateMeta } from "@/lib/meta";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО | Виды ВКР",
-  "Виды ВКР на факультете биотехнологий университета ИТМО",
+  "Виды ВКР на факультете биотехнологий Университета ИТМО",
   "/education/vkr",
 );
 

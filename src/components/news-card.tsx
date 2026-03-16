@@ -13,7 +13,7 @@ export default function NewsCard({
   headerLevel = 3,
 }: {
   imageSrc?: React.ComponentProps<typeof Image>["src"];
-  date: string;
+  date?: string;
   title: string;
   className?: string;
   classNames?: {
@@ -40,7 +40,7 @@ export default function NewsCard({
         </div>
       )}
       <div className="space-y-4">
-        <p className={classNames?.date}>{date}</p>
+        {date ? <p className={classNames?.date}>{date}</p> : null}
         {React.createElement(
           `h${headerLevel}`,
           { className: classNames?.title },
