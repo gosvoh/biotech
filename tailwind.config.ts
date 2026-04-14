@@ -256,7 +256,7 @@ const config: Config = {
         "utf8"
       );
       const root = parse(css);
-      const jss = objectify(root);
+      const jss = objectify(root as any) as Record<string, any>;
 
       if ("@layer components" in jss) addComponents(jss["@layer components"]);
       if ("@layer utilities" in jss) addUtilities(jss["@layer utilities"]);
