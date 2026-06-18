@@ -60,9 +60,9 @@ const DesktopMenu = () => {
         </Link>
       ))}
       {session && (
-        <Link href="#" onClick={() => signOut()}>
+        <button type="button" onClick={() => signOut()}>
           Выйти
-        </Link>
+        </button>
       )}
     </nav>
   );
