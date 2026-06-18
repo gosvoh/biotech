@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import type { PluginAPI } from "tailwindcss/types/config";
+import type { CSSRuleObject, PluginAPI } from "tailwindcss/types/config";
 import { parse } from "postcss";
 import { objectify } from "postcss-js";
 import { readFileSync } from "fs";
@@ -256,7 +256,9 @@ const config: Config = {
         "utf8"
       );
       const root = parse(css);
-      const jss = objectify(root as any) as Record<string, any>;
+      const jss = objectify(
+        root as unknown as Parameters<typeof objectify>[0]
+      ) as Record<string, CSSRuleObject>;
 
       if ("@layer components" in jss) addComponents(jss["@layer components"]);
       if ("@layer utilities" in jss) addUtilities(jss["@layer utilities"]);
