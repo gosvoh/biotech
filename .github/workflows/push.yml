@@ -31,11 +31,19 @@ jobs:
       - name: Generate Next.js types
         run: bunx next typegen
 
+      - name: Validate Prisma schema
+        run: bunx prisma validate
+        env:
+          DATABASE_URL: file:./database/dev.db
+
       - name: Lint
         run: bun lint
 
       - name: Typecheck
         run: bunx tsc --noEmit
+
+      - name: Test
+        run: bun run test
 
   build_and_push:
     name: Build and Push Docker Image

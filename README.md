@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Biotech
 
-## Getting Started
+Website for the Biotech faculty. Built with the Next.js App Router and a small
+Prisma/SQLite backend, with authentication handled by NextAuth.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) and **React 19**
+- **Prisma** ORM with a **SQLite** database
+- **NextAuth v5** for authentication
+- **Ant Design 6**, **shadcn/ui** and **Radix** primitives for the UI
+- **Tailwind CSS 3** for styling
+- **Bun** as the runtime and package manager
+- **Vitest** for unit tests
+
+## Prerequisites
+
+- [Bun](https://bun.sh) (the project's runtime and package manager)
+
+## Setup
+
+Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a `.env` file based on the documented variables in
+[`.env.example`](./.env.example) (database connection, mail/SMTP settings,
+NextAuth, etc.).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Generate the Prisma client and apply migrations to your local database:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+bun run db:generate
+bun run db:migrate
+```
 
-## Learn More
+## Common commands
 
-To learn more about Next.js, take a look at the following resources:
+| Command               | Description                                       |
+| --------------------- | ------------------------------------------------- |
+| `bun dev`             | Start the development server (Turbopack)          |
+| `bun run build`       | Create a production build                         |
+| `bun run db:migrate`  | Create/apply migrations in development            |
+| `bun run db:generate` | Generate the Prisma client                        |
+| `bun test`            | Run the unit tests (Vitest)                       |
+| `bun lint`            | Run ESLint                                        |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment / Docker
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The provided `Dockerfile` produces a standalone Next.js image using the
+`oven/bun` base image. At **build time** it applies migrations and generates the
+Prisma client so the cached/static pages can be prerendered (`bun run db:deploy`,
+`bun run db:generate`, `bun run build`).
 
-## Deploy on Vercel
+At **container start**, `docker-entrypoint.sh` runs `prisma migrate deploy`
+against the mounted database volume before launching the server, so pending
+migrations are applied to the persistent database on every deploy (not just at
+build time). The SQLite database and uploads directory are exposed as volumes
+(`/app/database` and `/app/uploads`) so data persists across container restarts.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+CI (`.github/workflows/push.yml`) lints, typechecks, validates the Prisma
+schema and runs the tests on every push and pull request, then builds and
+pushes the Docker image on pushes to `master`.
