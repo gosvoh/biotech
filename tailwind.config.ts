@@ -252,7 +252,7 @@ const config: Config = {
     animate,
     ({ addComponents, addUtilities }: PluginAPI) => {
       const css = readFileSync(
-        resolve(__dirname, "./src/app/globals.css"),
+        resolve(process.cwd(), "./src/app/globals.css"),
         "utf8"
       );
       const root = parse(css);
