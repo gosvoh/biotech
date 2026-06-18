@@ -74,7 +74,7 @@ export default function AskQuestion({ className }: { className?: string }) {
                 <Input placeholder="ФИО" />
               </Form.Item>
               <Form.Item
-                name="Email"
+                name="email"
                 rules={[
                   { type: "email", message: "Некорректный email" },
                   { required: true, message: "Пожалуйста, введите ваш email" },
