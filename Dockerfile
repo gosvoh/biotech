@@ -38,6 +38,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/database ./database
 COPY --from=builder --chown=nextjs:nodejs /app/migrations ./migrations
 COPY --from=builder --chown=nextjs:nodejs /app/schema.prisma ./schema.prisma
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 
 USER nextjs
 
@@ -49,4 +51,5 @@ ENV HOSTNAME=0.0.0.0
 VOLUME /app/database
 VOLUME /app/uploads
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["bun", "./server.js"]
