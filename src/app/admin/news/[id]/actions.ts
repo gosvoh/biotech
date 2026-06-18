@@ -1,29 +1,45 @@
 "use server";
 
 import { prisma } from "@/prisma";
-import type { News } from "@/lib/db/client";
 import { dbAction, requireAdmin } from "@/lib/utils.server";
 import sharp from "sharp";
 import fs from "fs/promises";
+import { z } from "zod";
+
+const newsSchema = z.object({
+  title: z.string().trim().min(1, "Please fill out the required fields."),
+  text: z.string().trim().min(1, "Please fill out the required fields."),
+  date: z.string().trim().min(1, "Please fill out the required fields."),
+  links: z.string().default(""),
+  hidden: z.boolean(),
+  tags: z
+    .array(z.string().min(1))
+    .min(1, "Please fill out the required fields."),
+});
+
+function parseNewsForm(formData: FormData) {
+  const tagsStr = (formData.get("tags") as string | null) ?? "";
+  return newsSchema.safeParse({
+    title: formData.get("title"),
+    text: formData.get("text"),
+    date: formData.get("date"),
+    links: formData.get("links") ?? "",
+    hidden: formData.get("hidden") === "true",
+    tags: tagsStr ? tagsStr.split(",") : [],
+  });
+}
 
 export async function addNews(formData: FormData) {
   await requireAdmin();
-  const news: Omit<News, "id"> = {
-    title: formData.get("title") as string,
-    text: formData.get("text") as string,
-    date: formData.get("date") as string,
-    hidden: formData.get("hidden") === "true",
-    links: formData.get("links") as string,
-  };
-  const tagsStr = formData.get("tags") as string;
-  const tags = tagsStr ? tagsStr.split(",") : [];
-  const images = formData.getAll("images") as File[];
 
-  console.log(images);
-
-  if (!news.title || !news.text || !news.date || !tags.length) {
-    return Promise.reject("Please fill out the required fields.");
+  const parsed = parseNewsForm(formData);
+  if (!parsed.success) {
+    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
+  const { tags, ...news } = parsed.data;
+  const images = formData
+    .getAll("images")
+    .filter((x): x is File => x instanceof File);
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
@@ -38,7 +54,6 @@ export async function addNews(formData: FormData) {
         const n = await prisma.newsImages.create({
           data: { newsId: newNews.id },
         });
-        console.log(image, n);
         await sharp(await image.arrayBuffer(), { animated: true }).toFile(
           `./uploads/news/${n.id}.webp`
         );
@@ -52,26 +67,22 @@ export async function addNews(formData: FormData) {
 
 export async function updateNews(formData: FormData) {
   await requireAdmin();
-  const news: News = {
-    id: formData.get("id") as string,
-    title: formData.get("title") as string,
-    text: formData.get("text") as string,
-    date: formData.get("date") as string,
-    hidden: formData.get("hidden") === "true",
-    links: formData.get("links") as string,
-  };
-  const tagsStr = formData.get("tags") as string;
-  const tags = tagsStr ? tagsStr.split(",") : [];
-  const images = formData.getAll("images") as (File | string)[];
 
-  if (!news.id || !news.title || !news.text || !news.date || !tags.length) {
+  const id = formData.get("id");
+  if (typeof id !== "string" || !id) {
     return Promise.reject("Please fill out the required fields.");
   }
+  const parsed = parseNewsForm(formData);
+  if (!parsed.success) {
+    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+  }
+  const { tags, ...news } = parsed.data;
+  const images = formData.getAll("images") as (File | string)[];
 
   return dbAction(
     prisma.$transaction(async (prisma) => {
       const newNews = await prisma.news.update({
-        where: { id: news.id },
+        where: { id },
         data: {
           ...news,
           tags: { set: tags.map((id) => ({ id })) },
@@ -102,7 +113,7 @@ export async function updateNews(formData: FormData) {
         for (const image of images) {
           if (typeof image === "string") continue;
           const n = await prisma.newsImages.create({
-            data: { newsId: news.id },
+            data: { newsId: id },
           });
           await sharp(await image.arrayBuffer()).toFile(
             `./uploads/news/${n.id}.webp`

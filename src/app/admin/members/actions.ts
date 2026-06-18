@@ -7,6 +7,41 @@ import sharp from "sharp";
 import fs from "fs/promises";
 import parsePhoneNumber from "libphonenumber-js";
 import { randomUUID } from "crypto";
+import { z } from "zod";
+
+const optionalText = z
+  .string()
+  .trim()
+  .transform((v) => (v.length ? v : null))
+  .nullable();
+
+const memberSchema = z.object({
+  lastName: z.string().trim().min(1, "Please fill out the required fields."),
+  firstName: z.string().trim().min(1, "Please fill out the required fields."),
+  middleName: optionalText,
+  position: optionalText,
+  email: optionalText.refine(
+    (v) => v === null || z.email().safeParse(v).success,
+    { message: "Invalid email." }
+  ),
+  departmentId: optionalText,
+});
+
+function getFormString(formData: FormData, key: string) {
+  const value = formData.get(key);
+  return typeof value === "string" ? value : "";
+}
+
+function parseMemberForm(formData: FormData) {
+  return memberSchema.safeParse({
+    lastName: getFormString(formData, "lastName"),
+    firstName: getFormString(formData, "firstName"),
+    middleName: getFormString(formData, "middleName"),
+    position: getFormString(formData, "position"),
+    email: getFormString(formData, "email"),
+    departmentId: getFormString(formData, "departmentId"),
+  });
+}
 
 function getMemberImageKey(member: Pick<Member, "id" | "image">) {
   return member.image ?? member.id;
@@ -31,24 +66,23 @@ async function saveMemberImage(image: File, imageKey: string) {
 
 export async function addMember(formData: FormData) {
   await requireAdmin();
-  const member: Omit<Member, "id" | "phone" | "image"> = {
-    lastName: formData.get("lastName") as string,
-    firstName: formData.get("firstName") as string,
-    middleName: formData.get("middleName") as string,
-    position: formData.get("position") as string,
-    email: formData.get("email") as string,
-    departmentId: formData.get("departmentId") as string,
-  };
-  const disciplinesStr = formData.get("disciplines") as string;
-  const scientificWorksStr = formData.get("scientificWorks") as string;
+
+  const parsed = parseMemberForm(formData);
+  if (!parsed.success) {
+    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+  }
+  const member: Omit<Member, "id" | "phone" | "image"> = parsed.data;
+
+  const disciplinesStr = getFormString(formData, "disciplines");
+  const scientificWorksStr = getFormString(formData, "scientificWorks");
   const disciplines = disciplinesStr ? disciplinesStr.split(",") : [];
   const scientificWorks = scientificWorksStr
     ? scientificWorksStr.split(",")
     : [];
-  const image = formData.get("image") as File;
+  const image = formData.get("image");
   const phone = formData.get("phone") as string | undefined;
 
-  if (!member.lastName || !member.firstName || !image) {
+  if (!(image instanceof File) || image.size === 0) {
     return Promise.reject("Please fill out the required fields.");
   }
 
@@ -78,27 +112,25 @@ export async function addMember(formData: FormData) {
 
 export async function updateMember(formData: FormData) {
   await requireAdmin();
-  const member: Omit<Member, "phone" | "image"> = {
-    id: formData.get("id") as string,
-    lastName: formData.get("lastName") as string,
-    firstName: formData.get("firstName") as string,
-    middleName: formData.get("middleName") as string,
-    position: formData.get("position") as string,
-    email: formData.get("email") as string,
-    departmentId: formData.get("departmentId") as string,
-  };
-  const disciplinesStr = formData.get("disciplines") as string;
-  const scientificWorksStr = formData.get("scientificWorks") as string;
+
+  const id = formData.get("id");
+  if (typeof id !== "string" || !id) {
+    return Promise.reject("Please fill out the required fields.");
+  }
+  const parsed = parseMemberForm(formData);
+  if (!parsed.success) {
+    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+  }
+  const member: Omit<Member, "phone" | "image"> = { id, ...parsed.data };
+
+  const disciplinesStr = getFormString(formData, "disciplines");
+  const scientificWorksStr = getFormString(formData, "scientificWorks");
   const disciplines = disciplinesStr ? disciplinesStr.split(",") : [];
   const scientificWorks = scientificWorksStr
     ? scientificWorksStr.split(",")
     : [];
   const image = formData.get("image") as File;
   const phone = formData.get("phone") as string | undefined;
-
-  if (!member.id || !member.lastName || !member.firstName) {
-    return Promise.reject("Please fill out the required fields.");
-  }
 
   const phoneNumber = phone
     ? parsePhoneNumber(phone)?.formatInternational()

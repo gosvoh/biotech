@@ -2,6 +2,13 @@
 
 import nodemailer from "nodemailer";
 import { Heading, Html, Link, render, Text } from "@react-email/components";
+import { z } from "zod";
+
+const questionSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  email: z.email().max(200),
+  question: z.string().trim().min(1).max(5000),
+});
 
 const transporter = nodemailer.createTransport({
   host: "smtp.timeweb.ru",
@@ -36,11 +43,10 @@ function Email({
   );
 }
 
-export async function sendMail(data: {
-  name: string;
-  email: string;
-  question: string;
-}) {
+export async function sendMail(input: unknown) {
+  const parsed = questionSchema.safeParse(input);
+  if (!parsed.success) return false;
+  const data = parsed.data;
   try {
     const mailOptions = {
       from: process.env.MAIL_USER!,
