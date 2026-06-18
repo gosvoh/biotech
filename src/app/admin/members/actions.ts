@@ -71,7 +71,10 @@ export async function addMember(formData: FormData) {
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
-  const member: Omit<Member, "id" | "phone" | "image"> = parsed.data;
+  const member: Omit<
+    Member,
+    "id" | "phone" | "image" | "createdAt" | "updatedAt"
+  > = parsed.data;
 
   const disciplinesStr = getFormString(formData, "disciplines");
   const scientificWorksStr = getFormString(formData, "scientificWorks");
@@ -121,7 +124,10 @@ export async function updateMember(formData: FormData) {
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
-  const member: Omit<Member, "phone" | "image"> = { id, ...parsed.data };
+  const member: Omit<Member, "phone" | "image" | "createdAt" | "updatedAt"> = {
+    id,
+    ...parsed.data,
+  };
 
   const disciplinesStr = getFormString(formData, "disciplines");
   const scientificWorksStr = getFormString(formData, "scientificWorks");

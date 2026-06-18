@@ -23,7 +23,10 @@ import { changeVisibility, deleteNews } from "./actions";
 export default function NewsClient({
   news,
 }: {
-  news: (Omit<News, "text"> & { tags: NewsTags[]; images: { id: string }[] })[];
+  news: (Omit<News, "text" | "createdAt" | "updatedAt"> & {
+    tags: NewsTags[];
+    images: { id: string }[];
+  })[];
 }) {
   return (
     <>

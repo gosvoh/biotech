@@ -62,6 +62,9 @@ model VerificationToken {
     token      String
     expires    DateTime
 
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
+
     @@unique([identifier, token])
 }
 
@@ -80,6 +83,9 @@ model Member {
 
     disciplines     Discipline[]
     scientificWorks ScientificWork[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model Department {
@@ -87,6 +93,9 @@ model Department {
     name String
 
     members Member[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model Discipline {
@@ -94,6 +103,9 @@ model Discipline {
     title String
 
     members Member[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model ScientificWork {
@@ -101,6 +113,9 @@ model ScientificWork {
     title String
 
     members Member[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model News {
@@ -113,6 +128,9 @@ model News {
 
     tags   NewsTags[]
     images NewsImages[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model NewsTags {
@@ -120,6 +138,9 @@ model NewsTags {
     title String
 
     news News[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model NewsImages {
@@ -127,6 +148,9 @@ model NewsImages {
 
     News   News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
     newsId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
 
 model Publication {
@@ -136,4 +160,7 @@ model Publication {
     title   String
     authors String
     link    String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt @default(now())
 }
