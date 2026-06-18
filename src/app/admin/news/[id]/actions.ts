@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/prisma";
-import { dbAction, requireAdmin } from "@/lib/utils.server";
+import { dbActionWithResult, requireAdmin } from "@/lib/utils.server";
 import sharp from "sharp";
 import fs from "fs/promises";
 import { z } from "zod";
@@ -34,14 +34,14 @@ export async function addNews(formData: FormData) {
 
   const parsed = parseNewsForm(formData);
   if (!parsed.success) {
-    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
   const { tags, ...news } = parsed.data;
   const images = formData
     .getAll("images")
     .filter((x): x is File => x instanceof File);
 
-  return dbAction(
+  return dbActionWithResult(
     prisma.$transaction(async (prisma) => {
       const newNews = await prisma.news.create({
         data: {
@@ -60,8 +60,7 @@ export async function addNews(formData: FormData) {
       }
       return newNews;
     }),
-    "news",
-    true
+    "news"
   );
 }
 
@@ -70,16 +69,16 @@ export async function updateNews(formData: FormData) {
 
   const id = formData.get("id");
   if (typeof id !== "string" || !id) {
-    return Promise.reject("Please fill out the required fields.");
+    throw new Error("Please fill out the required fields.");
   }
   const parsed = parseNewsForm(formData);
   if (!parsed.success) {
-    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
   const { tags, ...news } = parsed.data;
   const images = formData.getAll("images") as (File | string)[];
 
-  return dbAction(
+  return dbActionWithResult(
     prisma.$transaction(async (prisma) => {
       const newNews = await prisma.news.update({
         where: { id },
@@ -122,7 +121,6 @@ export async function updateNews(formData: FormData) {
       }
       return newNews;
     }),
-    "news",
-    true
+    "news"
   );
 }

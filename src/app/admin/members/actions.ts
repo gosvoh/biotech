@@ -1,6 +1,6 @@
 "use server";
 
-import { dbAction, requireAdmin } from "@/lib/utils.server";
+import { dbAction, getOptionalString, requireAdmin } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
 import sharp from "sharp";
@@ -69,7 +69,7 @@ export async function addMember(formData: FormData) {
 
   const parsed = parseMemberForm(formData);
   if (!parsed.success) {
-    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
   const member: Omit<Member, "id" | "phone" | "image"> = parsed.data;
 
@@ -80,10 +80,10 @@ export async function addMember(formData: FormData) {
     ? scientificWorksStr.split(",")
     : [];
   const image = formData.get("image");
-  const phone = formData.get("phone") as string | undefined;
+  const phone = getOptionalString(formData.get("phone"));
 
   if (!(image instanceof File) || image.size === 0) {
-    return Promise.reject("Please fill out the required fields.");
+    throw new Error("Please fill out the required fields.");
   }
 
   const phoneNumber = phone
@@ -115,11 +115,11 @@ export async function updateMember(formData: FormData) {
 
   const id = formData.get("id");
   if (typeof id !== "string" || !id) {
-    return Promise.reject("Please fill out the required fields.");
+    throw new Error("Please fill out the required fields.");
   }
   const parsed = parseMemberForm(formData);
   if (!parsed.success) {
-    return Promise.reject(parsed.error.issues[0]?.message ?? "Invalid input.");
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
   }
   const member: Omit<Member, "phone" | "image"> = { id, ...parsed.data };
 
@@ -130,7 +130,7 @@ export async function updateMember(formData: FormData) {
     ? scientificWorksStr.split(",")
     : [];
   const image = formData.get("image") as File;
-  const phone = formData.get("phone") as string | undefined;
+  const phone = getOptionalString(formData.get("phone"));
 
   const phoneNumber = phone
     ? parsePhoneNumber(phone)?.formatInternational()

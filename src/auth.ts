@@ -15,7 +15,10 @@ declare module "next-auth" {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // @ts-expect-error - PrismaAdapter is not typed in the NextAuth library
+  // @ts-expect-error - duplicate @auth/core installs (one hoisted, one nested
+  // under next-auth) yield two structurally-identical but nominally-distinct
+  // `Adapter` types, so PrismaAdapter's return type is not assignable here.
+  // Resolvable only by deduping @auth/core in package.json, which is upstream.
   adapter: PrismaAdapter(prisma),
   callbacks: {
     authorized: async ({ auth }) => !!auth,
