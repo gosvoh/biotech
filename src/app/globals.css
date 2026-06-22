@@ -209,6 +209,80 @@
   }
 }
 
+/* Native range input for the member image cropper. We use a styled native range
+   instead of antd `Slider` because the latter (rc-slider, a class component) loops
+   under React 19 when controlled inside a Modal. Fill up to the thumb is driven by
+   the `--crop-zoom-pct` custom property set inline from the current zoom. */
+.crop-zoom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.crop-zoom-slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.crop-zoom-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    #1677ff var(--crop-zoom-pct, 0%),
+    rgba(0, 0, 0, 0.1) var(--crop-zoom-pct, 0%)
+  );
+}
+
+.crop-zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #1677ff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.2s ease;
+}
+
+.crop-zoom-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+}
+
+.crop-zoom-slider:focus-visible {
+  outline: none;
+}
+
+.crop-zoom-slider:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.2);
+}
+
+.crop-zoom-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.crop-zoom-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 9999px;
+  background: #1677ff;
+}
+
+.crop-zoom-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #1677ff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 .wmde-markdown {
   --color-fg-default: hsl(var(--accent-carbon)) !important;
   font-family: var(--font-golos) !important;

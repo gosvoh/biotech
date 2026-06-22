@@ -1,15 +1,37 @@
 "use client";
 
-import { Modal, Slider } from "antd";
-import Cropper, { type Area } from "react-easy-crop";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Modal } from "antd";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type CSSProperties,
+  type PointerEvent,
+} from "react";
 import type { MemberImageCropModalProps } from "./types";
 import {
-  CENTERED_CROP,
-  CROPPER_RENDER_DELAY_MS,
+  MAX_ZOOM,
   MEMBER_CROP_SIZE,
+  MIN_ZOOM,
+  ZOOM_STEP,
+  centerOffset,
+  clampOffset,
   createCroppedImageFile,
+  getCropArea,
+  getMediaGeometry,
+  zoomAroundCenter,
+  type CropOffset,
+  type MediaGeometry,
 } from "./member-image-crop";
+
+interface CropView {
+  zoom: number;
+  offset: CropOffset;
+}
+
+const INITIAL_VIEW: CropView = { zoom: MIN_ZOOM, offset: { x: 0, y: 0 } };
 
 export function MemberImageCropModal({
   open,
@@ -19,58 +41,135 @@ export function MemberImageCropModal({
   onCancel,
   onApply,
 }: MemberImageCropModalProps) {
-  const [crop, setCrop] = useState(CENTERED_CROP);
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area>();
-  const [isCropperReady, setIsCropperReady] = useState(false);
-  const cropperTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
+  // zoom + offset live in one atomic state so a single (pure) updater can move both.
+  const [view, setView] = useState<CropView>(INITIAL_VIEW);
+  const [geometry, setGeometry] = useState<MediaGeometry>();
+  const [loadedSrc, setLoadedSrc] = useState(imageSrc);
+  const { zoom, offset } = view;
 
-  const clearCropperTimer = useCallback(() => {
-    if (!cropperTimerRef.current) return;
-    clearTimeout(cropperTimerRef.current);
-    cropperTimerRef.current = undefined;
-  }, []);
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startOffset: CropOffset;
+  } | null>(null);
+  // The native range fires a burst of `input` events when the track is click-held
+  // (the browser animates the thumb). Applying state per event re-renders the antd
+  // Modal each time, whose class-component lifecycle schedules a nested update, and the
+  // burst trips React's max-update-depth guard. Coalescing to one update per animation
+  // frame keeps updates spaced across frames (and is cheaper).
+  const rafRef = useRef<number | null>(null);
+  const pendingZoomRef = useRef<number | null>(null);
 
-  const resetCropState = useCallback(() => {
-    setCrop(CENTERED_CROP);
-    setZoom(1);
-    setCroppedAreaPixels(undefined);
-  }, []);
-
-  const handleCropModalOpenChange = useCallback(
-    (nextOpen: boolean) => {
-      clearCropperTimer();
-      setIsCropperReady(false);
-      resetCropState();
-
-      if (!nextOpen || !imageSrc) return;
-
-      cropperTimerRef.current = setTimeout(() => {
-        setIsCropperReady(true);
-      }, CROPPER_RENDER_DELAY_MS);
+  useEffect(
+    () => () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     },
-    [clearCropperTimer, imageSrc, resetCropState],
+    [],
   );
 
-  const handleCropComplete = useCallback((_: Area, areaPixels: Area) => {
-    setCroppedAreaPixels(areaPixels);
+  // Reset state when the source image changes (the modal instance is reused between
+  // uploads) so stale geometry/offset never leaks into a new image. Adjusting state
+  // during render is React's recommended alternative to a reset effect.
+  if (imageSrc !== loadedSrc) {
+    setLoadedSrc(imageSrc);
+    setView(INITIAL_VIEW);
+    setGeometry(undefined);
+  }
+
+  const handleImageLoad = useCallback(
+    (event: React.SyntheticEvent<HTMLImageElement>) => {
+      const { naturalWidth, naturalHeight } = event.currentTarget;
+      if (!naturalWidth || !naturalHeight) return;
+      const nextGeometry = getMediaGeometry(naturalWidth, naturalHeight);
+      setGeometry(nextGeometry);
+      setView({ zoom: MIN_ZOOM, offset: centerOffset(nextGeometry, MIN_ZOOM) });
+    },
+    [],
+  );
+
+  const handleZoom = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const nextZoom = Number(event.target.value);
+      if (!Number.isFinite(nextZoom)) return;
+      pendingZoomRef.current = nextZoom;
+      if (rafRef.current !== null) return;
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const next = pendingZoomRef.current;
+        pendingZoomRef.current = null;
+        if (next === null) return;
+        setView((prev) =>
+          geometry
+            ? {
+                zoom: next,
+                offset: zoomAroundCenter(prev.offset, geometry, prev.zoom, next),
+              }
+            : { ...prev, zoom: next },
+        );
+      });
+    },
+    [geometry],
+  );
+
+  const handlePointerDown = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (!geometry) return;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      dragRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startOffset: offset,
+      };
+    },
+    [geometry, offset],
+  );
+
+  const handlePointerMove = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      const drag = dragRef.current;
+      if (!drag || !geometry || drag.pointerId !== event.pointerId) return;
+      const next = {
+        x: drag.startOffset.x + (event.clientX - drag.startX),
+        y: drag.startOffset.y + (event.clientY - drag.startY),
+      };
+      setView((prev) => ({
+        ...prev,
+        offset: clampOffset(next, geometry, prev.zoom),
+      }));
+    },
+    [geometry],
+  );
+
+  const handlePointerUp = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Pointer may already be released; ignore.
+    }
+    dragRef.current = null;
   }, []);
 
   const handleApplyCrop = useCallback(async () => {
-    if (!imageSrc || !imageName || !croppedAreaPixels) return;
-
+    if (!imageSrc || !imageName || !geometry) return;
+    const cropArea = getCropArea(offset, geometry, zoom);
     const croppedFile = await createCroppedImageFile(
       imageSrc,
-      croppedAreaPixels,
+      cropArea,
       imageName,
       imageType ?? "image/jpeg",
     );
     onApply(croppedFile);
-  }, [croppedAreaPixels, imageName, imageSrc, imageType, onApply]);
+  }, [geometry, imageName, imageSrc, imageType, offset, onApply, zoom]);
 
-  useEffect(() => () => clearCropperTimer(), [clearCropperTimer]);
+  // Layout size is fixed (zoom-1 cover size); pan/zoom are applied via `transform`
+  // only, which is composited and never triggers reflow. Changing width/height/left/top
+  // here instead would relayout the image on every zoom tick.
+  const baseWidth = geometry ? geometry.naturalWidth * geometry.baseScale : 0;
+  const baseHeight = geometry ? geometry.naturalHeight * geometry.baseScale : 0;
+  const zoomPercent = ((zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)) * 100;
 
   return (
     <Modal
@@ -78,50 +177,65 @@ export function MemberImageCropModal({
       title="Crop image"
       onOk={() => void handleApplyCrop()}
       onCancel={onCancel}
-      afterOpenChange={handleCropModalOpenChange}
       okText="Apply"
       cancelText="Cancel"
-      okButtonProps={{ disabled: !croppedAreaPixels }}
+      okButtonProps={{ disabled: !geometry }}
       destroyOnHidden
       mask={{ closable: false }}
     >
       <div
-        className="relative mx-auto rounded-lg overflow-hidden bg-black/75"
-        style={{ width: MEMBER_CROP_SIZE, height: MEMBER_CROP_SIZE }}
+        className="relative mx-auto touch-none select-none overflow-hidden rounded-lg bg-black/75"
+        style={{
+          width: MEMBER_CROP_SIZE,
+          height: MEMBER_CROP_SIZE,
+          cursor: geometry ? "move" : "default",
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
-        {imageSrc && isCropperReady && (
-          <Cropper
+        {imageSrc && (
+          // eslint-disable-next-line @next/next/no-img-element -- local blob preview needs raw transform/natural-size control; next/image is unsuitable here
+          <img
             key={imageSrc}
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            minZoom={1}
-            maxZoom={3}
-            aspect={1}
-            onCropChange={setCrop}
-            onCropComplete={handleCropComplete}
-            onZoomChange={setZoom}
-            showGrid
-            restrictPosition
-            classes={{ containerClassName: "absolute inset-0" }}
+            src={imageSrc}
+            alt=""
+            draggable={false}
+            onLoad={handleImageLoad}
+            className="absolute left-0 top-0 max-w-none"
+            style={{
+              width: baseWidth,
+              height: baseHeight,
+              transformOrigin: "0 0",
+              transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+              opacity: geometry ? 1 : 0,
+            }}
           />
         )}
-        {imageSrc && !isCropperReady && (
+        {!geometry && (
           <div className="absolute inset-0 flex items-center justify-center text-sm text-white/80">
-            Preparing cropper...
+            Loading image...
           </div>
         )}
       </div>
       <div className="mt-6">
         <p className="mb-2">Zoom</p>
-        <Slider
-          min={1}
-          max={3}
-          step={0.01}
-          value={zoom}
-          onChange={(value) =>
-            setZoom(typeof value === "number" ? value : value[0])
-          }
+        <input
+          // Uncontrolled (defaultValue + key reset per image) so React never re-asserts
+          // the DOM value and never fights the browser's own thumb animation. zoom state
+          // mirrors the value (via the rAF-coalesced onChange) for the crop math and fill.
+          key={imageSrc}
+          type="range"
+          min={MIN_ZOOM}
+          max={MAX_ZOOM}
+          step={ZOOM_STEP}
+          defaultValue={MIN_ZOOM}
+          onChange={handleZoom}
+          disabled={!geometry}
+          aria-label="Zoom"
+          className="crop-zoom-slider"
+          style={{ "--crop-zoom-pct": `${zoomPercent}%` } as CSSProperties}
         />
       </div>
     </Modal>
