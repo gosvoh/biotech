@@ -13,7 +13,7 @@ export default function Tag({
       className={cn(
         "text-base md:text-lg xl:text-xl",
         "border rounded-lg cursor-pointer transition-colors",
-        "p-[10px] border-day-base-static-bg&stroke-60 text-day-base-static-bg&stroke-60",
+        "p-[10px] border-day-base-static-bg-stroke-60 text-day-base-static-bg-stroke-60",
         active ? "text-black border-accent" : "",
         "hover:border-accent",
         className

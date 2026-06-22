@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
+@config "../../tailwind.config.ts";
 
 @layer base {
   :root {
@@ -102,7 +102,7 @@
     @apply text-base xl:text-xl;
   }
   a {
-    @apply text-day-base-static-text&icons-10 hover:text-day-primary-violet-hover active:text-day-primary-violet-active transition-colors;
+    @apply text-day-base-static-text-icons-10 hover:text-day-primary-violet-hover active:text-day-primary-violet-active transition-colors;
   }
   header,
   footer,
@@ -143,26 +143,33 @@
     @apply flex-1;
   }
 
+  /* Raw CSS, not `@apply duration-1000`: in Tailwind v4 the `duration-*` and
+     `ease-*` utilities set the inheritable `--tw-duration`/`--tw-ease` custom
+     properties, which would leak into every descendant's `transition-colors`
+     (borders, links, cards) and make their hover transitions take 1s. Setting
+     the shorthand directly keeps the opacity fade here without polluting them. */
   main *:not(div) {
-    @apply transition-opacity duration-1000 ease-in-out;
+    transition: opacity 1000ms ease-in-out;
   }
 }
 
-@layer components {
-  .section-padding {
-    @apply py-10 p-6 md:px-20;
-  }
+/* Defined as v4 `@utility` (not inside `@layer components`) so they can be used
+   with `@apply` above. */
+@utility section-padding {
+  @apply py-10 p-6 md:px-20;
+}
 
+@utility main-block {
+  @apply flex flex-col gap-10;
+}
+
+@layer components {
   .section-home-padding {
     @apply pt-10 md:pt-20 pb-20;
   }
 
   .wrapper {
     @apply w-full sm:max-w-[516px] md:max-w-[696px] lg:max-w-[936px] xl:max-w-[1116px] xxl:max-w-[1296px] mx-auto;
-  }
-
-  .main-block {
-    @apply flex flex-col gap-10;
   }
 
   .card {
@@ -230,6 +237,6 @@
 
   & a {
     @apply !no-underline;
-    @apply !text-day-base-static-text&icons-10 hover:!text-day-primary-violet-hover active:!text-day-primary-violet-active transition-colors;
+    @apply !text-day-base-static-text-icons-10 hover:!text-day-primary-violet-hover active:!text-day-primary-violet-active transition-colors;
   }
 }

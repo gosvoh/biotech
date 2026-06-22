@@ -1,11 +1,9 @@
 import type { Config } from "tailwindcss";
-import type { CSSRuleObject, PluginAPI } from "tailwindcss/types/config";
-import { parse } from "postcss";
-import { objectify } from "postcss-js";
-import { readFileSync } from "fs";
-import { resolve } from "path";
-import animate from "tailwindcss-animate";
 
+// Loaded by Tailwind v4 via the `@config` directive in `globals.css`. v4 reads
+// the theme from here for backward compatibility; `content` is auto-detected
+// and ignored. Animations come from `tw-animate-css` (imported in the CSS) and
+// the custom `@layer` injection that v3 needed is now handled natively by v4.
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -47,7 +45,7 @@ const config: Config = {
           70: "#26004D",
           80: "#190033",
         },
-        "day-base-static-text&icons": {
+        "day-base-static-text-icons": {
           10: "#000000",
           20: "#37394B",
           30: "rgba(27,31,59,0.8)",
@@ -58,7 +56,7 @@ const config: Config = {
           80: "rgba(255,255,255,0.7)",
           90: "#FFFFFF",
         },
-        "day-base-static-bg&stroke": {
+        "day-base-static-bg-stroke": {
           10: "#FFFFFF",
           20: "#F6F6F6",
           30: "#EDEDED",
@@ -69,7 +67,7 @@ const config: Config = {
           80: "#333333",
           90: "#000000",
         },
-        "night-base-static-text&icons": {
+        "night-base-static-text-icons": {
           10: "#FFFFFF",
           20: "rgba(255,255,255,0.9)",
           30: "rgba(255,255,255,0.8)",
@@ -80,7 +78,7 @@ const config: Config = {
           80: "#9299A2",
           90: "#333333",
         },
-        "night-base-static-bg&stroke": {
+        "night-base-static-bg-stroke": {
           10: "#F6F7F8",
           20: "#EAECEE",
           30: "#DDDFE0",
@@ -248,21 +246,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    animate,
-    ({ addComponents, addUtilities }: PluginAPI) => {
-      const css = readFileSync(
-        resolve(process.cwd(), "./src/app/globals.css"),
-        "utf8"
-      );
-      const root = parse(css);
-      const jss = objectify(
-        root as unknown as Parameters<typeof objectify>[0]
-      ) as Record<string, CSSRuleObject>;
-
-      if ("@layer components" in jss) addComponents(jss["@layer components"]);
-      if ("@layer utilities" in jss) addUtilities(jss["@layer utilities"]);
-    },
-  ],
+  plugins: [],
 };
 export default config;

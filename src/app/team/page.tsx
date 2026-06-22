@@ -57,7 +57,7 @@ const Card = ({
           alt={name}
           className={cn(
             "max-w-3/4",
-            "rounded-full aspect-square object-cover border-2 border-day-base-static-bg&stroke-30",
+            "rounded-full aspect-square object-cover border-2 border-day-base-static-bg-stroke-30",
             "group-hover:border-accent transition-colors",
           )}
           width={500}
