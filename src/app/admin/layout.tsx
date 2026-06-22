@@ -2,11 +2,13 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider, App } from "antd";
 import ruRU from "antd/locale/ru_RU";
 import { Suspense } from "react";
+import AdminShell from "./admin-shell";
 
 // Authorization lives in each page via `requireAdminPage()`, not here: in the
 // App Router a layout and its pages render in parallel, so a layout-only guard
 // cannot stop a page from querying the database. The layout only sets up the
-// Ant Design runtime (registry, locale, message/notification context).
+// Ant Design runtime (registry, locale, message/notification context) and the
+// admin navigation shell (chrome only — no auth).
 //
 // The Suspense boundary is required because Ant Design's client runtime calls
 // `Math.random()` (style cache keys); Next.js needs a Suspense boundary above
@@ -20,7 +22,9 @@ export default function AdminLayout({
     <Suspense fallback={null}>
       <AntdRegistry>
         <ConfigProvider locale={ruRU}>
-          <App>{children}</App>
+          <App>
+            <AdminShell>{children}</AdminShell>
+          </App>
         </ConfigProvider>
       </AntdRegistry>
     </Suspense>

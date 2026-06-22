@@ -1,47 +1,10 @@
-import { generateMeta } from "@/lib/meta";
-import { Button } from "@/components/ui/button";
 import { requireAdminPage } from "@/lib/utils.server";
-import { type Metadata } from "next";
-import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = generateMeta(
-  "Биотех ИТМО | Администрирование",
-  "Админка сайта факультета биотехнологий Университета ИТМО",
-  "/admin",
-);
-
+// /admin не имеет собственного содержимого: после проверки доступа сразу
+// отправляем на раздел по умолчанию. Бренд в каркасе ведёт на /admin, поэтому
+// клик по нему приземляет администратора в «Новости».
 export default async function Admin() {
   await requireAdminPage();
-
-  return (
-    <main>
-      <section>
-        <div className="wrapper">
-          <div className="flex flex-col gap-3 w-fit">
-            <Link href="/admin/users">
-              <Button>Пользователи</Button>
-            </Link>
-            <Link href="/admin/members">
-              <Button>Команда</Button>
-            </Link>
-            <Link href="/admin/disciplines">
-              <Button>Дисциплины</Button>
-            </Link>
-            <Link href="/admin/scientific-works">
-              <Button>Публикации</Button>
-            </Link>
-            <Link href="/admin/news">
-              <Button>Новости</Button>
-            </Link>
-            <Link href="/admin/tags">
-              <Button>Теги новостей</Button>
-            </Link>
-            <Link href="/admin/publications">
-              <Button>Список публикаций в научных журналах</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+  redirect("/admin/news");
 }

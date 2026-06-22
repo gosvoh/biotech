@@ -5,6 +5,8 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { SessionProvider } from "next-auth/react";
 import ChatWidget from "@/components/chat-widget";
+import AppChrome from "@/components/app-chrome";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://biotech.cedne.ru"),
@@ -38,12 +40,23 @@ export default function RootLayout({
       <body
         className={`${golosFont.variable} ${gorizontFont.variable} antialiased`}
       >
-        <SessionProvider>
-          <Header />
-        </SessionProvider>
-        {children}
-        <Footer />
-        <ChatWidget />
+        <Suspense>
+          <AppChrome
+            header={
+              <SessionProvider>
+                <Header />
+              </SessionProvider>
+            }
+            footer={
+              <>
+                <Footer />
+                <ChatWidget />
+              </>
+            }
+          >
+            {children}
+          </AppChrome>
+        </Suspense>
       </body>
     </html>
   );
