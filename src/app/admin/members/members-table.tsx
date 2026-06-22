@@ -70,7 +70,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           title: "Department & Position",
           width: 200,
           render: (_, record: MemberWithRelations) => (
-            <Space direction="vertical">
+            <Space orientation="vertical">
               {departments.find((department) => department.id === record.departmentId)
                 ?.name}
               {record.position}
@@ -81,7 +81,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           title: "Disciplines",
           width: 200,
           render: (_, record: MemberWithRelations) => (
-            <Space direction="vertical">
+            <Space orientation="vertical">
               {record.disciplines.map((discipline) => (
                 <React.Fragment key={discipline.id}>
                   {discipline.title}
@@ -94,7 +94,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           title: "Scientific Works",
           width: 200,
           render: (_, record: MemberWithRelations) => (
-            <Space direction="vertical">
+            <Space orientation="vertical">
               {record.scientificWorks.map((scientificWork) => (
                 <React.Fragment key={scientificWork.id}>
                   {scientificWork.title}
@@ -107,7 +107,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           title: "Email & Phone",
           width: 200,
           render: (_, record: MemberWithRelations) => (
-            <Space direction="vertical">
+            <Space orientation="vertical">
               {record.email}
               {record.phone}
             </Space>

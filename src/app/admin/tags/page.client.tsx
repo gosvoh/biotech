@@ -21,7 +21,7 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
   const input = Form.useWatch("title", form);
 
   return (
-    <Space direction="vertical" className="w-full">
+    <Space orientation="vertical" className="w-full">
       <Link href="/admin">
         <Button icon={<ArrowLeftOutlined />} type="primary">
           Back

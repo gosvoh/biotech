@@ -25,7 +25,7 @@ export default function DisciplinesClient({
   const input = Form.useWatch("title", form) as string | undefined;
 
   return (
-    <Space direction="vertical" className="w-full">
+    <Space orientation="vertical" className="w-full">
       <Link href="/admin">
         <Button icon={<ArrowLeftOutlined />} type="primary">
           Back

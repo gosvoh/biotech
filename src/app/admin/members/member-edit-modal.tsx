@@ -146,7 +146,7 @@ export function MemberEditModal({
           close();
         }}
         destroyOnHidden
-        maskClosable={false}
+        mask={{ closable: false }}
       >
         <Form
           preserve={false}

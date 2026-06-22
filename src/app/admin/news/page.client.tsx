@@ -72,7 +72,7 @@ export default function NewsClient({
             title: "Tags",
             width: 200,
             render: (_, record) => (
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 {record.tags.map((x) => (
                   <Tag key={`tag-${record.id}-${x.id}`}>{x.title}</Tag>
                 ))}

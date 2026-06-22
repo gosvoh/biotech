@@ -83,7 +83,7 @@ export function MemberImageCropModal({
       cancelText="Cancel"
       okButtonProps={{ disabled: !croppedAreaPixels }}
       destroyOnHidden
-      maskClosable={false}
+      mask={{ closable: false }}
     >
       <div
         className="relative mx-auto rounded-lg overflow-hidden bg-black/75"
