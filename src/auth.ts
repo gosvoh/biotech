@@ -1,4 +1,5 @@
 import NextAuth, { type DefaultSession } from "next-auth";
+import type { Adapter } from "next-auth/adapters";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/prisma";
 import authConfig from "./auth.config";
@@ -15,13 +16,12 @@ declare module "next-auth" {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // @ts-ignore - duplicate @auth/core installs (one hoisted, one nested under
-  // next-auth) yield two structurally-identical but nominally-distinct
-  // `Adapter` types, so PrismaAdapter's return type is not assignable here.
-  // Whether the mismatch surfaces depends on type-resolution order, so this
-  // uses @ts-ignore (not @ts-expect-error, which itself errors when the
-  // mismatch is absent). Resolvable only by deduping @auth/core upstream.
-  adapter: PrismaAdapter(prisma),
+  // Duplicate @auth/core installs (one hoisted, one nested under next-auth)
+  // yield two structurally-identical but nominally-distinct `Adapter` types.
+  // Cast to next-auth's own `Adapter` so the return type is assignable here
+  // deterministically (a `@ts-expect-error`/`@ts-ignore` would be flaky: the
+  // mismatch only surfaces depending on type-resolution order).
+  adapter: PrismaAdapter(prisma) as Adapter,
   callbacks: {
     authorized: async ({ auth }) => !!auth,
     session({ session, user }) {
