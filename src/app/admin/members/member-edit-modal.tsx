@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from "react";
 import { addMember, updateMember } from "./actions";
 import type { MemberEditModalProps } from "./types";
 import { MemberImageCropModal } from "./member-image-crop-modal";
+import { useAction } from "@/lib/use-action";
 
 function buildMemberFormData(
   values: Record<string, unknown>,
@@ -53,6 +54,7 @@ export function MemberEditModal({
   close,
 }: MemberEditModalProps) {
   const [form] = Form.useForm();
+  const runAction = useAction();
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCropSrc, setImageToCropSrc] = useState<string>();
   const [imageToCropName, setImageToCropName] = useState<string>();
@@ -153,7 +155,8 @@ export function MemberEditModal({
           wrapperCol={{ span: 16 }}
           onFinish={(values) => {
             const formData = buildMemberFormData(values, member?.id);
-            return (member ? updateMember(formData) : addMember(formData)).then(
+            return runAction(
+              member ? updateMember(formData) : addMember(formData),
               close,
             );
           }}

@@ -12,8 +12,10 @@ import { Button, Form, Input, List, Popconfirm, Space } from "antd";
 import { useState } from "react";
 import { addNewsTags, deleteNewsTags, updateNewsTags } from "./actions";
 import Link from "next/link";
+import { useAction } from "@/lib/use-action";
 
 export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
+  const runAction = useAction();
   const [currentItem, setCurrentItem] = useState<NewsTags>();
   const [form] = Form.useForm();
   const input = Form.useWatch("title", form);
@@ -30,7 +32,7 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
         layout="inline"
         className="w-full"
         onFinish={(values) =>
-          addNewsTags(values.title).then(() => form.resetFields())
+          runAction(addNewsTags(values.title), () => form.resetFields())
         }
       >
         <Form.Item
@@ -73,7 +75,7 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
                   onClick={() => {
                     if (!isEditing) setCurrentItem(item);
                     else {
-                      updateNewsTags(currentItem!).then(() =>
+                      runAction(updateNewsTags(currentItem!), () =>
                         setCurrentItem(undefined)
                       );
                     }
@@ -85,7 +87,7 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
                   title="Are you sure?"
                   onConfirm={() => {
                     if (isEditing) return setCurrentItem(undefined);
-                    else return deleteNewsTags(item.id);
+                    else return runAction(deleteNewsTags(item.id));
                   }}
                 >
                   <Button

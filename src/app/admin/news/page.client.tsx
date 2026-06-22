@@ -19,6 +19,7 @@ import {
 } from "antd";
 import Link from "next/link";
 import { changeVisibility, deleteNews } from "./actions";
+import { useAction } from "@/lib/use-action";
 
 export default function NewsClient({
   news,
@@ -28,6 +29,8 @@ export default function NewsClient({
     images: { id: string }[];
   })[];
 }) {
+  const runAction = useAction();
+
   return (
     <>
       <Table
@@ -83,7 +86,9 @@ export default function NewsClient({
             render: (_, record) => (
               <Checkbox
                 checked={record.hidden}
-                onChange={(v) => changeVisibility(record.id, v.target.checked)}
+                onChange={(v) =>
+                  runAction(changeVisibility(record.id, v.target.checked))
+                }
               />
             ),
           },
@@ -97,7 +102,7 @@ export default function NewsClient({
                 </Link>
                 <Popconfirm
                   title="Are you sure?"
-                  onConfirm={() => deleteNews(record.id)}
+                  onConfirm={() => runAction(deleteNews(record.id))}
                 >
                   <Button danger icon={<DeleteOutlined />} />
                 </Popconfirm>

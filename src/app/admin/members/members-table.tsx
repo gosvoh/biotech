@@ -12,6 +12,7 @@ import React, { useMemo } from "react";
 import type { Department } from "@/lib/db/client";
 import { deleteMember, duplicateMember } from "./actions";
 import type { MemberWithRelations } from "./types";
+import { useAction } from "@/lib/use-action";
 
 type MembersTableProps = {
   members: MemberWithRelations[];
@@ -20,6 +21,7 @@ type MembersTableProps = {
 };
 
 export function MembersTable({ members, departments, onEdit }: MembersTableProps) {
+  const runAction = useAction();
   const trigger = useMemo(
     () => members.map((member) => member.id).join(":"),
     [members],
@@ -119,11 +121,11 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
               <Button icon={<EditOutlined />} onClick={() => onEdit(record)} />
               <Button
                 icon={<CopyOutlined />}
-                onClick={() => duplicateMember(record.id)}
+                onClick={() => runAction(duplicateMember(record.id))}
               />
               <Popconfirm
                 title="Are you sure?"
-                onConfirm={() => deleteMember(record.id)}
+                onConfirm={() => runAction(deleteMember(record.id))}
               >
                 <Button danger icon={<DeleteOutlined />} />
               </Popconfirm>

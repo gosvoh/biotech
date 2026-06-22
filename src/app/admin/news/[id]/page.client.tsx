@@ -15,7 +15,8 @@ import {
 import Link from "next/link";
 import { addNews, updateNews } from "./actions";
 import { useRouter } from "next/navigation";
-import { useFormStatus } from "react-dom";
+import { useTransition } from "react";
+import { useAction } from "@/lib/use-action";
 
 import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
@@ -37,7 +38,8 @@ export default function NewsClient({
   } = JSON.parse(news?.links || "{}");
 
   const router = useRouter();
-  const { pending } = useFormStatus();
+  const runAction = useAction();
+  const [pending, startTransition] = useTransition();
 
   return (
     <main>
@@ -72,11 +74,16 @@ export default function NewsClient({
                 })
               );
 
-              if (news) updateNews(fd).then(() => window.location.reload());
-              else
-                addNews(fd).then((x) =>
-                  router.push(`/admin/news/${(x as { id: string }).id}`)
-                );
+              startTransition(async () => {
+                if (news)
+                  await runAction(updateNews(fd), () =>
+                    window.location.reload()
+                  );
+                else
+                  await runAction(addNews(fd), (x) =>
+                    router.push(`/admin/news/${x.id}`)
+                  );
+              });
             }}
             layout="vertical"
             initialValues={{

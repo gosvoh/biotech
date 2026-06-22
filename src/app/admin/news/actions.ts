@@ -1,66 +1,72 @@
 "use server";
 
-import { dbAction, requireAdmin } from "@/lib/utils.server";
+import { actionResult, dbAction, requireAdmin } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import fs from "fs/promises";
 
 export async function deleteNews(id: string) {
-  await requireAdmin();
-  return dbAction(
-    prisma.$transaction(async (prisma) => {
-      const deleted = await prisma.news.delete({
-        where: { id },
-        include: { images: true },
-      });
-      for (const image of deleted.images) {
-        await fs.unlink(`./uploads/news/${image.id}.webp`);
-      }
-    }),
-    "news"
-  );
+  return actionResult(async () => {
+    await requireAdmin();
+    await dbAction(
+      prisma.$transaction(async (prisma) => {
+        const deleted = await prisma.news.delete({
+          where: { id },
+          include: { images: true },
+        });
+        for (const image of deleted.images) {
+          await fs.unlink(`./uploads/news/${image.id}.webp`).catch(() => {});
+        }
+      }),
+      "news"
+    );
+  });
 }
 
 export async function changeVisibility(id: string, hidden: boolean) {
-  await requireAdmin();
-  return dbAction(
-    prisma.news.update({
-      where: { id },
-      data: { hidden },
-    }),
-    "news"
-  );
+  return actionResult(async () => {
+    await requireAdmin();
+    await dbAction(
+      prisma.news.update({
+        where: { id },
+        data: { hidden },
+      }),
+      "news"
+    );
+  });
 }
 
 export async function duplicateNews(id: string) {
-  await requireAdmin();
-  return dbAction(
-    prisma.$transaction(async (prisma) => {
-      const news = await prisma.news.findUnique({
-        where: { id },
-        include: { tags: true },
-      });
-      if (!news) {
-        throw new Error("News not found");
-      }
+  return actionResult(async () => {
+    await requireAdmin();
+    await dbAction(
+      prisma.$transaction(async (prisma) => {
+        const news = await prisma.news.findUnique({
+          where: { id },
+          include: { tags: true },
+        });
+        if (!news) {
+          throw new Error("News not found");
+        }
 
-      const tags = news.tags;
+        const tags = news.tags;
 
-      const newsToCreate: Optional<typeof news, "id" | "tags"> = { ...news };
-      delete newsToCreate.id;
-      delete newsToCreate.tags;
-      newsToCreate.hidden = true;
+        const newsToCreate: Optional<typeof news, "id" | "tags"> = { ...news };
+        delete newsToCreate.id;
+        delete newsToCreate.tags;
+        newsToCreate.hidden = true;
 
-      const newNews = await prisma.news.create({
-        data: {
-          ...newsToCreate,
-          tags: { connect: tags.map((t) => ({ id: t.id })) },
-        },
-      });
-      await fs.copyFile(
-        `./uploads/news/${news.id}.webp`,
-        `./uploads/news/${newNews.id}.webp`
-      );
-    }),
-    "news"
-  );
+        const newNews = await prisma.news.create({
+          data: {
+            ...newsToCreate,
+            tags: { connect: tags.map((t) => ({ id: t.id })) },
+          },
+        });
+        await fs.copyFile(
+          `./uploads/news/${news.id}.webp`,
+          `./uploads/news/${newNews.id}.webp`
+        );
+      }),
+      "news"
+    );
+  });
 }

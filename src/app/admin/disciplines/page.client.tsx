@@ -12,12 +12,14 @@ import { Button, Form, Input, List, Popconfirm, Space } from "antd";
 import { useState } from "react";
 import { addDiscipline, deleteDiscipline, updateDiscipline } from "./actions";
 import Link from "next/link";
+import { useAction } from "@/lib/use-action";
 
 export default function DisciplinesClient({
   disciplines,
 }: {
   disciplines: Discipline[];
 }) {
+  const runAction = useAction();
   const [currentItem, setCurrentItem] = useState<Discipline>();
   const [form] = Form.useForm();
   const input = Form.useWatch("title", form) as string | undefined;
@@ -34,7 +36,7 @@ export default function DisciplinesClient({
         layout="inline"
         className="w-full"
         onFinish={(values) =>
-          addDiscipline(values.title).then(() => form.resetFields())
+          runAction(addDiscipline(values.title), () => form.resetFields())
         }
       >
         <Form.Item
@@ -77,7 +79,7 @@ export default function DisciplinesClient({
                   onClick={() => {
                     if (!isEditing) setCurrentItem(item);
                     else {
-                      updateDiscipline(currentItem!).then(() =>
+                      runAction(updateDiscipline(currentItem!), () =>
                         setCurrentItem(undefined)
                       );
                     }
@@ -89,7 +91,7 @@ export default function DisciplinesClient({
                   title="Are you sure?"
                   onConfirm={() => {
                     if (isEditing) return setCurrentItem(undefined);
-                    else return deleteDiscipline(item.id);
+                    else return runAction(deleteDiscipline(item.id));
                   }}
                 >
                   <Button

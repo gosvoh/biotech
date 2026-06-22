@@ -16,12 +16,14 @@ import {
   deleteScientificWork,
 } from "./actions";
 import Link from "next/link";
+import { useAction } from "@/lib/use-action";
 
 export default function ScientificWorksClient({
   scientificWorks,
 }: {
   scientificWorks: ScientificWork[];
 }) {
+  const runAction = useAction();
   const [currentItem, setCurrentItem] = useState<ScientificWork>();
   const [form] = Form.useForm();
   const input = Form.useWatch("title", form) as string | undefined;
@@ -38,7 +40,7 @@ export default function ScientificWorksClient({
         layout="inline"
         className="w-full"
         onFinish={(values) =>
-          addScientificWork(values.title).then(() => form.resetFields())
+          runAction(addScientificWork(values.title), () => form.resetFields())
         }
       >
         <Form.Item
@@ -81,7 +83,7 @@ export default function ScientificWorksClient({
                   onClick={() => {
                     if (!isEditing) setCurrentItem(item);
                     else {
-                      updateScientificWork(currentItem!).then(() =>
+                      runAction(updateScientificWork(currentItem!), () =>
                         setCurrentItem(undefined)
                       );
                     }
@@ -93,7 +95,7 @@ export default function ScientificWorksClient({
                   title="Are you sure?"
                   onConfirm={() => {
                     if (isEditing) return setCurrentItem(undefined);
-                    else return deleteScientificWork(item.id);
+                    else return runAction(deleteScientificWork(item.id));
                   }}
                 >
                   <Button

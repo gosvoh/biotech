@@ -27,6 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Publication } from "@/lib/db/client";
 import type { getPublications } from "./page";
 import dayjs from "@/lib/dayjs";
+import { useAction } from "@/lib/use-action";
 
 function EditModal({
   publication,
@@ -38,6 +39,7 @@ function EditModal({
   close: () => void;
 }) {
   const [form] = Form.useForm();
+  const runAction = useAction();
 
   useEffect(() => {
     if (publication?.id) {
@@ -61,7 +63,7 @@ function EditModal({
       <Form
         preserve={false}
         onFinish={(values) =>
-          Promise.all([
+          runAction(
             publication
               ? updatePublication({
                   ...values,
@@ -72,7 +74,8 @@ function EditModal({
                   ...values,
                   year: values.year.year().toString(),
                 }),
-          ]).then(close)
+            close
+          )
         }
         form={form}
         labelCol={{ span: 8 }}
@@ -111,6 +114,7 @@ export default function ProjectsClient({
 
   const [modalOpen, setModalOpen] = useState(false);
   const [project, setProject] = useState<Publication | undefined>();
+  const runAction = useAction();
 
   return (
     <>
@@ -167,7 +171,7 @@ export default function ProjectsClient({
                 />
                 <Popconfirm
                   title="Are you sure?"
-                  onConfirm={() => deletePublication(record.id)}
+                  onConfirm={() => runAction(deletePublication(record.id))}
                 >
                   <Button danger icon={<DeleteOutlined />} />
                 </Popconfirm>

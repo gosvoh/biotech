@@ -1,7 +1,11 @@
 "use server";
 
 import { prisma } from "@/prisma";
-import { dbActionWithResult, requireAdmin } from "@/lib/utils.server";
+import {
+  actionResult,
+  dbActionWithResult,
+  requireAdmin,
+} from "@/lib/utils.server";
 import sharp from "sharp";
 import fs from "fs/promises";
 import { z } from "zod";
@@ -30,97 +34,103 @@ function parseNewsForm(formData: FormData) {
 }
 
 export async function addNews(formData: FormData) {
-  await requireAdmin();
+  return actionResult(async () => {
+    await requireAdmin();
 
-  const parsed = parseNewsForm(formData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
-  }
-  const { tags, ...news } = parsed.data;
-  const images = formData
-    .getAll("images")
-    .filter((x): x is File => x instanceof File);
+    const parsed = parseNewsForm(formData);
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
+    }
+    const { tags, ...news } = parsed.data;
+    const images = formData
+      .getAll("images")
+      .filter((x): x is File => x instanceof File);
 
-  return dbActionWithResult(
-    prisma.$transaction(async (prisma) => {
-      const newNews = await prisma.news.create({
-        data: {
-          ...news,
-          tags: { connect: tags.map((id) => ({ id })) },
-        },
-      });
-      await fs.mkdir("uploads/news", { recursive: true });
-      for (const image of images) {
-        const n = await prisma.newsImages.create({
-          data: { newsId: newNews.id },
-        });
-        await sharp(await image.arrayBuffer(), { animated: true }).toFile(
-          `./uploads/news/${n.id}.webp`
-        );
-      }
-      return newNews;
-    }),
-    "news"
-  );
-}
-
-export async function updateNews(formData: FormData) {
-  await requireAdmin();
-
-  const id = formData.get("id");
-  if (typeof id !== "string" || !id) {
-    throw new Error("Please fill out the required fields.");
-  }
-  const parsed = parseNewsForm(formData);
-  if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
-  }
-  const { tags, ...news } = parsed.data;
-  const images = formData.getAll("images") as (File | string)[];
-
-  return dbActionWithResult(
-    prisma.$transaction(async (prisma) => {
-      const newNews = await prisma.news.update({
-        where: { id },
-        data: {
-          ...news,
-          tags: { set: tags.map((id) => ({ id })) },
-        },
-        include: {
-          images: {
-            where: {
-              NOT: { id: { in: images.filter((x) => typeof x === "string") } },
-            },
+    return dbActionWithResult(
+      prisma.$transaction(async (prisma) => {
+        const newNews = await prisma.news.create({
+          data: {
+            ...news,
+            tags: { connect: tags.map((id) => ({ id })) },
           },
-        },
-      });
-
-      await prisma.newsImages.deleteMany({
-        where: { id: { in: newNews.images.map((x) => x.id) } },
-      });
-
-      if (newNews.images.length) {
-        await Promise.all(
-          newNews.images.map(({ id }) =>
-            fs.unlink(`./uploads/news/${id}.webp`).catch(() => {})
-          )
-        );
-      }
-
-      if (images.length) {
+        });
         await fs.mkdir("uploads/news", { recursive: true });
         for (const image of images) {
-          if (typeof image === "string") continue;
           const n = await prisma.newsImages.create({
-            data: { newsId: id },
+            data: { newsId: newNews.id },
           });
-          await sharp(await image.arrayBuffer()).toFile(
+          await sharp(await image.arrayBuffer(), { animated: true }).toFile(
             `./uploads/news/${n.id}.webp`
           );
         }
-      }
-      return newNews;
-    }),
-    "news"
-  );
+        return newNews;
+      }),
+      "news"
+    );
+  });
+}
+
+export async function updateNews(formData: FormData) {
+  return actionResult(async () => {
+    await requireAdmin();
+
+    const id = formData.get("id");
+    if (typeof id !== "string" || !id) {
+      throw new Error("Please fill out the required fields.");
+    }
+    const parsed = parseNewsForm(formData);
+    if (!parsed.success) {
+      throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
+    }
+    const { tags, ...news } = parsed.data;
+    const images = formData.getAll("images") as (File | string)[];
+
+    return dbActionWithResult(
+      prisma.$transaction(async (prisma) => {
+        const newNews = await prisma.news.update({
+          where: { id },
+          data: {
+            ...news,
+            tags: { set: tags.map((id) => ({ id })) },
+          },
+          include: {
+            images: {
+              where: {
+                NOT: {
+                  id: { in: images.filter((x) => typeof x === "string") },
+                },
+              },
+            },
+          },
+        });
+
+        await prisma.newsImages.deleteMany({
+          where: { id: { in: newNews.images.map((x) => x.id) } },
+        });
+
+        if (newNews.images.length) {
+          await Promise.all(
+            newNews.images.map(({ id }) =>
+              fs.unlink(`./uploads/news/${id}.webp`).catch(() => {})
+            )
+          );
+        }
+
+        if (images.length) {
+          await fs.mkdir("uploads/news", { recursive: true });
+          for (const image of images) {
+            if (typeof image === "string") continue;
+            const n = await prisma.newsImages.create({
+              data: { newsId: id },
+            });
+            await sharp(await image.arrayBuffer()).toFile(
+              `./uploads/news/${n.id}.webp`
+            );
+          }
+        }
+        return newNews;
+      }),
+      "news"
+    );
+  });
 }
