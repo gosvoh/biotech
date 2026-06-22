@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma";
+import { requireAdminPage } from "@/lib/utils.server";
 import { cacheLife, cacheTag } from "next/cache";
 import NewsClient from "./page.client";
 import { Suspense } from "react";
@@ -21,6 +22,7 @@ async function getNews() {
 }
 
 export default async function News() {
+  await requireAdminPage();
   const news = await getNews();
 
   return (

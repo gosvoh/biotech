@@ -1,5 +1,5 @@
 import { prisma } from "@/prisma";
-import { auth } from "@/auth";
+import { requireAdminPage } from "@/lib/utils.server";
 import UsersClient from "./page.client";
 import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
@@ -12,7 +12,7 @@ async function getUsers() {
 }
 
 export default async function Users() {
-  const session = await auth();
+  const session = await requireAdminPage();
   const users = await getUsers();
 
   return (

@@ -1,5 +1,6 @@
 import { generateMeta } from "@/lib/meta";
 import { Button } from "@/components/ui/button";
+import { requireAdminPage } from "@/lib/utils.server";
 import { type Metadata } from "next";
 import Link from "next/link";
 
@@ -9,7 +10,9 @@ export const metadata: Metadata = generateMeta(
   "/admin",
 );
 
-export default function Admin() {
+export default async function Admin() {
+  await requireAdminPage();
+
   return (
     <main>
       <section>

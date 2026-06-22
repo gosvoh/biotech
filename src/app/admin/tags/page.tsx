@@ -1,5 +1,6 @@
 import NewsTagsClient from "./page.client";
 import { prisma } from "@/prisma";
+import { requireAdminPage } from "@/lib/utils.server";
 import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
 
@@ -11,6 +12,7 @@ async function getNewsTags() {
 }
 
 export default async function NewsTags() {
+  await requireAdminPage();
   const newsTags = await getNewsTags();
 
   return (

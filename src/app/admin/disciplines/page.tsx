@@ -1,5 +1,6 @@
 import DisciplinesClient from "./page.client";
 import { prisma } from "@/prisma";
+import { requireAdminPage } from "@/lib/utils.server";
 import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
 
@@ -11,6 +12,7 @@ async function getDisciplines() {
 }
 
 export default async function Disciplines() {
+  await requireAdminPage();
   const disciplines = await getDisciplines();
 
   return (

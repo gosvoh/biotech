@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma";
+import { requireAdminPage } from "@/lib/utils.server";
 import { cacheLife, cacheTag } from "next/cache";
 import MembersClient from "./page.client";
 import { Suspense } from "react";
@@ -35,6 +36,7 @@ async function getScientificWorks() {
 }
 
 export default async function Members() {
+  await requireAdminPage();
   const members = await getMembers();
   const departments = await getDepartments();
   const disciplines = await getDisciplines();

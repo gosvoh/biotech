@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
+import { requireAdminPage } from "@/lib/utils.server";
 import ProjectsClient from "./page.client";
 import { Suspense } from "react";
 
@@ -11,6 +12,7 @@ export async function getPublications() {
 }
 
 export default async function Publications() {
+  await requireAdminPage();
   const publications = await getPublications();
 
   return (
