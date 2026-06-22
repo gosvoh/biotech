@@ -359,9 +359,11 @@ export default function Education() {
             <h3 className="max-md:text-center md:text-balance">
               Вы можете ознакомиться с порядком перевода здесь
             </h3>
-            <Button variant="outline" className="md:w-fit">
-              Перейти
-            </Button>
+            <Link href="https://student.itmo.ru/ru/transfer/" target="_blank">
+              <Button variant="outline" className="md:w-fit">
+                Перейти
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
