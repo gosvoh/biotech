@@ -2,15 +2,17 @@
 
 import {
   Button,
+  Card,
   DatePicker,
+  Descriptions,
   FloatButton,
   Form,
   Input,
   Modal,
   Popconfirm,
   Space,
-  Table,
 } from "antd";
+import type { DescriptionsProps } from "antd";
 import {
   createPublication,
   deletePublication,
@@ -27,6 +29,7 @@ import type { Publication } from "@/lib/db/client";
 import type { getPublications } from "./page";
 import dayjs from "@/lib/dayjs";
 import { useAction } from "@/lib/use-action";
+import { ResponsiveTable } from "../responsive-table";
 
 function EditModal({
   publication,
@@ -115,6 +118,44 @@ export default function ProjectsClient({
   const [project, setProject] = useState<Publication | undefined>();
   const runAction = useAction();
 
+  const renderPublicationCard = (record: Publication) => {
+    const items: DescriptionsProps["items"] = [
+      { key: "year", label: "Год", children: record.year },
+      { key: "authors", label: "Авторы", children: record.authors },
+      {
+        key: "link",
+        label: "Ссылка",
+        children: (
+          <Link href={record.link} target="_blank">
+            Открыть
+          </Link>
+        ),
+      },
+    ];
+
+    return (
+      <Card size="small">
+        <div className="font-semibold">{record.title}</div>
+        <Descriptions column={1} size="small" className="mt-2" items={items} />
+        <div className="mt-3 flex justify-end gap-2">
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => {
+              setProject(record);
+              setModalOpen(true);
+            }}
+          />
+          <Popconfirm
+            title="Удалить?"
+            onConfirm={() => runAction(deletePublication(record.id))}
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
+      </Card>
+    );
+  };
+
   return (
     <>
       <EditModal
@@ -125,7 +166,7 @@ export default function ProjectsClient({
           setProject(undefined);
         }}
       />
-      <Table
+      <ResponsiveTable
         dataSource={publications}
         rowKey="id"
         pagination={{ pageSize: 30, hideOnSinglePage: true }}
@@ -171,6 +212,7 @@ export default function ProjectsClient({
             ),
           },
         ]}
+        renderCard={renderPublicationCard}
       />
       <FloatButton
         icon={<PlusOutlined />}

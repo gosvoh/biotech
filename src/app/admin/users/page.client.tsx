@@ -1,11 +1,13 @@
 "use client";
 
-import { Button, Popconfirm, Space, Table } from "antd";
+import { Button, Card, Descriptions, Popconfirm, Space } from "antd";
+import type { DescriptionsProps } from "antd";
 import IsAdmin from "./is-admin";
 import type { User } from "@/lib/db/client";
 import { deleteUser } from "./actions";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useAction } from "@/lib/use-action";
+import { ResponsiveTable } from "../responsive-table";
 
 export default function UsersClient({
   userId,
@@ -16,11 +18,47 @@ export default function UsersClient({
 }) {
   const runAction = useAction();
 
+  const renderUserCard = (record: User) => {
+    const items: DescriptionsProps["items"] = [
+      {
+        key: "role",
+        label: "Роль",
+        children: (
+          <IsAdmin
+            userId={record.id}
+            canChangeRole={userId !== record.id}
+            role={record.role}
+          />
+        ),
+      },
+    ];
+
+    return (
+      <Card size="small">
+        <div className="font-semibold break-all">{record.email}</div>
+        <Descriptions column={1} size="small" className="mt-2" items={items} />
+        <div className="mt-3 flex justify-end">
+          <Popconfirm
+            title="Удалить?"
+            onConfirm={() => runAction(deleteUser(record.id))}
+          >
+            <Button
+              danger
+              disabled={userId === record.id}
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
+        </div>
+      </Card>
+    );
+  };
+
   return (
-    <Table
+    <ResponsiveTable
       dataSource={users}
       rowKey={"id"}
       pagination={{ pageSize: 30 }}
+      renderCard={renderUserCard}
       columns={[
         {
           title: "Эл. почта",
