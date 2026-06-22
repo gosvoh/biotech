@@ -42,6 +42,10 @@ export async function GET(
     return new NextResponse(file, {
       headers: {
         "Content-Type": "image/webp",
+        // Upload URLs are content-addressed (member image keys are random
+        // UUIDs, news image ids change on replace), so a stored file never
+        // changes — cache it aggressively.
+        "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch {
