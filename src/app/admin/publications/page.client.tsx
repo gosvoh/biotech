@@ -23,7 +23,7 @@ import {
   EditOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Publication } from "@/lib/db/client";
 import type { getPublications } from "./page";
 import dayjs from "@/lib/dayjs";
@@ -41,20 +41,6 @@ function EditModal({
   const [form] = Form.useForm();
   const runAction = useAction();
 
-  // Only touch the form while the modal is open: with `destroyOnHidden` the
-  // inner <Form> is unmounted when closed, and calling form methods then warns
-  // "useForm is not connected to any Form element". Reset on close is handled
-  // by `destroyOnHidden` + `preserve={false}`.
-  useEffect(() => {
-    if (!open) return;
-    if (publication?.id) {
-      form.setFieldsValue({
-        ...publication,
-        year: dayjs(publication.year),
-      });
-    } else form.resetFields();
-  }, [form, publication, open]);
-
   return (
     <Modal
       open={open}
@@ -64,7 +50,18 @@ function EditModal({
       destroyOnHidden
     >
       <Form
+        // Remount per publication so `initialValues` are re-applied on each
+        // open. Populating via `initialValues` (instead of a useEffect calling
+        // setFieldsValue) is immune to Modal mount timing: the <Form> mounts
+        // only when the modal opens, and values applied at mount always stick.
+        key={publication?.id ?? "new"}
         preserve={false}
+        initialValues={{
+          authors: publication?.authors,
+          title: publication?.title,
+          link: publication?.link,
+          year: publication ? dayjs(publication.year) : undefined,
+        }}
         onFinish={(values) =>
           runAction(
             publication

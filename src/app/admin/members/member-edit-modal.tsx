@@ -105,31 +105,6 @@ export function MemberEditModal({
     return true;
   }, [form]);
 
-  // Only touch the form while the modal is open: with `destroyOnHidden` the
-  // <Form> is unmounted when closed, and calling form methods then warns
-  // "useForm is not connected to any Form element". Reset on close is handled
-  // by `destroyOnHidden` + `preserve={false}`.
-  useEffect(() => {
-    if (!open) return;
-    form.setFieldValue("image", []);
-
-    if (member?.id) {
-      form.setFieldsValue({
-        lastName: member.lastName,
-        firstName: member.firstName,
-        middleName: member.middleName,
-        position: member.position,
-        email: member.email,
-        phone: member.phone,
-        departmentId: member.departmentId ?? departments[0].id,
-        disciplines: member.disciplines.map((d) => d.id) ?? [],
-        scientificWorks: member.scientificWorks.map((sw) => sw.id) ?? [],
-      });
-    } else {
-      form.resetFields();
-    }
-  }, [departments, form, member, open]);
-
   useEffect(
     () => () => {
       if (imageToCropSrc?.startsWith("blob:"))
@@ -152,10 +127,30 @@ export function MemberEditModal({
         mask={{ closable: false }}
       >
         <Form
+          // Remount per member so `initialValues` are re-applied on each open.
+          // Populating via `initialValues` (instead of a useEffect calling
+          // setFieldsValue) is immune to Modal mount timing: with
+          // `destroyOnHidden` the <Form> mounts only when the modal opens, and
+          // values applied at mount always stick.
+          key={member?.id ?? "new"}
           preserve={false}
           form={form}
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
+          initialValues={{
+            lastName: member?.lastName,
+            firstName: member?.firstName,
+            middleName: member?.middleName,
+            position: member?.position,
+            email: member?.email,
+            phone: member?.phone,
+            departmentId: member
+              ? member.departmentId ?? departments[0]?.id
+              : undefined,
+            disciplines: member?.disciplines.map((d) => d.id) ?? [],
+            scientificWorks: member?.scientificWorks.map((sw) => sw.id) ?? [],
+            image: [],
+          }}
           onFinish={(values) => {
             const formData = buildMemberFormData(values, member?.id);
             return runAction(
