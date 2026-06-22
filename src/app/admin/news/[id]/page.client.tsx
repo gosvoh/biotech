@@ -22,6 +22,22 @@ import dayjs from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
 import { rehypeRewrite } from "@/components/markdown-render";
 
+function parseNewsLinks(links?: string | null): {
+  vkLink?: string;
+  tgLink?: string;
+} {
+  if (!links) return {};
+  try {
+    const parsed = JSON.parse(links);
+    if (parsed && typeof parsed === "object") {
+      return parsed as { vkLink?: string; tgLink?: string };
+    }
+  } catch {
+    // Malformed/legacy value — fall through to empty links.
+  }
+  return {};
+}
+
 export default function NewsClient({
   news,
   tags,
@@ -29,13 +45,9 @@ export default function NewsClient({
   news?: News & { tags: NewsTags[]; images: NewsImages[] };
   tags: NewsTags[];
 }) {
-  const {
-    vkLink,
-    tgLink,
-  }: {
-    vkLink?: string;
-    tgLink?: string;
-  } = JSON.parse(news?.links || "{}");
+  // Parse defensively: legacy or hand-edited rows may hold a non-JSON `links`
+  // value, and an unguarded JSON.parse here would crash the whole edit page.
+  const { vkLink, tgLink } = parseNewsLinks(news?.links);
 
   const router = useRouter();
   const runAction = useAction();
