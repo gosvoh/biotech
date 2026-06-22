@@ -105,7 +105,12 @@ export function MemberEditModal({
     return true;
   }, [form]);
 
+  // Only touch the form while the modal is open: with `destroyOnHidden` the
+  // <Form> is unmounted when closed, and calling form methods then warns
+  // "useForm is not connected to any Form element". Reset on close is handled
+  // by `destroyOnHidden` + `preserve={false}`.
   useEffect(() => {
+    if (!open) return;
     form.setFieldValue("image", []);
 
     if (member?.id) {
@@ -123,9 +128,7 @@ export function MemberEditModal({
     } else {
       form.resetFields();
     }
-
-    return () => form.resetFields();
-  }, [departments, form, member]);
+  }, [departments, form, member, open]);
 
   useEffect(
     () => () => {

@@ -41,16 +41,19 @@ function EditModal({
   const [form] = Form.useForm();
   const runAction = useAction();
 
+  // Only touch the form while the modal is open: with `destroyOnHidden` the
+  // inner <Form> is unmounted when closed, and calling form methods then warns
+  // "useForm is not connected to any Form element". Reset on close is handled
+  // by `destroyOnHidden` + `preserve={false}`.
   useEffect(() => {
+    if (!open) return;
     if (publication?.id) {
       form.setFieldsValue({
         ...publication,
         year: dayjs(publication.year),
       });
     } else form.resetFields();
-
-    return () => form.resetFields();
-  }, [form, publication]);
+  }, [form, publication, open]);
 
   return (
     <Modal
