@@ -13,7 +13,25 @@ export function getOptionalString(
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
+/**
+ * Whether admin auth is bypassed for local development. Gated on
+ * `NODE_ENV !== "production"` so the `DISABLE_ADMIN_AUTH` env var can never
+ * open the admin area on a production deploy, even if it is set there.
+ */
+function isAdminAuthDisabled() {
+  const disabled =
+    process.env.NODE_ENV !== "production" &&
+    process.env.DISABLE_ADMIN_AUTH === "true";
+  if (disabled) {
+    console.warn(
+      "[admin] DISABLE_ADMIN_AUTH is on — admin auth is bypassed (dev only)."
+    );
+  }
+  return disabled;
+}
+
 export async function requireAdmin() {
+  if (isAdminAuthDisabled()) return;
   const session = await auth();
   if (!session || session.user.role !== "admin") {
     throw new Error("Unauthorized");
@@ -31,6 +49,7 @@ export async function requireAdmin() {
  * for mutations), this redirects and is meant for rendering.
  */
 export async function requireAdminPage() {
+  if (isAdminAuthDisabled()) return null;
   const session = await auth();
   if (!session) {
     await signIn(undefined, { redirectTo: "/admin" });
