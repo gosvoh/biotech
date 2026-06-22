@@ -117,7 +117,7 @@ export function MemberEditModal({
     <>
       <Modal
         open={open}
-        title={member ? "Edit Member" : "Add Member"}
+        title={member ? "Редактировать сотрудника" : "Добавить сотрудника"}
         onOk={() => form.submit()}
         onCancel={() => {
           closeCropModal();
@@ -160,42 +160,42 @@ export function MemberEditModal({
           }}
         >
           <Form.Item
-            label="Last Name"
+            label="Фамилия"
             name="lastName"
             rules={[{ required: true }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="First Name"
+            label="Имя"
             name="firstName"
             rules={[{ required: true }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item label="Middle Name" name="middleName">
+          <Form.Item label="Отчество" name="middleName">
             <Input />
           </Form.Item>
-          <Form.Item label="Position" name="position">
+          <Form.Item label="Должность" name="position">
             <Input />
           </Form.Item>
           <Form.Item
-            label="Email"
+            label="Эл. почта"
             name="email"
-            rules={[{ type: "email", message: "Invalid email" }]}
+            rules={[{ type: "email", message: "Некорректный email" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            label="Phone"
+            label="Телефон"
             name="phone"
             rules={[
-              { pattern: /^\+?[0-9 ]+$/, message: "Invalid phone number" },
+              { pattern: /^\+?[0-9 ]+$/, message: "Некорректный номер телефона" },
             ]}
           >
             <Input />
           </Form.Item>
-          <Form.Item label="Department" name="departmentId">
+          <Form.Item label="Подразделение" name="departmentId">
             <Select
               options={departments.map((department) => ({
                 label: department.name,
@@ -207,7 +207,7 @@ export function MemberEditModal({
               }
             />
           </Form.Item>
-          <Form.Item label="Disciplines" name="disciplines">
+          <Form.Item label="Дисциплины" name="disciplines">
             <Select
               mode="multiple"
               options={disciplines.map((discipline) => ({
@@ -220,7 +220,7 @@ export function MemberEditModal({
               }
             />
           </Form.Item>
-          <Form.Item label="Scientific Works" name="scientificWorks">
+          <Form.Item label="Научные работы" name="scientificWorks">
             <Select
               mode="multiple"
               options={scientificWorks.map((scientificWork) => ({
@@ -234,7 +234,7 @@ export function MemberEditModal({
             />
           </Form.Item>
           <Form.Item
-            label="Image"
+            label="Фото"
             name="image"
             valuePropName="fileList"
             getValueFromEvent={(event) => event.fileList}
@@ -248,7 +248,7 @@ export function MemberEditModal({
               maxCount={1}
               accept="image/*"
             >
-              <Button icon={<UploadOutlined />}>Upload</Button>
+              <Button icon={<UploadOutlined />}>Загрузить</Button>
             </Upload>
           </Form.Item>
         </Form>

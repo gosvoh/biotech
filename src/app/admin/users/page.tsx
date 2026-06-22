@@ -16,15 +16,11 @@ export default async function Users() {
   const users = await getUsers();
 
   return (
-    <main>
-      <section>
-        <div className="wrapper">
-          <h1 className="text-2xl font-bold">Пользователи</h1>
-          <Suspense fallback={null}>
-            <UsersClient users={users} userId={session?.user.id} />
-          </Suspense>
-        </div>
-      </section>
-    </main>
+    <>
+      <h1 className="text-2xl font-bold">Пользователи</h1>
+      <Suspense fallback={null}>
+        <UsersClient users={users} userId={session?.user.id} />
+      </Suspense>
+    </>
   );
 }

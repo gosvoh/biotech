@@ -1,13 +1,11 @@
 "use client";
 
 import {
-  ArrowLeftOutlined,
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Popconfirm, Space, Table } from "antd";
-import Link from "next/link";
 import React, { useMemo } from "react";
 import type { Department } from "@/lib/db/client";
 import { deleteMember, duplicateMember } from "./actions";
@@ -32,16 +30,9 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
       dataSource={members}
       rowKey="id"
       pagination={{ pageSize: 30, hideOnSinglePage: true }}
-      title={() => (
-        <Link href="/admin">
-          <Button icon={<ArrowLeftOutlined />} type="primary">
-            Back
-          </Button>
-        </Link>
-      )}
       columns={[
         {
-          title: "Image",
+          title: "Фото",
           dataIndex: "image",
           width: 100,
           render: (image: string | null, record: MemberWithRelations) => (
@@ -60,14 +51,14 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           ),
         },
         {
-          title: "Name",
+          title: "ФИО",
           render: (_, record: MemberWithRelations) =>
             `${record.lastName} ${record.firstName} ${
               record.middleName ?? ""
             }`.trim(),
         },
         {
-          title: "Department & Position",
+          title: "Подразделение и должность",
           width: 200,
           render: (_, record: MemberWithRelations) => (
             <Space orientation="vertical">
@@ -78,7 +69,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           ),
         },
         {
-          title: "Disciplines",
+          title: "Дисциплины",
           width: 200,
           render: (_, record: MemberWithRelations) => (
             <Space orientation="vertical">
@@ -91,7 +82,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           ),
         },
         {
-          title: "Scientific Works",
+          title: "Научные работы",
           width: 200,
           render: (_, record: MemberWithRelations) => (
             <Space orientation="vertical">
@@ -104,7 +95,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           ),
         },
         {
-          title: "Email & Phone",
+          title: "Эл. почта и телефон",
           width: 200,
           render: (_, record: MemberWithRelations) => (
             <Space orientation="vertical">
@@ -114,7 +105,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
           ),
         },
         {
-          title: "Actions",
+          title: "Действия",
           width: 100,
           render: (_, record: MemberWithRelations) => (
             <Space>
@@ -124,7 +115,7 @@ export function MembersTable({ members, departments, onEdit }: MembersTableProps
                 onClick={() => runAction(duplicateMember(record.id))}
               />
               <Popconfirm
-                title="Are you sure?"
+                title="Удалить?"
                 onConfirm={() => runAction(deleteMember(record.id))}
               >
                 <Button danger icon={<DeleteOutlined />} />

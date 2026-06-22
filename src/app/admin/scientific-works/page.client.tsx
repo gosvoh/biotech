@@ -2,7 +2,6 @@
 
 import type { ScientificWork } from "@/lib/db/client";
 import {
-  ArrowLeftOutlined,
   CloseOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -15,7 +14,6 @@ import {
   updateScientificWork,
   deleteScientificWork,
 } from "./actions";
-import Link from "next/link";
 import { useAction } from "@/lib/use-action";
 
 export default function ScientificWorksClient({
@@ -30,11 +28,6 @@ export default function ScientificWorksClient({
 
   return (
     <Space orientation="vertical" className="w-full">
-      <Link href="/admin">
-        <Button icon={<ArrowLeftOutlined />} type="primary">
-          Back
-        </Button>
-      </Link>
       <Form
         form={form}
         layout="inline"
@@ -45,14 +38,14 @@ export default function ScientificWorksClient({
       >
         <Form.Item
           name="title"
-          label="Title"
+          label="Название"
           className="!flex-1"
           rules={[
-            { required: true, message: "Title is required" },
+            { required: true, message: "Укажите название" },
             {
               validator: (_, value) => {
                 if (scientificWorks.some((d) => d.title === value))
-                  return Promise.reject(new Error("Title must be unique"));
+                  return Promise.reject(new Error("Название должно быть уникальным"));
                 return Promise.resolve();
               },
             },
@@ -61,7 +54,7 @@ export default function ScientificWorksClient({
           <Input />
         </Form.Item>
         <Button htmlType="submit" type="primary">
-          Add
+          Добавить
         </Button>
       </Form>
       <List
@@ -92,7 +85,7 @@ export default function ScientificWorksClient({
                 />,
                 <Popconfirm
                   key={`delete-btn-${item.id}`}
-                  title="Are you sure?"
+                  title="Удалить?"
                   onConfirm={() => {
                     if (isEditing) return setCurrentItem(undefined);
                     else return runAction(deleteScientificWork(item.id));

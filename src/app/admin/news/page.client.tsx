@@ -2,7 +2,6 @@
 
 import type { News, NewsTags } from "@/lib/db/client";
 import {
-  ArrowLeftOutlined,
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
@@ -37,16 +36,9 @@ export default function NewsClient({
         dataSource={news}
         rowKey="id"
         pagination={{ pageSize: 30, hideOnSinglePage: true }}
-        title={() => (
-          <Link href="/admin">
-            <Button icon={<ArrowLeftOutlined />} type="primary">
-              Back
-            </Button>
-          </Link>
-        )}
         columns={[
           {
-            title: "Image",
+            title: "Фото",
             width: 100,
             render: (_, record) => (
               <Image
@@ -64,12 +56,12 @@ export default function NewsClient({
             ),
           },
           {
-            title: "Title",
+            title: "Название",
             dataIndex: "title",
             width: 200,
           },
           {
-            title: "Tags",
+            title: "Теги",
             width: 200,
             render: (_, record) => (
               <Space orientation="vertical">
@@ -80,7 +72,7 @@ export default function NewsClient({
             ),
           },
           {
-            title: "Hidden",
+            title: "Скрыта",
             width: 100,
 
             render: (_, record) => (
@@ -93,7 +85,7 @@ export default function NewsClient({
             ),
           },
           {
-            title: "Actions",
+            title: "Действия",
             width: 100,
             render: (_, record) => (
               <Space>
@@ -101,7 +93,7 @@ export default function NewsClient({
                   <Button icon={<EditOutlined />} />
                 </Link>
                 <Popconfirm
-                  title="Are you sure?"
+                  title="Удалить?"
                   onConfirm={() => runAction(deleteNews(record.id))}
                 >
                   <Button danger icon={<DeleteOutlined />} />

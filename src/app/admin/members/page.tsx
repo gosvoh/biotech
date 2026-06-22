@@ -43,20 +43,16 @@ export default async function Members() {
   const scientificWorks = await getScientificWorks();
 
   return (
-    <main>
-      <section>
-        <div className="wrapper">
-          <h1 className="text-2xl font-bold">Члены команды</h1>
-          <Suspense fallback={null}>
-            <MembersClient
-              members={members}
-              departments={departments}
-              disciplines={disciplines}
-              scientificWorks={scientificWorks}
-            />
-          </Suspense>
-        </div>
-      </section>
-    </main>
+    <>
+      <h1 className="text-2xl font-bold">Члены команды</h1>
+      <Suspense fallback={null}>
+        <MembersClient
+          members={members}
+          departments={departments}
+          disciplines={disciplines}
+          scientificWorks={scientificWorks}
+        />
+      </Suspense>
+    </>
   );
 }

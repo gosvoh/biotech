@@ -18,7 +18,6 @@ import {
 } from "./actions";
 import Link from "next/link";
 import {
-  ArrowLeftOutlined,
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
@@ -44,7 +43,7 @@ function EditModal({
   return (
     <Modal
       open={open}
-      title={publication ? "Edit publication" : "Create publication"}
+      title={publication ? "Редактировать публикацию" : "Добавить публикацию"}
       onOk={() => form.submit()}
       onCancel={close}
       destroyOnHidden
@@ -81,17 +80,17 @@ function EditModal({
         labelCol={{ span: 8 }}
         wrapperCol={{ span: 16 }}
       >
-        <Form.Item label="Year" name="year" rules={[{ required: true }]}>
+        <Form.Item label="Год" name="year" rules={[{ required: true }]}>
           <DatePicker picker="year" className="w-full" />
         </Form.Item>
-        <Form.Item label="Authors" name="authors" rules={[{ required: true }]}>
+        <Form.Item label="Авторы" name="authors" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
-        <Form.Item label="Title" name="title" rules={[{ required: true }]}>
+        <Form.Item label="Название" name="title" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
         <Form.Item
-          label="Link"
+          label="Ссылка"
           name="link"
           rules={[{ required: true, type: "url" }]}
         >
@@ -130,16 +129,9 @@ export default function ProjectsClient({
         dataSource={publications}
         rowKey="id"
         pagination={{ pageSize: 30, hideOnSinglePage: true }}
-        title={() => (
-          <Link href="/admin">
-            <Button icon={<ArrowLeftOutlined />} type="primary">
-              Back
-            </Button>
-          </Link>
-        )}
         columns={[
           {
-            title: "Year",
+            title: "Год",
             dataIndex: "year",
             width: 100,
             filters: yearFilter.map((year) => ({ text: year, value: year })),
@@ -147,7 +139,7 @@ export default function ProjectsClient({
             onFilter: (value, record) => record.year === value,
           },
           {
-            title: "Publication",
+            title: "Публикация",
             render: (_, record) => (
               <>
                 <Link href={record.link} target="_blank">
@@ -158,7 +150,7 @@ export default function ProjectsClient({
             ),
           },
           {
-            title: "Actions",
+            title: "Действия",
             width: 100,
             render: (_, record) => (
               <Space>
@@ -170,7 +162,7 @@ export default function ProjectsClient({
                   }}
                 />
                 <Popconfirm
-                  title="Are you sure?"
+                  title="Удалить?"
                   onConfirm={() => runAction(deletePublication(record.id))}
                 >
                   <Button danger icon={<DeleteOutlined />} />

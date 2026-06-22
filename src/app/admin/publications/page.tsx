@@ -16,17 +16,13 @@ export default async function Publications() {
   const publications = await getPublications();
 
   return (
-    <main>
-      <section>
-        <div className="wrapper">
-          <h1 className="text-2xl font-bold">
-            Список публикаций в научных журналах
-          </h1>
-          <Suspense fallback={null}>
-            <ProjectsClient publications={publications} />
-          </Suspense>
-        </div>
-      </section>
-    </main>
+    <>
+      <h1 className="text-2xl font-bold">
+        Список публикаций в научных журналах
+      </h1>
+      <Suspense fallback={null}>
+        <ProjectsClient publications={publications} />
+      </Suspense>
+    </>
   );
 }

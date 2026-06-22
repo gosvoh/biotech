@@ -174,11 +174,11 @@ export function MemberImageCropModal({
   return (
     <Modal
       open={open}
-      title="Crop image"
+      title="Обрезка изображения"
       onOk={() => void handleApplyCrop()}
       onCancel={onCancel}
-      okText="Apply"
-      cancelText="Cancel"
+      okText="Применить"
+      cancelText="Отмена"
       okButtonProps={{ disabled: !geometry }}
       destroyOnHidden
       mask={{ closable: false }}

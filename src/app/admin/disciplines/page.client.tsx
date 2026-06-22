@@ -2,7 +2,6 @@
 
 import type { Discipline } from "@/lib/db/client";
 import {
-  ArrowLeftOutlined,
   CloseOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -11,7 +10,6 @@ import {
 import { Button, Form, Input, List, Popconfirm, Space } from "antd";
 import { useState } from "react";
 import { addDiscipline, deleteDiscipline, updateDiscipline } from "./actions";
-import Link from "next/link";
 import { useAction } from "@/lib/use-action";
 
 export default function DisciplinesClient({
@@ -26,11 +24,6 @@ export default function DisciplinesClient({
 
   return (
     <Space orientation="vertical" className="w-full">
-      <Link href="/admin">
-        <Button icon={<ArrowLeftOutlined />} type="primary">
-          Back
-        </Button>
-      </Link>
       <Form
         form={form}
         layout="inline"
@@ -41,14 +34,14 @@ export default function DisciplinesClient({
       >
         <Form.Item
           name="title"
-          label="Title"
+          label="Название"
           className="!flex-1"
           rules={[
-            { required: true, message: "Title is required" },
+            { required: true, message: "Укажите название" },
             {
               validator: (_, value) => {
                 if (disciplines.some((d) => d.title === value))
-                  return Promise.reject(new Error("Title must be unique"));
+                  return Promise.reject(new Error("Название должно быть уникальным"));
                 return Promise.resolve();
               },
             },
@@ -57,7 +50,7 @@ export default function DisciplinesClient({
           <Input />
         </Form.Item>
         <Button htmlType="submit" type="primary">
-          Add
+          Добавить
         </Button>
       </Form>
       <List
@@ -88,7 +81,7 @@ export default function DisciplinesClient({
                 />,
                 <Popconfirm
                   key={`delete-btn-${item.id}`}
-                  title="Are you sure?"
+                  title="Удалить?"
                   onConfirm={() => {
                     if (isEditing) return setCurrentItem(undefined);
                     else return runAction(deleteDiscipline(item.id));

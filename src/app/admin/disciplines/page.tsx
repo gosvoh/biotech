@@ -16,15 +16,11 @@ export default async function Disciplines() {
   const disciplines = await getDisciplines();
 
   return (
-    <main>
-      <section>
-        <div className="wrapper">
-          <h1 className="text-2xl font-bold">Дисциплины</h1>
-          <Suspense fallback={null}>
-            <DisciplinesClient disciplines={disciplines} />
-          </Suspense>
-        </div>
-      </section>
-    </main>
+    <>
+      <h1 className="text-2xl font-bold">Дисциплины</h1>
+      <Suspense fallback={null}>
+        <DisciplinesClient disciplines={disciplines} />
+      </Suspense>
+    </>
   );
 }

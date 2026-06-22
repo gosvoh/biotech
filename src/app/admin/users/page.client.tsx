@@ -4,8 +4,7 @@ import { Button, Popconfirm, Space, Table } from "antd";
 import IsAdmin from "./is-admin";
 import type { User } from "@/lib/db/client";
 import { deleteUser } from "./actions";
-import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
-import Link from "next/link";
+import { DeleteOutlined } from "@ant-design/icons";
 import { useAction } from "@/lib/use-action";
 
 export default function UsersClient({
@@ -22,25 +21,18 @@ export default function UsersClient({
       dataSource={users}
       rowKey={"id"}
       pagination={{ pageSize: 30 }}
-      title={() => (
-        <Link href="/admin">
-          <Button icon={<ArrowLeftOutlined />} type="primary">
-            Back
-          </Button>
-        </Link>
-      )}
       columns={[
         {
-          title: "Email",
+          title: "Эл. почта",
           dataIndex: "email",
         },
         {
-          title: "Role",
+          title: "Роль",
           dataIndex: "role",
           width: 150,
           filters: [
-            { text: "Admin", value: "admin" },
-            { text: "User", value: "user" },
+            { text: "Администратор", value: "admin" },
+            { text: "Пользователь", value: "user" },
           ],
           onFilter: (value, record) => record.role === value,
           sorter: (a, b) => a.role.localeCompare(b.role),
@@ -54,12 +46,12 @@ export default function UsersClient({
           ),
         },
         {
-          title: "Actions",
+          title: "Действия",
           width: 150,
           render: (_, record) => (
             <Space>
               <Popconfirm
-                title="Are you sure?"
+                title="Удалить?"
                 onConfirm={() => runAction(deleteUser(record.id))}
               >
                 <Button
