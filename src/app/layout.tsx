@@ -34,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" data-color-mode="light">
+    <html lang="ru" data-color-mode="light" data-scroll-behavior="smooth">
       <body
         className={`${golosFont.variable} ${gorizontFont.variable} antialiased`}
       >
