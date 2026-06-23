@@ -27,19 +27,53 @@ export const metadata: Metadata = generateMeta(
   "/research",
 );
 
-const RNFProjects: (string | string[])[] = [
-  [
-    "23-26-00056",
-    "Интеллектуальный биоразлагаемый упаковочный материал для пищевых продуктов",
-  ],
-  "Разработка научно-технических основ контроля качества и безопасности мясных продуктов с помощью гиперспектрального анализа и терагерцового излучения",
-  "Разработка биоактивного функционального пищевого ингредиента на основе арахидоновой кислоты и пробиотических штаммов лактобактерий для профилактики сахарного диабета второго типа",
-  "Применение биопотенциала адаптогенных БАВ из растительного сырья для создания новых функциональных продуктов питания с пробиотическим эффектом для активного долголетия и здоровья",
-  "Научно-технологические основы получения бактериальной наноцеллюлозы на субстратах из соевой мелассы",
+type Project = { id: string; title: string; href?: string };
+
+const RNFProjects: Project[] = [
+  {
+    id: "25-26-00604",
+    title:
+      "Биотехнологический потенциал Rhizopus spp. для биотрансформации растительного сырья и создания новых функциональных продуктов питания с заданными характеристиками",
+    href: "https://rscf.ru/project/25-26-00604/",
+  },
+  {
+    id: "25-26-00676",
+    title:
+      "Разработка экологичных антимикробных материалов для контроля биопленок и борьбы с устойчивостью микроорганизмов в пищевой промышленности с применением искусственного интеллекта",
+    href: "https://rscf.ru/project/25-26-00676/",
+  },
+  {
+    id: "24-24-00169",
+    title:
+      "Научно-технологические основы получения бактериальной наноцеллюлозы на субстратах из соевой мелассы",
+    href: "https://rscf.ru/project/24-24-00169/",
+  },
+  {
+    id: "23-26-00134",
+    title:
+      "Разработка микробных заквасок с целью расширения ассортимента хлебобулочных изделий из нетрадиционных видов муки",
+    href: "https://rscf.ru/project/23-26-00134/",
+  },
+  {
+    id: "23-26-00056",
+    title:
+      "Интеллектуальный биоразлагаемый упаковочный материал для пищевых продуктов",
+    href: "https://rscf.ru/project/23-26-00056/",
+  },
+  {
+    id: "22-26-00288",
+    title:
+      "Применение биопотенциала адаптогенных БАВ из растительного сырья для создания новых функциональных продуктов питания с пробиотическим эффектом для активного долголетия и здоровья",
+    href: "https://rscf.ru/project/22-26-00288/",
+  },
 ];
 
-const EFFIProjects: string[] = [
-  "Получение бактериоцинов пробиотических штаммов лактобацилл и изучение их структуры, функций и свойств для использования в качестве пищевых биоконсервантов.",
+const TeenLabProjects: Project[] = [
+  {
+    id: "FSER-2025-0028",
+    title:
+      "Лаборатория персонализированных продуктов питания и упаковочных материалов",
+  },
 ];
 
 async function getPublications() {
@@ -121,21 +155,21 @@ export default async function Research() {
             <h2>БиоТех ИТМО</h2>
             <div className="space-y-2 md:space-y-6">
               <h3 className="font-bold md:mb-6">
-                Фундаментальные научные исследования и инновационные разработки
+                Фундаментальные научные исследования и инновационные разработки
               </h3>
               <p>
-                Факультет биотехнологий проводит фундаментальные и поисковые
-                научные исследования в сфере функциональных и специальных
-                продуктов питания, технологий пищевых продуктов, а также
-                биотехнологии (в том числе бионанотехнологии). Ученые факультета
-                активно вовлекают обучающихся в научно-исследовательскую
-                деятельность и осуществляют исследования и разработки
-                в интересах бизнеса
+                Факультет биотехнологий проводит фундаментальные и поисковые
+                научные исследования в сфере функциональных и специальных
+                продуктов питания, технологий пищевых продуктов, а также
+                биотехнологии (в том числе бионанотехнологии). Ученые факультета
+                активно вовлекают обучающихся в научно-исследовательскую
+                деятельность и осуществляют исследования и разработки
+                в интересах бизнеса
               </p>
               <p>
-                В 2025 году в рамках Национального проекта «Молодежь и дети» на
+                В 2025 году в рамках Национального проекта «Молодежь и дети» на
                 факультете открыта Молодежная лаборатория персонализированных
-                продуктов питания и упаковочных материалов
+                продуктов питания и упаковочных материалов
               </p>
             </div>
           </div>
@@ -150,15 +184,12 @@ export default async function Research() {
                 Молодежная лаборатория Минобрнауки
               </AccordionTrigger>
               <AccordionContent>
-                {RNFProjects.map((project, i) => (
+                {TeenLabProjects.map((project) => (
                   <NewsCard
-                    key={`project-${i}`}
-                    date={
-                      typeof project === "string"
-                        ? undefined
-                        : `[${project[0]}]`
-                    }
-                    title={typeof project === "string" ? project : project[1]}
+                    key={project.id}
+                    date={`[${project.id}]`}
+                    title={project.title}
+                    href={project.href}
                     className="p-6"
                     classNames={{
                       date: "text-lg",
@@ -171,11 +202,12 @@ export default async function Research() {
             <AccordionItem value="effi">
               <AccordionTrigger>Проекты РНФ</AccordionTrigger>
               <AccordionContent>
-                {EFFIProjects.map((project) => (
+                {RNFProjects.map((project) => (
                   <NewsCard
-                    key={project}
-                    // date={`[${(i + 1).toString().padStart(2, "0")}]`}
-                    title={project}
+                    key={project.id}
+                    date={`[${project.id}]`}
+                    title={project.title}
+                    href={project.href}
                     className="p-6"
                     classNames={{
                       date: "text-lg",
@@ -199,15 +231,16 @@ export default async function Research() {
 
       <section className="max-md:hidden">
         <div className="wrapper flex-row gap-6">
-          <h2 className="basis-1/4">Проекты РНФ</h2>
+          <h2 className="basis-1/4 hyphens-auto">
+            Моло&shy;дежная лабо&shy;ра&shy;то&shy;рия Мин&shy;обр&shy;науки
+          </h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {RNFProjects.map((project, i) => (
+            {TeenLabProjects.map((project) => (
               <NewsCard
-                key={`project-${i}`}
-                date={
-                  typeof project === "string" ? undefined : `[${project[0]}]`
-                }
-                title={typeof project === "string" ? project : project[1]}
+                key={project.id}
+                date={`[${project.id}]`}
+                title={project.title}
+                href={project.href}
                 classNames={{ date: "text-lg" }}
               />
             ))}
@@ -217,13 +250,14 @@ export default async function Research() {
 
       <section className="max-md:hidden">
         <div className="wrapper flex-row gap-6">
-          <h2 className="basis-1/4">Проекты ЭФФИ</h2>
+          <h2 className="basis-1/4">Проекты РНФ</h2>
           <div className="basis-3/4 grid grid-cols-1 xl:grid-cols-2 gap-6">
-            {EFFIProjects.map((project) => (
+            {RNFProjects.map((project) => (
               <NewsCard
-                key={project}
-                // date={`[${(i + 1).toString().padStart(2, "0")}]`}
-                title={project}
+                key={project.id}
+                date={`[${project.id}]`}
+                title={project.title}
+                href={project.href}
                 classNames={{ date: "text-lg" }}
               />
             ))}
@@ -278,8 +312,8 @@ export default async function Research() {
               На странице «Команда»
             </h2>
             <p className="max-md:text-center md:text-balance">
-              вы сможете познакомиться с научными руководителями, их научными
-              специальностями и избранными публикациями
+              вы сможете познакомиться с научными руководителями, их научными
+              специальностями и избранными публикациями
             </p>
             <Link href="/team" className="contents">
               <Button variant="outline" className="md:w-fit">
