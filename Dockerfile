@@ -27,7 +27,9 @@ WORKDIR /prisma-cli
 RUN bun add prisma@6.19.3
 COPY schema.prisma ./schema.prisma
 COPY migrations ./migrations
-RUN DATABASE_URL="file:/tmp/build.db" ./node_modules/.bin/prisma migrate deploy --schema=./schema.prisma
+# Invoke via `bun` explicitly: the oven/bun image has no `node`, so the
+# `#!/usr/bin/env node` shebang in the prisma bin would fail.
+RUN DATABASE_URL="file:/tmp/build.db" bun ./node_modules/prisma/build/index.js migrate deploy --schema=./schema.prisma
 
 FROM base AS runner
 WORKDIR /app
