@@ -6,7 +6,6 @@ import {
   dbActionWithResult,
   requireAdmin,
 } from "@/lib/utils.server";
-import sharp from "sharp";
 import fs from "fs/promises";
 import { z } from "zod";
 
@@ -59,9 +58,12 @@ export async function addNews(formData: FormData) {
           const n = await prisma.newsImages.create({
             data: { newsId: newNews.id },
           });
-          await sharp(await image.arrayBuffer(), { animated: true }).toFile(
-            `./uploads/news/${n.id}.webp`
-          );
+          // Bun.Image (no native libvips, survives the standalone build) takes
+          // the first frame; animated GIF/WebP uploads are flattened to a
+          // static webp, matching how updateNews already handles them.
+          await new Bun.Image(await image.arrayBuffer())
+            .webp()
+            .write(`./uploads/news/${n.id}.webp`);
         }
         return newNews;
       }),
@@ -123,9 +125,9 @@ export async function updateNews(formData: FormData) {
             const n = await prisma.newsImages.create({
               data: { newsId: id },
             });
-            await sharp(await image.arrayBuffer()).toFile(
-              `./uploads/news/${n.id}.webp`
-            );
+            await new Bun.Image(await image.arrayBuffer())
+              .webp()
+              .write(`./uploads/news/${n.id}.webp`);
           }
         }
         return newNews;

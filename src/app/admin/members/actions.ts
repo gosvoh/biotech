@@ -8,7 +8,6 @@ import {
 } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import type { Member } from "@/lib/db/client";
-import sharp from "sharp";
 import fs from "fs/promises";
 import parsePhoneNumber from "libphonenumber-js";
 import { randomUUID } from "crypto";
@@ -58,15 +57,15 @@ function getMemberImagePath(imageKey: string) {
 
 async function saveMemberImage(image: File, imageKey: string) {
   await fs.mkdir("uploads/members", { recursive: true });
-  await sharp(await image.arrayBuffer())
-    .resize({
-      width: 1000,
-      height: 1000,
-      fit: "cover",
-      position: "center",
-      withoutEnlargement: true,
-    })
-    .toFile(getMemberImagePath(imageKey));
+  // The client crop modal (member-image-crop.ts) always emits a square image,
+  // so fitting it into a 1000x1000 box without upscaling reproduces the old
+  // sharp `fit: cover` output. Bun.Image has no native addon / libvips, so it
+  // survives the `output: "standalone"` build that broke sharp's runtime
+  // dlopen of libvips-cpp.so on the server.
+  await new Bun.Image(await image.arrayBuffer())
+    .resize(1000, 1000, { withoutEnlargement: true })
+    .webp()
+    .write(getMemberImagePath(imageKey));
 }
 
 export async function addMember(formData: FormData) {
