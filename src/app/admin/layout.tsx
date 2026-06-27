@@ -1,8 +1,6 @@
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { ConfigProvider, App } from "antd";
-import ruRU from "antd/locale/ru_RU";
 import { Suspense } from "react";
-import AdminShell from "./admin-shell";
+import AdminClientBoundary from "./admin-client-boundary";
+import AdminSkeleton from "./admin-skeleton";
 
 // Authorization lives in each page via `requireAdminPage()`, not here: in the
 // App Router a layout and its pages render in parallel, so a layout-only guard
@@ -10,23 +8,19 @@ import AdminShell from "./admin-shell";
 // Ant Design runtime (registry, locale, message/notification context) and the
 // admin navigation shell (chrome only — no auth).
 //
-// The Suspense boundary is required because Ant Design's client runtime calls
-// `Math.random()` (style cache keys); Next.js needs a Suspense boundary above
-// such a Client Component to prerender it.
+// The antd subtree is rendered client-only inside `AdminClientBoundary` to avoid
+// an unstyled flash (see that file). The Suspense boundary covers the dynamic,
+// request-time data the pages read (auth/db) under `cacheComponents`; its
+// fallback is the same skeleton the boundary shows before mount, so the loading
+// state is seamless.
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <Suspense fallback={null}>
-      <AntdRegistry>
-        <ConfigProvider locale={ruRU}>
-          <App>
-            <AdminShell>{children}</AdminShell>
-          </App>
-        </ConfigProvider>
-      </AntdRegistry>
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminClientBoundary>{children}</AdminClientBoundary>
     </Suspense>
   );
 }
