@@ -61,7 +61,7 @@ export async function requireAdminPage() {
   return session;
 }
 
-function revalidate(tagToRevalidate: string | string[]) {
+export function revalidate(tagToRevalidate: string | string[]) {
   if (Array.isArray(tagToRevalidate))
     tagToRevalidate.forEach((tag) => revalidateTag(tag, { expire: 0 }));
   else revalidateTag(tagToRevalidate, { expire: 0 });

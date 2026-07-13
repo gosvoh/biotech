@@ -8,4 +8,14 @@ echo "[entrypoint] Applying database migrations (prisma migrate deploy)..."
 bun ./prisma-cli/node_modules/prisma/build/index.js migrate deploy --schema=/app/schema.prisma
 echo "[entrypoint] Migrations applied. Starting server..."
 
-exec "$@"
+# Run in the background (instead of `exec`) so we can warm the "use cache"
+# pages against the just-migrated runtime database before real traffic
+# hits the build-time-baked cache entries. Forward TERM/INT since
+# backgrounding loses the signal transparency `exec` gave us.
+"$@" &
+server_pid=$!
+trap 'kill -TERM "$server_pid" 2>/dev/null' TERM INT
+
+bun ./scripts/warm-cache.ts &
+
+wait "$server_pid"
