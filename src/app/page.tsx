@@ -34,12 +34,13 @@ export default function Home() {
       <NewsCarouselSection />
 
       <section className="main-block section-home-padding">
+        {/* Временно скрыт блок "Приветствие декана"
         <div className="wrapper md:flex-row-reverse items-center justify-between">
-          {/* <Image src={Bag} alt="" className="md:max-w-3/8" /> */}
+          <Image src={Bag} alt="" className="md:max-w-3/8" />
           <Image src={Mvk} alt="" className="md:max-w-3/8 rounded-full" />
           <div className="space-y-6 md:max-w-1/2">
             <div className="space-y-2 md:space-y-4">
-              {/* <h2>Биотех ИТМО</h2>
+              <h2>Биотех ИТМО</h2>
               <p>
                 {removeHangingPrepositionsAndConjunctions(
                   <>
@@ -48,7 +49,7 @@ export default function Home() {
                     взаимосвязи с индустрией
                   </>,
                 )}
-              </p> */}
+              </p>
               <h2>Приветствие декана</h2>
               <p>
                 {removeHangingPrepositionsAndConjunctions(
@@ -68,11 +69,12 @@ export default function Home() {
                 )}
               </p>
             </div>
-            {/* <Button asChild>
+            <Button asChild>
               <Link href="/education">Образование</Link>
-            </Button> */}
+            </Button>
           </div>
         </div>
+        */}
         {/* <div className="wrapper">
           <h3>История факультета</h3>
           <Timeline
