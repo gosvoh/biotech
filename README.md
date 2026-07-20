@@ -13,6 +13,19 @@ Prisma/SQLite backend, with authentication handled by NextAuth.
 - **Bun** as the runtime and package manager
 - **Vitest** for unit tests
 
+## Site structure
+
+| Route       | Contents                                             |
+| ----------- | ---------------------------------------------------- |
+| `/`         | Landing page                                         |
+| `/education`| Education programmes                                 |
+| `/research` | Research areas and scientific work                   |
+| `/team`     | Faculty and team members                             |
+| `/news`     | News, with tags and images                           |
+| `/contacts` | Contacts and contact form                            |
+| `/admin`    | Authenticated admin area (content management)        |
+| `/uploads`  | Serves uploaded files from the uploads volume        |
+
 ## Prerequisites
 
 - [Bun](https://bun.sh) (the project's runtime and package manager)
@@ -44,8 +57,11 @@ bun run db:migrate
 | `bun run build`       | Create a production build                         |
 | `bun run db:migrate`  | Create/apply migrations in development            |
 | `bun run db:generate` | Generate the Prisma client                        |
-| `bun test`            | Run the unit tests (Vitest)                       |
+| `bun run test`        | Run the unit tests (Vitest)                       |
 | `bun lint`            | Run ESLint                                        |
+
+> Use `bun run test`, not `bun test` — the latter invokes Bun's own test runner
+> instead of Vitest.
 
 ## Deployment / Docker
 
