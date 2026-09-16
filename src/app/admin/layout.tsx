@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import AdminClientBoundary from "./admin-client-boundary";
 import AdminSkeleton from "./admin-skeleton";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // Authorization lives in each page via `requireAdminPage()`, not here: in the
 // App Router a layout and its pages render in parallel, so a layout-only guard

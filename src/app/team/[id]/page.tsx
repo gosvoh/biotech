@@ -1,3 +1,4 @@
+import { generateMeta } from "@/lib/meta";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
 import Breadcrumbs from "@/components/breadcrumbs";
@@ -5,7 +6,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 import Link from "next/link";
-import { type Metadata, type ResolvingMetadata } from "next";
+import { type Metadata } from "next";
 import type { Member } from "@/lib/db/client";
 import { Suspense } from "react";
 
@@ -21,13 +22,11 @@ export async function getMember(id: string) {
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
-  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const id = (await params).id;
   const member = await getMember(id);
-  const parentMeta = await parent;
 
-  if (!member) return parentMeta as Metadata;
+  if (!member) notFound();
 
   const memberName = [
     member.firstName,
@@ -35,13 +34,11 @@ export async function generateMetadata(
     member.lastName,
   ].join(" ");
 
-  return {
-    ...(parentMeta as Metadata),
-    title: `Биотех ИТМО | ${memberName}`,
-    description: `Команда факультета биотехнологий Университета ИТМО: ${memberName}`,
-    openGraph: { images: { url: `https://biotech.cedne.ru/team/${id}` } },
-    twitter: { images: { url: `https://biotech.cedne.ru/team/${id}` } },
-  };
+  return generateMeta(
+    `Биотех ИТМО | ${memberName}`,
+    `Команда факультета биотехнологий Университета ИТМО: ${memberName}`,
+    `/team/${encodeURIComponent(id)}`,
+  );
 }
 
 async function MemberContent({ params }: { params: Promise<{ id: string }> }) {

@@ -1,3 +1,4 @@
+import { SITE_URL, siteUrl } from "@/lib/site";
 import { ImageResponse } from "next/og";
 import { type Metadata } from "next";
 import type React from "react";
@@ -90,42 +91,40 @@ export const generateOGImage = async (
 export const generateMeta = (
   title: string,
   description: string,
-  imageBaseUrl?: string,
-): Metadata => ({
-  title,
-  description,
-  icons: "favicon.ico",
-  metadataBase: new URL("https://biotech.cedne.ru"),
-  creator: "Aleksey Vokhmin",
-  openGraph: {
-    type: "website",
-    locale: "ru_RU",
-    title,
+  pathname = "/",
+): Metadata => {
+  const url = siteUrl(pathname);
+  const imagePath = new URL(url).pathname.replace(/\/$/, "");
+  return {
+    title: { absolute: title },
     description,
-    images: {
-      url: `${
-        imageBaseUrl?.startsWith("http")
-          ? imageBaseUrl
-          : `https://biotech.cedne.ru${imageBaseUrl ?? ""}`
-      }/opengraph-image`,
-      width: 1920,
-      height: 960,
+    icons: "/favicon.ico",
+    metadataBase: new URL(SITE_URL),
+    alternates: { canonical: url },
+    creator: "Aleksey Vokhmin",
+    openGraph: {
+      type: "website",
+      locale: "ru_RU",
+      title,
+      description,
+      url,
+      images: {
+        url: siteUrl(`${imagePath}/opengraph-image`),
+        width: 1920,
+        height: 960,
+        alt: title,
+      },
     },
-  },
-  twitter: {
-    card: "summary_large_image",
-    title,
-    description,
-    site: "@biotech",
-    creator: "@gosvoh",
-    images: {
-      url: `${
-        imageBaseUrl?.startsWith("http")
-          ? imageBaseUrl
-          : `https://biotech.cedne.ru${imageBaseUrl ?? ""}`
-      }/opengraph-image`,
-      width: 1920,
-      height: 960,
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: {
+        url: siteUrl(`${imagePath}/twitter-image`),
+        width: 1920,
+        height: 960,
+        alt: title,
+      },
     },
-  },
-});
+  };
+};
