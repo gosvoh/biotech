@@ -11,6 +11,10 @@ import { Suspense } from "react";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  verification: {
+    google: "hFx2Q5g19sfVw3c_uHcDSjAsJtEgXXYMABVSP2lt5uo",
+    yandex: "bbd46aaa8fc9af40",
+  },
   title: {
     default: "Биотех ИТМО",
     template: "%s | Биотех ИТМО",
