@@ -10,10 +10,10 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { id: string } }) {
-  const news = await getNews(params.id);
+export default async function Image({ params }: { params: Promise<{ id: string }> }) {
+  const news = await getNews((await params).id);
 
-  if (!news) return notFound();
+  if (!news || news.hidden) return notFound();
 
   return generateOGImage(`Новость: ${news.title}`, { fontSize: 100 });
 }

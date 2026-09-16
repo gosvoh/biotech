@@ -1,32 +1,44 @@
 import { describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { generateMeta } from "@/lib/meta";
+import { SITE_URL, siteUrl } from "@/lib/site";
 
-describe("generateMeta", () => {
-  it("sets the title and description on the base metadata", () => {
-    const meta = generateMeta("Title", "Description");
-    expect(meta.title).toBe("Title");
+describe("production metadata", () => {
+  it("pins the public HTTPS origin", () => {
+    expect(new URL(SITE_URL).hostname).toBe("biotech.itmo.ru");
+    expect(new URL(SITE_URL).protocol).toBe("https:");
+  });
+
+  it.each(["/", "/education", "/education/vkr", "/news", "/team", "/research", "/contacts", "/news/123", "/team/42"])("builds page-specific metadata for %s", (path) => {
+    const meta = generateMeta("Title", "Description", path);
+    const url = siteUrl(path);
+    expect(meta.title).toEqual({ absolute: "Title" });
     expect(meta.description).toBe("Description");
-    expect(meta.openGraph?.title).toBe("Title");
-    expect(meta.openGraph?.description).toBe("Description");
+    expect(meta.metadataBase).toEqual(new URL(SITE_URL));
+    expect(meta.alternates?.canonical).toBe(url);
+    expect(meta.icons).toBe("/favicon.ico");
+    expect(meta.openGraph).toMatchObject({
+      title: "Title", description: "Description", url, type: "website",
+      images: { url: `${url.replace(/\/$/, "")}/opengraph-image`, width: 1920, height: 960 },
+    });
+    expect(meta.twitter).toMatchObject({
+      card: "summary_large_image", title: "Title", description: "Description",
+      images: { url: `${url.replace(/\/$/, "")}/twitter-image` },
+    });
   });
 
-  it("uses the absolute imageBaseUrl as-is when it starts with http", () => {
-    const meta = generateMeta("T", "D", "https://example.com/img");
-    const og = meta.openGraph as { images: { url: string } };
-    expect(og.images.url).toBe("https://example.com/img/opengraph-image");
+  it.each(["https://example.com", "//example.com", "/\\example.com", "/news?foo=bar", "/news#fragment"])("rejects non-path inputs: %s", (path) => {
+    expect(() => siteUrl(path)).toThrow();
   });
 
-  it("prefixes a relative imageBaseUrl with the production origin", () => {
-    const meta = generateMeta("T", "D", "/news/1");
-    const og = meta.openGraph as { images: { url: string } };
-    expect(og.images.url).toBe(
-      "https://biotech.cedne.ru/news/1/opengraph-image",
-    );
-  });
-
-  it("falls back to the production origin when no imageBaseUrl is given", () => {
-    const meta = generateMeta("T", "D");
-    const tw = meta.twitter as { images: { url: string } };
-    expect(tw.images.url).toBe("https://biotech.cedne.ru/opengraph-image");
+  it("keeps tracked source files free of the retired host", () => {
+    // Assemble the forbidden hostname so the guard itself is not a stale URL.
+    const retiredHost = ["cedne", "ru"].join(".");
+    const files = execFileSync("git", ["ls-files", "-z"], { encoding: "utf8" }).split("\0").filter(Boolean);
+    for (const file of files) {
+      const content = readFileSync(file);
+      if (!content.includes(0)) expect(content.toString(), file).not.toContain(retiredHost);
+    }
   });
 });

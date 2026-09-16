@@ -10,8 +10,8 @@ export const size = {
 
 export const contentType = "image/png";
 
-export default async function Image({ params }: { params: { id: string } }) {
-  const member = await getMember(params.id);
+export default async function Image({ params }: { params: Promise<{ id: string }> }) {
+  const member = await getMember((await params).id);
 
   if (!member) return notFound();
 

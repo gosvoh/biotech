@@ -1,3 +1,4 @@
+import { generateMeta } from "@/lib/meta";
 import Breadcrumbs from "@/components/breadcrumbs";
 import MarkdownRender from "@/components/markdown-render";
 import Tag from "@/components/tag";
@@ -12,7 +13,7 @@ import Link from "next/link";
 import Image from "next/image";
 import NewsImageCarousel from "@/components/news-images-carousel";
 import NewsCarouselSection from "@/components/news-carousel-section";
-import { type Metadata, type ResolvingMetadata } from "next";
+import { type Metadata } from "next";
 import { Suspense } from "react";
 
 export async function getNews(id: string) {
@@ -27,28 +28,24 @@ export async function getNews(id: string) {
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string }> },
-  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const id = (await params).id;
   const news = await getNews(id);
-  const parentMeta = await parent;
 
-  if (!news || news.hidden) return parentMeta as Metadata;
+  if (!news || news.hidden) notFound();
 
-  return {
-    ...(parentMeta as Metadata),
-    title: `Биотех ИТМО | ${news.title}`,
-    description: `Новость факультета биотехнологий Университета ИТМО: ${news.title} от ${news.date}`,
-    openGraph: { images: { url: `https://biotech.cedne.ru/news/${id}` } },
-    twitter: { images: { url: `https://biotech.cedne.ru/news/${id}` } },
-  };
+  return generateMeta(
+    `Биотех ИТМО | ${news.title}`,
+    `Новость факультета биотехнологий Университета ИТМО: ${news.title} от ${news.date}`,
+    `/news/${encodeURIComponent(id)}`,
+  );
 }
 
 async function NewsContent({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
   const news = await getNews(id);
 
-  if (!news) notFound();
+  if (!news || news.hidden) notFound();
 
   let socialLinks: SocialLinks | undefined = undefined;
   try {

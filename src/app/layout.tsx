@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site";
 import localFont from "next/font/local";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -9,7 +10,7 @@ import AppChrome from "@/components/app-chrome";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://biotech.cedne.ru"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Биотех ИТМО",
     template: "%s | Биотех ИТМО",
