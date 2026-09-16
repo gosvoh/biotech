@@ -15,7 +15,7 @@ describe("production metadata", () => {
     const url = siteUrl(path);
     expect(meta.title).toEqual({ absolute: "Title" });
     expect(meta.description).toBe("Description");
-    expect(meta.metadataBase?.href).toBe(`${SITE_URL}/`);
+    expect(meta.metadataBase).toEqual(new URL(SITE_URL));
     expect(meta.alternates?.canonical).toBe(url);
     expect(meta.icons).toBe("/favicon.ico");
     expect(meta.openGraph).toMatchObject({
