@@ -7,11 +7,58 @@ import {
   requireAdmin,
 } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
+import { nextMemberSortOrder } from "@/lib/member-order";
 import type { Member } from "@/lib/db/client";
 import fs from "fs/promises";
 import parsePhoneNumber from "libphonenumber-js";
 import { randomUUID } from "crypto";
 import { z } from "zod";
+
+const reorderSchema = z.array(z.object({
+  departmentId: z.string().min(1).nullable(),
+  memberIds: z.array(z.string().min(1)),
+})).min(1);
+
+export async function reorderMembers(input: unknown) {
+  return actionResult(async () => {
+    await requireAdmin();
+    const parsed = reorderSchema.safeParse(input);
+    if (!parsed.success) throw new Error("Некорректный список сотрудников.");
+    const groups = parsed.data;
+    const departmentIds = groups.map((group) => group.departmentId);
+    const memberIds = groups.flatMap((group) => group.memberIds);
+    if (new Set(departmentIds).size !== departmentIds.length ||
+        new Set(memberIds).size !== memberIds.length) {
+      throw new Error("Подразделения и сотрудники не должны повторяться.");
+    }
+
+    await dbAction(
+      prisma.$transaction(async (tx) => {
+        for (const { departmentId, memberIds } of groups) {
+          if (departmentId !== null && !await tx.department.findUnique({
+            where: { id: departmentId }, select: { id: true },
+          })) {
+            throw new Error("Подразделение не найдено. Обновите список.");
+          }
+          const current = await tx.member.findMany({
+            where: { departmentId }, select: { id: true },
+          });
+          const currentIds = new Set(current.map((member) => member.id));
+          // Require the complete group, including employees added or moved
+          // since the dialog opened. Unknown and foreign IDs are rejected too.
+          if (current.length !== memberIds.length ||
+              memberIds.some((id) => !currentIds.has(id))) {
+            throw new Error("Состав подразделения изменился. Закройте окно, обновите страницу и повторите попытку.");
+          }
+          for (const [sortOrder, id] of memberIds.entries()) {
+            await tx.member.update({ where: { id }, data: { sortOrder } });
+          }
+        }
+      }),
+      "members",
+    );
+  });
+}
 
 const optionalText = z
   .string()
@@ -78,7 +125,7 @@ export async function addMember(formData: FormData) {
     }
     const member: Omit<
       Member,
-      "id" | "phone" | "image" | "createdAt" | "updatedAt"
+      "id" | "phone" | "image" | "createdAt" | "updatedAt" | "sortOrder"
     > = parsed.data;
 
     const disciplinesStr = getFormString(formData, "disciplines");
@@ -105,6 +152,7 @@ export async function addMember(formData: FormData) {
         const newMember = await prisma.member.create({
           data: {
             ...member,
+            sortOrder: await nextMemberSortOrder(prisma, member.departmentId),
             image: imageKey,
             phone: phoneNumber,
             disciplines: { connect: disciplines.map((id) => ({ id })) },
@@ -131,7 +179,7 @@ export async function updateMember(formData: FormData) {
     if (!parsed.success) {
       throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
     }
-    const member: Omit<Member, "phone" | "image" | "createdAt" | "updatedAt"> =
+    const member: Omit<Member, "phone" | "image" | "createdAt" | "updatedAt" | "sortOrder"> =
       {
         id,
         ...parsed.data,
@@ -154,7 +202,7 @@ export async function updateMember(formData: FormData) {
       prisma.$transaction(async (prisma) => {
         const currentMember = await prisma.member.findUnique({
           where: { id: member.id },
-          select: { id: true, image: true },
+          select: { id: true, image: true, departmentId: true },
         });
 
         if (!currentMember) throw new Error("Member not found");
@@ -167,6 +215,9 @@ export async function updateMember(formData: FormData) {
           where: { id: memberId },
           data: {
             ...memberData,
+            ...(currentMember.departmentId !== memberData.departmentId
+              ? { sortOrder: await nextMemberSortOrder(prisma, memberData.departmentId) }
+              : {}),
             ...(nextImageKey ? { image: nextImageKey } : {}),
             phone: phoneNumber,
             disciplines: { set: disciplines.map((id) => ({ id })) },
@@ -239,6 +290,7 @@ export async function duplicateMember(memberId: string) {
         const newMember = await prisma.member.create({
           data: {
             ...memberToCreate,
+            sortOrder: await nextMemberSortOrder(prisma, member.departmentId),
             image: newImageKey,
             disciplines: { connect: disciplines.map((d) => ({ id: d.id })) },
             scientificWorks: {
