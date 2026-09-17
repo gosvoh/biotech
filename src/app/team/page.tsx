@@ -11,6 +11,7 @@ import FigureImage from "@/components/figure-image";
 import Breadcrumbs from "@/components/breadcrumbs";
 import { cacheLife, cacheTag } from "next/cache";
 import { prisma } from "@/prisma";
+import { memberOrderBy } from "@/lib/member-order";
 import type { Member } from "@/lib/db/client";
 import { type Metadata } from "next";
 import { generateMeta } from "@/lib/meta";
@@ -25,7 +26,7 @@ async function getMembers() {
   "use cache";
   cacheLife("minutes");
   cacheTag("members");
-  return prisma.member.findMany({ orderBy: { lastName: "asc" } });
+  return prisma.member.findMany({ orderBy: memberOrderBy });
 }
 
 async function getDepartments() {

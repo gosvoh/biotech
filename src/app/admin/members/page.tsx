@@ -1,4 +1,5 @@
 import { prisma } from "@/prisma";
+import { memberOrderBy } from "@/lib/member-order";
 import { requireAdminPage } from "@/lib/utils.server";
 import { cacheLife, cacheTag } from "next/cache";
 import MembersClient from "./page.client";
@@ -10,7 +11,7 @@ async function getMembers() {
   cacheTag("members");
   return prisma.member.findMany({
     include: { disciplines: true, scientificWorks: true },
-    orderBy: { lastName: "asc" },
+    orderBy: memberOrderBy,
   });
 }
 
