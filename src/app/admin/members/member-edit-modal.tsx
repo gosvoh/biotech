@@ -144,9 +144,7 @@ export function MemberEditModal({
             position: member?.position,
             email: member?.email,
             phone: member?.phone,
-            departmentId: member
-              ? member.departmentId ?? departments[0]?.id
-              : undefined,
+            departmentId: member?.departmentId ?? undefined,
             disciplines: member?.disciplines.map((d) => d.id) ?? [],
             scientificWorks: member?.scientificWorks.map((sw) => sw.id) ?? [],
             image: [],
@@ -177,7 +175,7 @@ export function MemberEditModal({
             <Input />
           </Form.Item>
           <Form.Item label="Должность" name="position">
-            <Input />
+            <Input placeholder="Необязательно" />
           </Form.Item>
           <Form.Item
             label="Эл. почта"
@@ -193,10 +191,12 @@ export function MemberEditModal({
               { pattern: /^\+?[0-9 ]+$/, message: "Некорректный номер телефона" },
             ]}
           >
-            <Input />
+            <Input placeholder="Необязательно" />
           </Form.Item>
           <Form.Item label="Подразделение" name="departmentId">
             <Select
+              allowClear
+              placeholder="Без подразделения"
               options={departments.map((department) => ({
                 label: department.name,
                 value: department.id,

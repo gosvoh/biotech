@@ -77,6 +77,7 @@ model Member {
     position   String?
     email      String?
     phone      String?
+    sortOrder  Int     @default(0)
 
     Department   Department? @relation(fields: [departmentId], references: [id])
     departmentId String?

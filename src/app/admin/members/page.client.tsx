@@ -1,10 +1,11 @@
 "use client";
 
 import { PlusOutlined } from "@ant-design/icons";
-import { FloatButton } from "antd";
+import { Button, FloatButton } from "antd";
 import { useCallback, useState } from "react";
 import { MemberEditModal } from "./member-edit-modal";
 import { MembersTable } from "./members-table";
+import { MemberOrderModal } from "./member-order-modal";
 import type { MemberWithRelations, MembersClientProps } from "./types";
 
 export default function MembersClient({
@@ -14,6 +15,7 @@ export default function MembersClient({
   scientificWorks = [],
 }: MembersClientProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
   const [member, setMember] = useState<MemberWithRelations>();
 
   const closeModal = useCallback(() => {
@@ -33,6 +35,14 @@ export default function MembersClient({
 
   return (
     <>
+      <div className="my-4">
+        <Button onClick={() => setOrderOpen(true)} disabled={members.length === 0}>
+          Изменить порядок
+        </Button>
+      </div>
+      {orderOpen && (
+        <MemberOrderModal members={members} departments={departments} close={() => setOrderOpen(false)} />
+      )}
       <MemberEditModal
         member={member}
         departments={departments}
