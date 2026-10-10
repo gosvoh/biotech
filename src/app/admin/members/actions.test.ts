@@ -300,6 +300,42 @@ describe("persistent member order", () => {
     expect((await list(null)).map((m) => m.id)).toEqual(["n2", "n1"]);
   });
 
+  it.each([undefined, "", " \t "])(
+    "creates employees without position or phone: %j",
+    async (empty) => {
+      const data = form();
+      data.set("image", new File(["image"], "photo.webp"));
+      if (empty !== undefined) {
+        data.set("position", empty);
+        data.set("phone", empty);
+      }
+      expect((await addMember(data)).ok).toBe(true);
+      expect((await list("a")).at(-1)).toMatchObject({
+        position: null,
+        phone: null,
+        sortOrder: 2,
+      });
+    },
+  );
+
+  it.each([undefined, "", " \t "])(
+    "clears existing position and phone without changing order: %j",
+    async (empty) => {
+      await mocks.db.member.update({
+        where: { id: "a2" },
+        data: { position: "Преподаватель", phone: "+7 999 123 45 67" },
+      });
+      const data = form("a2");
+      if (empty !== undefined) {
+        data.set("position", empty);
+        data.set("phone", empty);
+      }
+      expect((await updateMember(data)).ok).toBe(true);
+      expect(await mocks.db.member.findUniqueOrThrow({ where: { id: "a2" } }))
+        .toMatchObject({ position: null, phone: null, sortOrder: 1 });
+    },
+  );
+
   it.each(["a", null, "empty"])(
     "appends new employees to group %s, preserving form fields and relations",
     async (departmentId) => {

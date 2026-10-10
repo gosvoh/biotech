@@ -175,7 +175,7 @@ export function MemberEditModal({
             <Input />
           </Form.Item>
           <Form.Item label="Должность" name="position">
-            <Input />
+            <Input placeholder="Необязательно" />
           </Form.Item>
           <Form.Item
             label="Эл. почта"
@@ -191,7 +191,7 @@ export function MemberEditModal({
               { pattern: /^\+?[0-9 ]+$/, message: "Некорректный номер телефона" },
             ]}
           >
-            <Input />
+            <Input placeholder="Необязательно" />
           </Form.Item>
           <Form.Item label="Подразделение" name="departmentId">
             <Select

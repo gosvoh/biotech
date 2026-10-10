@@ -135,7 +135,7 @@ export async function addMember(formData: FormData) {
       ? scientificWorksStr.split(",")
       : [];
     const image = formData.get("image");
-    const phone = getOptionalString(formData.get("phone"));
+    const phone = getOptionalString(formData.get("phone"))?.trim();
 
     if (!(image instanceof File) || image.size === 0) {
       throw new Error("Please fill out the required fields.");
@@ -192,7 +192,7 @@ export async function updateMember(formData: FormData) {
       ? scientificWorksStr.split(",")
       : [];
     const image = formData.get("image") as File;
-    const phone = getOptionalString(formData.get("phone"));
+    const phone = getOptionalString(formData.get("phone"))?.trim();
 
     const phoneNumber = phone
       ? parsePhoneNumber(phone)?.formatInternational()

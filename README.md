@@ -60,6 +60,9 @@ bun run db:migrate
 | `bun run test`        | Run the unit tests (Vitest)                       |
 | `bun lint`            | Run ESLint                                        |
 
+The `dev` and `start` scripts explicitly use the Bun runtime because employee
+photo uploads are processed with `Bun.Image`.
+
 > Use `bun run test`, not `bun test` — the latter invokes Bun's own test runner
 > instead of Vitest.
 

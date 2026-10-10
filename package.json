@@ -3,9 +3,9 @@
   "version": "1.7.5",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "bun --bun next dev --turbopack",
     "build": "next build",
-    "start": "next start",
+    "start": "bun --bun next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "db:migrate": "prisma migrate dev",
