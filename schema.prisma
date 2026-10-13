@@ -137,6 +137,7 @@ model News {
 model NewsTags {
     id    String @id @default(cuid())
     title String
+    normalizedTitle String? @unique
 
     news News[]
 
