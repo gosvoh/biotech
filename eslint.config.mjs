@@ -4,7 +4,7 @@ import nextTypescript from "eslint-config-next/typescript";
 const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
-  { ignores: ["src/lib/db/client"] },
+  { ignores: ["src/lib/db/client", "database/vk-import/**"] },
 ];
 
 export default eslintConfig;
