@@ -53,7 +53,7 @@ const ERRORS = {
 
 /** Reconsider only the newest thirty; catalogue changes never hide existing publications. */
 export async function recheckVkTags(options: VkImportOptions): Promise<VkTagRecheckResult> {
-  const { db, api, now = () => new Date() } = options;
+  const { db, api, now = () => new Date(), automationGuard } = options;
   const queued = await getVkTagRecheckStatus(db);
   const result: VkTagRecheckResult = { ...queued, group: null, checked: 0, added: 0, skipped: 0, failed: 0, successful: false, error: null };
   if (!queued.pending) return { ...result, successful: true };
@@ -72,11 +72,11 @@ export async function recheckVkTags(options: VkImportOptions): Promise<VkTagRech
   result.appliedRevision = previous.appliedRevision;
   if (previous.appliedRevision >= queued.revision) return { ...result, ...previous, successful: true };
   const token = randomUUID();
-  const fence = createVkLeaseFence(db, group.id, token, now);
+  const fence = createVkLeaseFence(db, group.id, token, now, automationGuard);
   const started = now();
   const claimed = await db.vkImportSource.updateMany({
     where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: started } }] },
-    data: { leaseToken: token, leaseUntil: new Date(started.getTime() + VK_LEASE_MS) },
+    data: { leaseToken: token, leaseUntil: new Date(started.getTime() + VK_LEASE_MS), automationLeaseRevision: automationGuard?.revision ?? null },
   });
   if (claimed.count !== 1) return { ...result, error: ERRORS.lease };
   try {
@@ -118,7 +118,7 @@ export async function recheckVkTags(options: VkImportOptions): Promise<VkTagRech
         await tx.vkImportSource.update({ where: { groupId: group.id }, data: {
           ...(result.successful ? { tagRecheckAppliedRevision: queued.revision, lastTagRecheckAt: finished } : {}),
           lastTagRecheckError: result.error, lastTagRecheckResult: result as unknown as Prisma.InputJsonValue,
-          leaseToken: null, leaseUntil: null,
+          leaseToken: null, leaseUntil: null, automationLeaseRevision: null,
         } });
         await tx.vkImportTagCatalog.updateMany({ where: { id: 1, revision: queued.revision }, data: { lastError: null } });
       });
@@ -127,6 +127,7 @@ export async function recheckVkTags(options: VkImportOptions): Promise<VkTagRech
       result.error = ERRORS.storage;
     }
   }
+  await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null, automationLeaseRevision: null } });
   const final = await getVkTagRecheckStatus(db, group.id);
   return { ...result, ...final, error: result.error ?? final.error };
 }

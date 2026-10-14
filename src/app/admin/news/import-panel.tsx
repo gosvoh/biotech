@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Button, Card, Tag } from "antd";
 import { SyncOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import type { VkImportStatus } from "@/lib/vk-import/types";
+import VkAutomationControls from "./automation-controls";
+import type { VkAutomationState, VkImportStatus } from "@/lib/vk-import/types";
 import type { VkTagRecheckStatus } from "@/lib/vk-import/recheck";
 import { checkVkNews, recheckVkNewsTags } from "./import-actions";
 
@@ -12,7 +13,7 @@ function formatTime(value: string | null | undefined) {
   return value ? new Intl.DateTimeFormat("ru-RU", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Moscow" }).format(new Date(value)) + " МСК" : "Ещё не выполнялась";
 }
 
-export default function VkImportPanel({ initialStatus, initialTagStatus }: { initialStatus: VkImportStatus; initialTagStatus?: VkTagRecheckStatus | null }) {
+export default function VkImportPanel({ initialStatus, initialTagStatus, initialAutomation }: { initialStatus: VkImportStatus; initialTagStatus?: VkTagRecheckStatus | null; initialAutomation?: VkAutomationState }) {
   const [status, setStatus] = useState(initialStatus);
   const [pending, setPending] = useState(false);
   const [tagsPending, setTagsPending] = useState(false);
@@ -69,8 +70,9 @@ export default function VkImportPanel({ initialStatus, initialTagStatus }: { ini
           Проверить сейчас
         </Button>
       </div>
+      {initialAutomation && <VkAutomationControls initialState={initialAutomation} configured={status.configured} source={status.source} />}
       <p className="mt-4 text-sm text-gray-600">
-        Кнопка проверяет новые публикации после предыдущей проверки и изменения в 30 последних постах. При первом запуске проверяются 30 последних постов; после простоя — все новые публикации.
+        Кнопка однократно проверяет новые публикации после предыдущей проверки и изменения в 30 последних постах. Она работает и при выключенном расписании. Если источник занят, запрос сохраняется в очереди и выполняется после текущей операции. При первом запуске проверяются 30 последних постов; после простоя — все новые публикации.
         Импортируются собственные посты сообщества с тегами сайта и датой от 1 сентября 2026 года. Репосты пропускаются.
       </p>
       <p className="mt-2 text-sm text-gray-600">Правки за пределами окна автоматически не проверяются. Удаление ранее наблюдавшихся постов проверяется отдельно в ограниченном объёме. Старую новость можно проверить действием «Проверить эту новость» в её карточке. Фото сохраняются на сайте, остальные вложения доступны по ссылке на оригинал.</p>
@@ -89,7 +91,8 @@ export default function VkImportPanel({ initialStatus, initialTagStatus }: { ini
       {synced && <div className="mt-3 text-sm" aria-live="polite"><p className="font-medium">Изменения: {synced.successful ? "проверка завершена" : "проверка завершена с ошибками"}</p><p>Проверено: {synced.checked} · Обновлено: {synced.updated} · Скрыто: {synced.hidden} · Восстановлено: {synced.restored} · Ошибок: {synced.failed}</p></div>}
       {status.error && <p role="alert" className="mt-4 text-red-700">{status.error}</p>}
       {result && <div aria-live="polite" className="mt-4">
-        <p className="font-medium">{result.successful ? "Проверка завершена" : "Проверка завершена с ошибками"}</p>
+        <p className="font-medium">{result.queued ? "Проверка сохранена в очереди" : result.successful ? "Проверка завершена" : "Проверка завершена с ошибками"}</p>
+        {result.queued && <p className="mt-1 text-gray-600">Исполнитель продолжит проверку после освобождения источника, в том числе при выключенном расписании.</p>}
         <p className="mt-1">Добавлено: {result.added} · Пропущено: {result.skipped} · Ошибок: {result.failed}</p>
         {!!result.reasons.length && <details className="mt-3"><summary className="cursor-pointer">Причины пропусков и ошибок (до 30)</summary><ul className="mt-2 list-disc pl-5">
           {result.reasons.map((item, index) => <li key={`${item.postId}-${index}`}>Пост {item.postId}: {item.reason}</li>)}

@@ -35,7 +35,7 @@ async function historyState(db: PrismaClient, job: Job): Promise<VkHistoryState>
     added: count("done", "added") + count("failed", "added") + count("pending", "added"), updated: effects("updated"), hidden: effects("hidden"), restored: effects("restored"), skipped: count("done", "skipped"), failed: count("failed"), queued: count("pending"),
     lastSuccessAt: job.lastSuccessAt?.toISOString() ?? null, error: job.error };
 }
-export async function getVkHistory({ db }: VkImportOptions, id: string): Promise<VkHistoryState | null> {
+export async function getVkHistory({ db }: Pick<VkImportOptions, "db">, id: string): Promise<VkHistoryState | null> {
   const job = await db.vkHistoryJob.findUnique({ where: { id } });
   return job ? historyState(db, job) : null;
 }
@@ -72,7 +72,7 @@ function descending(a: VkPost, b: VkPost) { return b.date - a.date || (BigInt(a.
 
 /** One durable wall page and at most thirty content applications; explicit continuation survives restart. */
 export async function runVkHistoryBatch(options: VkHistoryOptions, id: string): Promise<VkHistoryState> {
-  const { db, api, now = () => new Date() } = options;
+  const { db, api, now = () => new Date(), automationGuard } = options;
   if (typeof id !== "string" || !id.trim()) throw new VkHistoryError("Операция истории не найдена.");
   let job = await db.vkHistoryJob.findUnique({ where: { id } });
   if (!job) throw new VkHistoryError("Операция истории не найдена.");
@@ -81,8 +81,8 @@ export async function runVkHistoryBatch(options: VkHistoryOptions, id: string): 
   if (group.id !== job.groupId) throw new VkHistoryError("Источник ВК изменился. Историю прежней группы продолжить нельзя.");
   if (job.state === "completed") return historyState(db, job);
   const token = randomUUID(), started = now();
-  const fence = createVkLeaseFence(db, group.id, token, now);
-  const claimed = await db.vkImportSource.updateMany({ where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: started } }] }, data: { leaseToken: token, leaseUntil: new Date(started.getTime() + VK_LEASE_MS), name: group.name, screenName: group.screenName } });
+  const fence = createVkLeaseFence(db, group.id, token, now, automationGuard);
+  const claimed = await db.vkImportSource.updateMany({ where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: started } }] }, data: { leaseToken: token, leaseUntil: new Date(started.getTime() + VK_LEASE_MS), name: group.name, screenName: group.screenName, automationLeaseRevision: automationGuard?.revision ?? null } });
   if (claimed.count !== 1) return { ...await historyState(db, job), error: HISTORY_ERRORS.lease };
   const lower = calendarDay(job.from), upper = calendarDay(job.to) + 86400;
   let batchError: string | null = null;
@@ -178,7 +178,7 @@ export async function runVkHistoryBatch(options: VkHistoryOptions, id: string): 
       await db.$transaction(async (tx) => { await fence(tx); await tx.vkHistoryJob.update({ where: { id }, data: { state: "waiting", error: batchError } }); });
     } catch { /* The next owner alone may persist the resumed job state. */ }
   } finally {
-    await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null } });
+    await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null, automationLeaseRevision: null } });
   }
   job = await db.vkHistoryJob.findUniqueOrThrow({ where: { id } });
   return { ...await historyState(db, job), ...(batchError ? { error: batchError } : {}) };

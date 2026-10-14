@@ -6,7 +6,7 @@ import type { VkImportResult, VkImportStatus, VkSyncResult } from "./types";
 export async function getVkImportStatus(): Promise<VkImportStatus> {
   const config = getVkConfigStatus();
   const status: VkImportStatus = { ...config, group: null, lastAttemptAt: null, lastSuccessAt: null, lastResult: null };
-  if (!config.configured || !config.source) return status;
+  if (!config.source) return status;
   try {
     const source = config.source.toLowerCase();
     const numeric = /^-?\d+$/.test(source) ? String(Math.abs(Number(source))) : null;
@@ -24,7 +24,7 @@ export async function getVkImportStatus(): Promise<VkImportStatus> {
       lastResult: combined,
       lastSyncAt: stored.lastSyncAt?.toISOString() ?? null,
       lastSyncResult: stored.lastSyncResult as unknown as VkSyncResult | null,
-      error: stored.lastError ?? stored.lastSyncError,
+      error: config.error ?? stored.lastError ?? stored.lastSyncError,
     };
   } catch {
     return { ...status, error: "Не удалось прочитать состояние импорта. Проверьте миграции базы и повторите попытку." };

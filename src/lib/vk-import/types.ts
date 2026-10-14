@@ -45,6 +45,8 @@ export interface VkImportCounts {
 }
 
 export interface VkImportResult extends VkImportCounts {
+  /** The explicit normal check is durable and will be retried by the worker. */
+  queued?: boolean;
   sync?: VkSyncResult;
   group: VkGroup;
   successful: boolean;
@@ -116,4 +118,19 @@ export interface VkHistoryState {
   queued: number;
   lastSuccessAt: string | null;
   error: string | null;
+}
+export interface VkAutomationState {
+ manualCheckPending?: boolean;
+ groupId: string | null;
+ enabled: boolean;
+ initialHistoryId: string | null;
+ initialState: VkHistoryState | null;
+ lastNewAt: string | null;
+ lastSyncAt: string | null;
+ nextNewAt: string | null;
+ nextSyncAt: string | null;
+ lastWorkerAt: string | null;
+ error: string | null;
+ running: boolean;
+ queued: boolean;
 }

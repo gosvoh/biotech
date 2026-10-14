@@ -42,7 +42,7 @@ export default function VkHistoryPanel({ configured, initialJobs, today, loadErr
       <label className="flex flex-col gap-1 text-sm">По дату<input className="rounded border px-3 py-2" name="to" type="date" min={from || "2026-09-01"} max={today} required value={to} disabled={pending !== null || !configured} onChange={(event) => setTo(event.target.value)} /></label>
       <Button htmlType="submit" disabled={!configured || pending !== null} loading={pending === "queue"}>Импортировать историю</Button>
     </form>
-    <p className="mt-3 text-sm text-gray-600">Нажмите «Обработать порцию» для продолжения. Можно закрыть страницу и вернуться позже — выбранный период и прогресс сохранятся. Обычная проверка новых постов выполняется отдельно.</p>
+    <p className="mt-3 text-sm text-gray-600">Выбранный период обрабатывается исполнителем и при закрытой странице. Кнопка «Обработать порцию» запускает следующую часть вручную. Первоначальная история при выключенном расписании приостановлена; выбранная вручную история продолжается. Период и прогресс сохраняются. Обычная проверка новых постов выполняется отдельно.</p>
     {(error || loadError) && <p role="alert" className="mt-3 text-red-700">{error ?? loadError}</p>}
     {jobs.map((job) => <div key={job.id} className="mt-4 rounded border p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">

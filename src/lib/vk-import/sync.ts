@@ -42,7 +42,7 @@ function sameVersion(a: VkPost | null, b: VkPost): boolean {
 }
 
 /** Synchronizes existing identities only; no archive crawl or implicit deletion proof. */
-export async function syncVkNews({ db, api, images, invalidate, now = () => new Date(), target, removeOldImages }: VkSyncOptions, batch?: VkPostBatchLease & { posts: VkPost[]; historyJobId?: string }): Promise<VkSyncResult> {
+export async function syncVkNews({ db, api, images, invalidate, now = () => new Date(), automationGuard, target, removeOldImages }: VkSyncOptions, batch?: VkPostBatchLease & { posts: VkPost[]; historyJobId?: string }): Promise<VkSyncResult> {
   const startedAt = now();
   let group;
   try { group = batch?.group ?? await api.getGroup(); }
@@ -53,7 +53,7 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
   };
   if (target && target.groupId !== group.id) return { ...result, error: ERRORS.source };
   const token = batch?.token ?? randomUUID();
-  const fence = createVkLeaseFence(db, group.id, token, now);
+  const fence = createVkLeaseFence(db, group.id, token, now, automationGuard);
   const heartbeat = () => fence();
   let owned = false;
   let windowIds: string[] | null = null;
@@ -91,12 +91,12 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
     });
   };
   try {
-    await db.vkImportSource.upsert({ where: { groupId: group.id }, update: {}, create: { groupId: group.id, name: group.name, screenName: group.screenName } });
+    await db.vkImportSource.upsert({ where: { groupId: group.id }, update: {}, create: { groupId: group.id, name: group.name, screenName: group.screenName, automationLeaseRevision: automationGuard?.revision ?? null } });
     const previous = await db.vkImportSource.findUniqueOrThrow({ where: { groupId: group.id } });
     if (!batch) {
     const claimed = await db.vkImportSource.updateMany({
       where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: startedAt } }] },
-      data: { leaseToken: token, leaseUntil: new Date(startedAt.getTime() + VK_LEASE_MS), name: group.name, screenName: group.screenName },
+      data: { leaseToken: token, leaseUntil: new Date(startedAt.getTime() + VK_LEASE_MS), name: group.name, screenName: group.screenName, automationLeaseRevision: automationGuard?.revision ?? null },
     });
     if (claimed.count !== 1) return { ...result, error: ERRORS.lease };
     owned = true;
@@ -340,11 +340,12 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
               ...(result.successful ? { lastSyncAt: new Date(result.finishedAt) } : {}),
               lastSyncError: result.error, lastSyncResult: result as unknown as Prisma.InputJsonValue,
             } : {}),
-            leaseToken: null, leaseUntil: null,
+            leaseToken: null, leaseUntil: null, automationLeaseRevision: null,
           } });
         });
       } catch { result.successful = false; result.error = ERRORS.lease; }
     }
+    if (owned) await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null, automationLeaseRevision: null } });
   }
   return result;
 }

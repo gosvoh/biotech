@@ -3,9 +3,9 @@
   "version": "1.7.5",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev --turbopack",
-    "build": "next build",
-    "start": "bun --bun next start",
+    "dev": "bun scripts/start-with-vk.ts dev",
+    "build": "next build && bun scripts/build-vk-worker.ts",
+    "start": "bun scripts/start-with-vk.ts start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "db:migrate": "prisma migrate dev",

@@ -169,7 +169,28 @@ model Publication {
     updatedAt DateTime @updatedAt @default(now())
 }
 
+model VkAutomationRuntime {
+    id Int @id @default(1)
+    currentGroupId String?
+    leaseToken String?
+    leaseUntil DateTime?
+    lastWorkerAt DateTime?
+    nextQueueAt DateTime?
+    lastHistoryId String?
+    lastError String?
+}
+
 model VkImportSource {
+    manualCheckRevision Int @default(0)
+    manualCheckAppliedRevision Int @default(0)
+    nextManualCheckAt DateTime?
+    autoEnabled Boolean @default(false)
+    autoRevision Int @default(0)
+    automationLeaseRevision Int?
+    nextNewAt DateTime?
+    nextSyncAt DateTime?
+    nextHistoryAt DateTime?
+    lastAutomationError String?
     groupId String @id
     name String
     screenName String

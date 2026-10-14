@@ -1,3 +1,4 @@
+import { getVkAutomationPanelState } from "@/lib/vk-import/automation-state.server";
 import VkHistoryPanel from "./history-panel";
 import { getVkHistoryPanelState, getVkTagRecheckPanelState } from "@/lib/vk-import/history-state.server";
 import VkExclusions from "./vk-exclusions";
@@ -32,7 +33,7 @@ async function getNews() {
 
 export default async function News() {
   await requireAdminPage();
-  const [news, importStatus, exclusions, history] = await Promise.all([getNews(), getVkImportStatus(), getExcludedVkPosts(), getVkHistoryPanelState()]);
+  const [news, importStatus, exclusions, history, automation] = await Promise.all([getNews(), getVkImportStatus(), getExcludedVkPosts(), getVkHistoryPanelState(), getVkAutomationPanelState()]);
   const tagStatus = await getVkTagRecheckPanelState(importStatus.group?.id);
   const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Moscow", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 
@@ -40,7 +41,7 @@ export default async function News() {
     <>
       <h1 className="text-2xl font-bold">Новости</h1>
       <Suspense fallback={null}>
-        <VkImportPanel initialStatus={importStatus} initialTagStatus={tagStatus} />
+        <VkImportPanel initialStatus={importStatus} initialTagStatus={tagStatus} initialAutomation={automation} />
         <VkHistoryPanel configured={importStatus.configured} initialJobs={history.jobs} today={today} loadError={history.error} />
         <VkExclusions posts={exclusions} />
         <NewsClient news={news} />

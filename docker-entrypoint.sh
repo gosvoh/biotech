@@ -2,20 +2,10 @@
 set -e
 
 echo "[entrypoint] Applying database migrations (prisma migrate deploy)..."
-# Use the self-contained CLI baked into the image (prisma-cli stage) so startup
-# never depends on network access to fetch the CLI or the schema-engine binary.
-# Run via `bun`: the oven/bun image has no `node` for the prisma shebang.
+# The self-contained CLI and schema engine are baked into the image.
 bun ./prisma-cli/node_modules/prisma/build/index.js migrate deploy --schema=/app/schema.prisma
-echo "[entrypoint] Migrations applied. Starting server..."
+echo "[entrypoint] Migrations applied. Starting server and VK worker..."
 
-# Run in the background (instead of `exec`) so we can warm the "use cache"
-# pages against the just-migrated runtime database before real traffic
-# hits the build-time-baked cache entries. Forward TERM/INT since
-# backgrounding loses the signal transparency `exec` gave us.
-"$@" &
-server_pid=$!
-trap 'kill -TERM "$server_pid" 2>/dev/null' TERM INT
-
-bun ./scripts/warm-cache.ts &
-
-wait "$server_pid"
+# The supervisor shares one cache secret with web, importer and warm-cache,
+# owns their lifecycle and forwards shutdown to the importer through IPC.
+exec bun ./scripts/start-with-vk.ts standalone "$@"

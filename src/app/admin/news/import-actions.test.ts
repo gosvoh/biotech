@@ -147,3 +147,10 @@ it.each(["edit","deleted"])("checks existing window news despite an unrelated ne
   if(existingChange==="edit") expect((await getNews())[0][0].title).toBe("Правка прежней новости");
   else expect((await getNews())[1]).toBe(0);
 });
+it("saves the normal button check in a durable queue when history owns the source",async()=>{
+ await mocks.db.vkImportSource.create({data:{groupId:"42",name:"Биотех ИТМО",screenName:"biotech.itmo",leaseToken:"history-owner",leaseUntil:new Date(Date.now()+60000)}});
+ expect(await checkVkNews()).toMatchObject({ok:true,data:{successful:false,queued:true}});
+ expect(await mocks.db.news.count()).toBe(0);
+ const source=await mocks.db.vkImportSource.findUniqueOrThrow({where:{groupId:"42"}});
+ expect(source.autoEnabled).toBe(false);
+});

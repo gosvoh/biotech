@@ -6,6 +6,7 @@ import VkImportPanel from "./import-panel";
 import { checkVkNews, recheckVkNewsTags } from "./import-actions";
 import type { VkImportStatus } from "@/lib/vk-import/types";
 
+vi.mock("./automation-actions", () => ({ setVkNewsAutomation: vi.fn() }));
 vi.mock("./import-actions", () => ({ checkVkNews: vi.fn(), recheckVkNewsTags: vi.fn() }));
 const refresh = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
@@ -82,4 +83,14 @@ it("shows a durable tag recheck waiting after failure and retries only the bound
   await act(async () => retry!.click());
   expect(recheckVkNewsTags).toHaveBeenCalledOnce(); expect(checkVkNews).not.toHaveBeenCalled();
   expect(container.textContent).toContain("Пересмотр тегов завершён");
+});
+
+it("explains a saved manual check queue without reporting completion or failure", async () => {
+  vi.mocked(checkVkNews).mockResolvedValue({ ok: true, data: { queued: true, group: { id: "42", name: "Биотех", screenName: "biotech.itmo" }, successful: false, added: 0, skipped: 0, failed: 0, startedAt: "2026-10-14T19:00:00Z", finishedAt: "2026-10-14T19:00:00Z", lastSuccessAt: null, error: null, reasons: [] } });
+  await render();
+  await act(async () => container.querySelector<HTMLButtonElement>("button")!.click());
+  expect(container.textContent).toContain("Проверка сохранена в очереди");
+  expect(container.textContent).not.toContain("Проверка завершена с ошибками");
+  expect(container.textContent).toContain("при выключенном расписании");
+  expect(refresh).toHaveBeenCalledOnce();
 });

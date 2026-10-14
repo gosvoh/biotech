@@ -28,10 +28,11 @@ export interface VkImportOptions {
   images: VkImageStore;
   invalidate: () => Promise<void> | void;
   now?: () => Date;
+  automationGuard?: import("./lease").VkAutomationGuard;
 }
 
 /** Manual new-post import. All persistence is scoped to the canonical source. */
-export async function importVkNews({ db, api, images, invalidate, now = () => new Date() }: VkImportOptions, batch?: ImportBatch): Promise<VkImportResult> {
+export async function importVkNews({ db, api, images, invalidate, now = () => new Date(), automationGuard }: VkImportOptions, batch?: ImportBatch): Promise<VkImportResult> {
   const startedAt = now();
   let group;
   try { group = batch?.group ?? await api.getGroup(); }
@@ -46,7 +47,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     if (result.reasons.length < MAX_REASONS) result.reasons.push({ postId, reason: message });
   };
   // This write also serves as the fence: publication and lease verification share a transaction.
-  const fence = createVkLeaseFence(db, group.id, token, now);
+  const fence = createVkLeaseFence(db, group.id, token, now, automationGuard);
   const heartbeat = () => fence();
   const recordFailure = async (postId: string, message: string, revision: number) => {
     await db.$transaction(async (tx) => {
@@ -66,7 +67,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     if (!batch) {
     const claimed = await db.vkImportSource.updateMany({
       where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: startedAt } }] },
-      data: { leaseToken: token, leaseUntil: new Date(startedAt.getTime() + LEASE_MS), name: group.name, screenName: group.screenName, lastAttemptAt: startedAt },
+      data: { leaseToken: token, leaseUntil: new Date(startedAt.getTime() + LEASE_MS), name: group.name, screenName: group.screenName, lastAttemptAt: startedAt, automationLeaseRevision: automationGuard?.revision ?? null },
     });
     if (claimed.count !== 1) { result.error = ERRORS.lease; return result; }
     owned = true;
@@ -209,7 +210,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
             where: { groupId: group.id },
             data: {
               ...(result.successful ? { lastSuccessAt: new Date(result.finishedAt) } : {}),
-              lastError: result.error, lastResult: result as unknown as Prisma.InputJsonValue, leaseToken: null, leaseUntil: null,
+              lastError: result.error, lastResult: result as unknown as Prisma.InputJsonValue, leaseToken: null, leaseUntil: null, automationLeaseRevision: null,
             },
           });
         });
@@ -220,22 +221,23 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
         result.lastSuccessAt = latest?.lastSuccessAt?.toISOString() ?? null;
       }
     }
+    if (owned) await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null, automationLeaseRevision: null } });
   }
   return result;
 }
 
 /** Shared bounded application path. An inherited lease is never released or used for normal check statistics. */
 export async function applyVkPostBatch(options: VkImportOptions, posts: VkPost[], settings: { reconsiderSkipped?: boolean; syncExisting?: boolean; historyJobId?: string; lease?: VkPostBatchLease } = {}): Promise<VkImportResult> {
-  const { db, api, now = () => new Date() } = options;
+  const { db, api, now = () => new Date(), automationGuard } = options;
   const group = settings.lease?.group ?? await api.getGroup();
   const token = settings.lease?.token ?? randomUUID();
   const started = now();
-  const fence = createVkLeaseFence(db, group.id, token, now);
+  const fence = createVkLeaseFence(db, group.id, token, now, automationGuard);
   let owned = false;
   try {
     if (!settings.lease) {
       await db.vkImportSource.upsert({ where: { groupId: group.id }, update: {}, create: { groupId: group.id, name: group.name, screenName: group.screenName } });
-      const claimed = await db.vkImportSource.updateMany({ where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: started } }] }, data: { leaseToken: token, leaseUntil: new Date(started.getTime() + LEASE_MS) } });
+      const claimed = await db.vkImportSource.updateMany({ where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: started } }] }, data: { leaseToken: token, leaseUntil: new Date(started.getTime() + LEASE_MS), automationLeaseRevision: automationGuard?.revision ?? null } });
       if (claimed.count !== 1) return { group, added: 0, skipped: 0, failed: 0, successful: false, startedAt: started.toISOString(), finishedAt: now().toISOString(), lastSuccessAt: null, error: ERRORS.lease, reasons: [] };
       owned = true;
     }
@@ -250,6 +252,6 @@ export async function applyVkPostBatch(options: VkImportOptions, posts: VkPost[]
     }
     return result;
   } finally {
-    if (owned) await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null } });
+    if (owned) await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null, automationLeaseRevision: null } });
   }
 }
