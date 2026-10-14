@@ -15,7 +15,7 @@ export function runtimeEnvironment(args: string[], environment: Record<string, s
 
 export function webCommand(mode: "dev" | "start" | "standalone", args: string[]): string[] {
  const explicitBundler = args.some(arg => ["--webpack", "--turbopack", "--turbo"].includes(arg));
- return mode === "standalone" ? [...args] : [process.execPath, "--bun", resolve("node_modules/next/dist/bin/next"), mode, ...(mode === "dev" && !explicitBundler ? ["--turbopack"] : []), ...args];
+ return mode === "standalone" ? [...args] : [process.execPath, "--bun", resolve("node_modules/next/dist/bin/next"), mode, ...(mode === "dev" && !explicitBundler ? ["--webpack"] : []), ...args];
 }
 
 /** One owner for the web process, importer and optional startup cache warmup. */

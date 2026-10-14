@@ -77,8 +77,8 @@ it("preserves enabled automation and paused history when a compiled worker tempo
 it.each(["--webpack","--turbopack","--turbo"])("honors an explicit dev bundler %s while forwarding the selected port",(bundler)=>{
  expect(webCommand("dev",[bundler,"--port","3028"]).slice(3)).toEqual(["dev",bundler,"--port","3028"]);
 });
-it("keeps Turbopack as the dev default and leaves production startup arguments intact",()=>{
- expect(webCommand("dev",["--port","3028"]).slice(3)).toEqual(["dev","--turbopack","--port","3028"]);
+it("uses Webpack for local dev and leaves production startup arguments intact",()=>{
+ expect(webCommand("dev",["--port","3028"]).slice(3)).toEqual(["dev","--webpack","--port","3028"]);
  expect(webCommand("start",["-p","3028"]).slice(3)).toEqual(["start","-p","3028"]);
  expect(webCommand("standalone",["bun","./server.js"])).toEqual(["bun","./server.js"]);
 });
