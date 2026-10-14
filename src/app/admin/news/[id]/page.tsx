@@ -1,3 +1,4 @@
+import { newsImagesOrderBy } from "@/lib/news-order";
 import NewsClient from "./page.client";
 import { prisma } from "@/prisma";
 import { requireAdminPage } from "@/lib/utils.server";
@@ -11,7 +12,7 @@ async function getNews(id: string) {
   cacheTag("news");
   return prisma.news.findFirst({
     where: { id },
-    include: { tags: true, images: true },
+    include: { tags: true, images: { orderBy: newsImagesOrderBy } },
   });
 }
 

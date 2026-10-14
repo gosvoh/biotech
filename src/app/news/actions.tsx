@@ -1,4 +1,5 @@
 "use server";
+import { newsOrderBy, newsImagesOrderBy } from "@/lib/news-order";
 
 import { prisma } from "@/prisma";
 
@@ -8,7 +9,7 @@ export async function getNews(page: number = 0, tags: string[] = []) {
     id: true,
     tags: true,
     title: true,
-    images: { select: { id: true } },
+    images: { select: { id: true }, orderBy: newsImagesOrderBy },
   };
   const where = {
     hidden: false,
@@ -17,6 +18,7 @@ export async function getNews(page: number = 0, tags: string[] = []) {
 
   return prisma.$transaction([
     prisma.news.findMany({
+      orderBy: newsOrderBy,
       select,
       where,
       skip: page === 0 ? 0 : (page - 1) * 4 + 3,

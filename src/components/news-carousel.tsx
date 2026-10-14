@@ -1,3 +1,4 @@
+import { newsOrderBy, newsImagesOrderBy } from "@/lib/news-order";
 import {
   CarouselContent,
   CarouselItem,
@@ -19,11 +20,12 @@ async function getNews() {
   cacheLife("minutes");
   cacheTag("news");
   return prisma.news.findMany({
+      orderBy: newsOrderBy,
     select: {
       id: true,
       date: true,
       title: true,
-      images: { select: { id: true } },
+      images: { select: { id: true }, orderBy: newsImagesOrderBy },
     },
     where: { hidden: false },
     take: 10,

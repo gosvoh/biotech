@@ -1,3 +1,4 @@
+import { newsImagesOrderBy } from "@/lib/news-order";
 import { generateMeta } from "@/lib/meta";
 import Breadcrumbs from "@/components/breadcrumbs";
 import MarkdownRender from "@/components/markdown-render";
@@ -22,7 +23,7 @@ export async function getNews(id: string) {
   cacheTag("news");
   return prisma.news.findUnique({
     where: { id },
-    include: { tags: true, images: true },
+    include: { tags: true, images: { orderBy: newsImagesOrderBy } },
   });
 }
 

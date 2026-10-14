@@ -129,6 +129,7 @@ model News {
 
     tags   NewsTags[]
     images NewsImages[]
+    vkImport VkImportPost?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt @default(now())
@@ -147,6 +148,7 @@ model NewsTags {
 
 model NewsImages {
     id String @id @default(cuid())
+    sortOrder Int @default(0)
 
     News   News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
     newsId String
@@ -165,4 +167,34 @@ model Publication {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt @default(now())
+}
+
+model VkImportSource {
+    groupId String @id
+    name String
+    screenName String
+    cursorDate Int?
+    lastAttemptAt DateTime?
+    lastSuccessAt DateTime?
+    lastError String?
+    lastResult Json?
+    needsRevalidate Boolean @default(false)
+    leaseToken String?
+    leaseUntil DateTime?
+    posts VkImportPost[]
+}
+
+model VkImportPost {
+    groupId String
+    postId String
+    source VkImportSource @relation(fields: [groupId], references: [groupId], onDelete: Cascade)
+    newsId String? @unique
+    news News? @relation(fields: [newsId], references: [id], onDelete: SetNull)
+    status String
+    snapshot Json?
+    attempts Int @default(0)
+    error String?
+
+    @@id([groupId, postId])
+    @@index([groupId, status])
 }

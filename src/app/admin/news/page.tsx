@@ -1,3 +1,6 @@
+import VkImportPanel from "./import-panel";
+import { getVkImportStatus } from "@/lib/vk-import/status.server";
+import { newsOrderBy, newsImagesOrderBy } from "@/lib/news-order";
 import { prisma } from "@/prisma";
 import { requireAdminPage } from "@/lib/utils.server";
 import { cacheLife, cacheTag } from "next/cache";
@@ -9,6 +12,7 @@ async function getNews() {
   cacheLife("minutes");
   cacheTag("news");
   return prisma.news.findMany({
+      orderBy: newsOrderBy,
     select: {
       id: true,
       date: true,
@@ -16,19 +20,20 @@ async function getNews() {
       links: true,
       tags: true,
       title: true,
-      images: { select: { id: true } },
+      images: { select: { id: true }, orderBy: newsImagesOrderBy },
     },
   });
 }
 
 export default async function News() {
   await requireAdminPage();
-  const news = await getNews();
+  const [news, importStatus] = await Promise.all([getNews(), getVkImportStatus()]);
 
   return (
     <>
       <h1 className="text-2xl font-bold">Новости</h1>
       <Suspense fallback={null}>
+        <VkImportPanel initialStatus={importStatus} />
         <NewsClient news={news} />
       </Suspense>
     </>
