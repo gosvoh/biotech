@@ -2,8 +2,13 @@ import { randomUUID } from "node:crypto";
 import type { Prisma, PrismaClient } from "@/lib/db/client";
 import { getStoredVkSelectionBasis, prepareVkPost } from "./post";
 import { VkApiError, getVkApiErrorMessage } from "./client";
-import type { PreparedVkImage, VkApi, VkImageStore, VkImportResult, VkPost } from "./types";
+import type { PreparedVkImage, VkApi, VkImageStore, VkImportResult, VkPost, VkGroup } from "./types";
 import { createVkLeaseFence, LostVkLease as LostLease, VK_LEASE_MS as LEASE_MS } from "./lease";
+
+import { syncVkNews } from "./sync";
+
+export interface VkPostBatchLease { group: VkGroup; token: string }
+interface ImportBatch extends VkPostBatchLease { posts: VkPost[]; reconsiderSkipped?: boolean; historyJobId?: string }
 
 const PAGE_SIZE = 100;
 const MAX_REASONS = 30;
@@ -26,16 +31,16 @@ export interface VkImportOptions {
 }
 
 /** Manual new-post import. All persistence is scoped to the canonical source. */
-export async function importVkNews({ db, api, images, invalidate, now = () => new Date() }: VkImportOptions): Promise<VkImportResult> {
+export async function importVkNews({ db, api, images, invalidate, now = () => new Date() }: VkImportOptions, batch?: ImportBatch): Promise<VkImportResult> {
   const startedAt = now();
   let group;
-  try { group = await api.getGroup(); }
+  try { group = batch?.group ?? await api.getGroup(); }
   catch (error) { throw new VkApiError(getVkApiErrorMessage(error)); }
   const result: VkImportResult = {
     group, added: 0, skipped: 0, failed: 0, successful: false,
     startedAt: startedAt.toISOString(), finishedAt: startedAt.toISOString(), lastSuccessAt: null, error: null, reasons: [],
   };
-  const token = randomUUID();
+  const token = batch?.token ?? randomUUID();
   let owned = false;
   const reason = (postId: string, message: string) => {
     if (result.reasons.length < MAX_REASONS) result.reasons.push({ postId, reason: message });
@@ -58,6 +63,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     });
     const previous = await db.vkImportSource.findUniqueOrThrow({ where: { groupId: group.id } });
     result.lastSuccessAt = previous.lastSuccessAt?.toISOString() ?? null;
+    if (!batch) {
     const claimed = await db.vkImportSource.updateMany({
       where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: startedAt } }] },
       data: { leaseToken: token, leaseUntil: new Date(startedAt.getTime() + LEASE_MS), name: group.name, screenName: group.screenName, lastAttemptAt: startedAt },
@@ -65,10 +71,15 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     if (claimed.count !== 1) { result.error = ERRORS.lease; return result; }
     owned = true;
 
+    } else await heartbeat();
+
     // Resolve all wall/API pages before publishing: a failed page does not publish a partial scan.
     const candidates = new Map<string, VkPost>();
     let scanCursor = previous.cursorDate;
     try {
+      if (batch) {
+        for (const post of batch.posts) candidates.set(post.id, post);
+      } else {
       for (let offset = 0; ; offset += PAGE_SIZE) {
         await heartbeat();
         const page = await api.getWall(group.id, offset, PAGE_SIZE);
@@ -96,6 +107,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
         for (const post of fetched) if (requestedIds.has(post.id)) candidates.set(post.id, post);
         for (const item of requested) if (!candidates.has(item.postId)) await recordFailure(item.postId, ERRORS.missing, item.revision);
       }
+      }
     } catch (error) {
       if (error instanceof LostLease) throw error;
       result.error = error instanceof IncompleteWallPage ? ERRORS.incomplete : getVkApiErrorMessage(error);
@@ -108,7 +120,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
       const key = { groupId: group.id, postId: post.id };
       const existing = await db.vkImportPost.findUnique({ where: { groupId_postId: key } });
       // The ledger intentionally survives deletion of a news row, so a deleted post cannot reappear.
-      if (existing?.manualDeleted || existing?.status === "imported" || existing?.status === "skipped") {
+      if (existing?.manualDeleted || existing?.status === "imported" || (existing?.status === "skipped" && !batch?.reconsiderSkipped) || existing?.syncEnabled === false) {
         result.skipped++;
         continue;
       }
@@ -144,6 +156,15 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
           });
           await tx.vkImportPost.update({ where: { groupId_postId: key }, data: { status: "imported", newsId: news.id, error: null, selectionBasis: preparedPost.selectionBasis as unknown as Prisma.InputJsonValue, autoHiddenReason: null, lastCheckedAt: now(), lastCheckError: null } });
           await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true, revalidationRevision: { increment: 1 } } });
+          // Attribute creation in the same transaction as publication. A later
+          // progress/cache failure can neither lose nor borrow this job's addition.
+          if (batch?.historyJobId) {
+            const recorded = await tx.vkHistoryPost.updateMany({
+              where: { jobId: batch.historyJobId, postId: post.id, job: { groupId: group.id }, state: { in: ["pending", "failed"] } },
+              data: { outcome: "added" },
+            });
+            if (recorded.count !== 1) throw new LostLease();
+          }
         });
         committed = true;
         result.added++;
@@ -156,10 +177,12 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
         await recordFailure(post.id, ERRORS.post, expectedRevision);
       }
     }
+    if (!batch) {
     await db.$transaction(async (tx) => {
       await fence(tx);
       await tx.vkImportSource.update({ where: { groupId: group.id }, data: { cursorDate: scanCursor } });
     });
+    }
     const current = await db.vkImportSource.findUniqueOrThrow({ where: { groupId: group.id } });
     if (current.needsRevalidate) {
       await heartbeat();
@@ -177,7 +200,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     result.successful = false;
   } finally {
     result.finishedAt = now().toISOString();
-    if (owned) {
+    if (owned && !batch) {
       try {
         await db.$transaction(async (tx) => {
           await fence(tx);
@@ -199,4 +222,34 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     }
   }
   return result;
+}
+
+/** Shared bounded application path. An inherited lease is never released or used for normal check statistics. */
+export async function applyVkPostBatch(options: VkImportOptions, posts: VkPost[], settings: { reconsiderSkipped?: boolean; syncExisting?: boolean; historyJobId?: string; lease?: VkPostBatchLease } = {}): Promise<VkImportResult> {
+  const { db, api, now = () => new Date() } = options;
+  const group = settings.lease?.group ?? await api.getGroup();
+  const token = settings.lease?.token ?? randomUUID();
+  const started = now();
+  const fence = createVkLeaseFence(db, group.id, token, now);
+  let owned = false;
+  try {
+    if (!settings.lease) {
+      await db.vkImportSource.upsert({ where: { groupId: group.id }, update: {}, create: { groupId: group.id, name: group.name, screenName: group.screenName } });
+      const claimed = await db.vkImportSource.updateMany({ where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: started } }] }, data: { leaseToken: token, leaseUntil: new Date(started.getTime() + LEASE_MS) } });
+      if (claimed.count !== 1) return { group, added: 0, skipped: 0, failed: 0, successful: false, startedAt: started.toISOString(), finishedAt: now().toISOString(), lastSuccessAt: null, error: ERRORS.lease, reasons: [] };
+      owned = true;
+    }
+    await fence();
+    const result = await importVkNews(options, { group, token, posts: posts.slice(0, 30), reconsiderSkipped: settings.reconsiderSkipped, historyJobId: settings.historyJobId });
+    if (settings.syncExisting && result.error !== ERRORS.lease) {
+      const sync = await syncVkNews(options, { group, token, posts: posts.slice(0, 30), historyJobId: settings.historyJobId });
+      result.sync = sync;
+      result.failed += sync.failed;
+      result.successful &&= sync.successful;
+      result.error ??= sync.error;
+    }
+    return result;
+  } finally {
+    if (owned) await db.vkImportSource.updateMany({ where: { groupId: group.id, leaseToken: token }, data: { leaseToken: null, leaseUntil: null } });
+  }
 }

@@ -9,6 +9,7 @@ import { createVkImageStore } from "@/lib/vk-import/images";
 import { importVkNews } from "@/lib/vk-import/importer";
 import { syncVkNews } from "@/lib/vk-import/sync";
 import { createNewsPhotoFiles } from "@/lib/vk-import/news-files";
+import { recheckVkTags, type VkTagRecheckResult } from "@/lib/vk-import/recheck";
 import type { VkImportResult } from "@/lib/vk-import/types";
 
 export async function checkVkNews(): Promise<ActionResult<VkImportResult>> {
@@ -30,4 +31,14 @@ export async function checkVkNews(): Promise<ActionResult<VkImportResult>> {
   } catch (error) {
     return { ok: false, error: getVkApiErrorMessage(error) };
   }
+}
+
+export async function recheckVkNewsTags(): Promise<ActionResult<VkTagRecheckResult>> {
+  try { await requireAdmin(); }
+  catch { return { ok: false, error: "Недостаточно прав для пересмотра тегов" }; }
+  const status = getVkConfigStatus();
+  if (!status.configured) return { ok: false, error: status.error ?? "Настройте подключение к ВК" };
+  try {
+    return { ok: true, data: await recheckVkTags({ db: prisma, api: createVkApi(readVkConfig()), images: createVkImageStore(), invalidate: () => revalidate(["newsTags", "news"]) }) };
+  } catch (error) { return { ok: false, error: getVkApiErrorMessage(error) }; }
 }

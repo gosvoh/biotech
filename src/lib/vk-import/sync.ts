@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Prisma } from "@/lib/db/client";
 import { VkApiError, getVkApiErrorMessage } from "./client";
-import type { VkImportOptions } from "./importer";
+import type { VkImportOptions, VkPostBatchLease } from "./importer";
 import { createVkLeaseFence, LostVkLease, VK_LEASE_MS } from "./lease";
 import { getStoredVkSelectionBasis as readBasis, getVkSelectionBasis, prepareVkPost } from "./post";
 import type { PreparedVkImage, VkPost, VkPostLookup, VkSyncResult } from "./types";
@@ -42,17 +42,17 @@ function sameVersion(a: VkPost | null, b: VkPost): boolean {
 }
 
 /** Synchronizes existing identities only; no archive crawl or implicit deletion proof. */
-export async function syncVkNews({ db, api, images, invalidate, now = () => new Date(), target, removeOldImages }: VkSyncOptions): Promise<VkSyncResult> {
+export async function syncVkNews({ db, api, images, invalidate, now = () => new Date(), target, removeOldImages }: VkSyncOptions, batch?: VkPostBatchLease & { posts: VkPost[]; historyJobId?: string }): Promise<VkSyncResult> {
   const startedAt = now();
   let group;
-  try { group = await api.getGroup(); }
+  try { group = batch?.group ?? await api.getGroup(); }
   catch (error) { throw new VkApiError(getVkApiErrorMessage(error)); }
   const result: VkSyncResult = {
     group, checked: 0, updated: 0, hidden: 0, restored: 0, failed: 0, successful: false,
     startedAt: startedAt.toISOString(), finishedAt: startedAt.toISOString(), error: null,
   };
   if (target && target.groupId !== group.id) return { ...result, error: ERRORS.source };
-  const token = randomUUID();
+  const token = batch?.token ?? randomUUID();
   const fence = createVkLeaseFence(db, group.id, token, now);
   const heartbeat = () => fence();
   let owned = false;
@@ -64,6 +64,15 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
     const current = await tx.vkImportPost.findUnique({ where: { groupId_postId: { groupId: group.id, postId: expected.postId } } });
     if (!current || current.revision !== expected.revision || current.manualDeleted || current.newsId !== expected.newsId || current.syncEnabled !== expected.syncEnabled) throw new EditorChanged();
     return current;
+  };
+  const recordEffects = async (tx: Prisma.TransactionClient, postId: string, effects: { updated?: boolean; hidden?: boolean; restored?: boolean; added?: boolean }) => {
+    if (!batch?.historyJobId) return;
+    const data = { ...(effects.updated ? { updated: true } : {}), ...(effects.hidden ? { hidden: true } : {}), ...(effects.restored ? { restored: true } : {}), ...(effects.added ? { outcome: "added" } : {}) };
+    if (!Object.keys(data).length) return;
+    const recorded = await tx.vkHistoryPost.updateMany({
+      where: { jobId: batch.historyJobId, postId, job: { groupId: group.id }, state: { in: ["pending", "failed"] } }, data,
+    });
+    if (recorded.count !== 1) throw new LostVkLease();
   };
   const failure = async (entry: Entry, message: string, confirmedDeletion = false) => {
     result.failed++;
@@ -84,15 +93,17 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
   try {
     await db.vkImportSource.upsert({ where: { groupId: group.id }, update: {}, create: { groupId: group.id, name: group.name, screenName: group.screenName } });
     const previous = await db.vkImportSource.findUniqueOrThrow({ where: { groupId: group.id } });
+    if (!batch) {
     const claimed = await db.vkImportSource.updateMany({
       where: { groupId: group.id, OR: [{ leaseUntil: null }, { leaseUntil: { lte: startedAt } }] },
       data: { leaseToken: token, leaseUntil: new Date(startedAt.getTime() + VK_LEASE_MS), name: group.name, screenName: group.screenName },
     });
     if (claimed.count !== 1) return { ...result, error: ERRORS.lease };
     owned = true;
+    } else await heartbeat();
     // Only failed applications of a previously confirmed deletion enter this bounded queue.
     // Old content remains outside daily synchronization even when availability is retried.
-    const deletionRetries = target ? [] : await db.vkImportPost.findMany({
+    const deletionRetries = target || batch ? [] : await db.vkImportPost.findMany({
       where: { groupId: group.id, deletionRetry: true, manualDeleted: false, syncEnabled: true, newsId: { not: null }, news: { isNot: null } },
       orderBy: [{ deletionRetryAt: "asc" }, { postId: "asc" }], take: 30,
     });
@@ -104,7 +115,10 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
     const outsideLive = new Set<string>();
     const ambiguous = new Set<string>();
     let requested: string[];
-    if (target) requested = [target.postId];
+    if (batch) {
+      for (const post of batch.posts) found.set(post.id, post);
+      requested = [];
+    } else if (target) requested = [target.postId];
     else {
       await heartbeat();
       const page = await api.getWall(group.id, 0, 100);
@@ -177,7 +191,9 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
             if (news) await tx.news.update({ where: { id: news.id }, data: { hidden: true } });
             await tx.vkImportPost.update({ where: { groupId_postId: key }, data: { autoHiddenReason: "Оригинал удалён в ВК", lastCheckedAt: now(), lastCheckError: null, deletionRetry: false, deletionRetryAt: null, revision: { increment: 1 } } });
             if (news && !news.hidden) await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true, revalidationRevision: { increment: 1 } } });
-            return Boolean(news && !news.hidden);
+            const changed = Boolean(news && !news.hidden);
+            await recordEffects(tx, entry.postId, { hidden: changed });
+            return changed;
           });
           result.checked++;
           if (hidden) result.hidden++;
@@ -212,6 +228,7 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
               ...(basis.length && !readBasis(entry.selectionBasis).length ? { selectionBasis: basis as unknown as Prisma.InputJsonValue } : {}),
             } });
             if (currentNews.hidden !== hidden) await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true, revalidationRevision: { increment: 1 } } });
+            await recordEffects(tx, entry.postId, { restored: currentNews.hidden && !hidden, hidden: !currentNews.hidden && hidden });
             return currentNews.hidden && !hidden;
           });
           result.checked++;
@@ -230,7 +247,9 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
               autoHiddenReason: prepared.reason, lastCheckedAt: now(), lastCheckError: null, deletionRetry: false, deletionRetryAt: null, revision: { increment: 1 },
             } });
             if (currentNews && !currentNews.hidden) await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true, revalidationRevision: { increment: 1 } } });
-            return Boolean(currentNews && !currentNews.hidden);
+            const changed = Boolean(currentNews && !currentNews.hidden);
+            await recordEffects(tx, entry.postId, { hidden: changed });
+            return changed;
           });
           result.checked++;
           if (hidden) result.hidden++;
@@ -257,7 +276,9 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
               syncEnabled: true, lastCheckedAt: now(), lastCheckError: null, deletionRetry: false, deletionRetryAt: null, error: null, revision: { increment: 1 },
             } });
             await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true, revalidationRevision: { increment: 1 } } });
-            return { restored: Boolean(oldNews?.hidden && !news.hidden), hidden: Boolean(oldNews && !oldNews.hidden && news.hidden) };
+            const outcome = { restored: Boolean(oldNews?.hidden && !news.hidden), hidden: Boolean(oldNews && !oldNews.hidden && news.hidden) };
+            await recordEffects(tx, entry.postId, { ...outcome, updated: Boolean(current.newsId), added: !current.newsId });
+            return outcome;
           });
           committed = true;
           result.checked++;
@@ -310,7 +331,7 @@ export async function syncVkNews({ db, api, images, invalidate, now = () => new 
     }
   } finally {
     result.finishedAt = now().toISOString();
-    if (owned) {
+    if (owned && !batch) {
       try {
         await db.$transaction(async (tx) => {
           await fence(tx);

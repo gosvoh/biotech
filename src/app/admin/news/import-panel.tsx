@@ -5,18 +5,22 @@ import { Button, Card, Tag } from "antd";
 import { SyncOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import type { VkImportStatus } from "@/lib/vk-import/types";
-import { checkVkNews } from "./import-actions";
+import type { VkTagRecheckStatus } from "@/lib/vk-import/recheck";
+import { checkVkNews, recheckVkNewsTags } from "./import-actions";
 
 function formatTime(value: string | null | undefined) {
   return value ? new Intl.DateTimeFormat("ru-RU", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Moscow" }).format(new Date(value)) + " МСК" : "Ещё не выполнялась";
 }
 
-export default function VkImportPanel({ initialStatus }: { initialStatus: VkImportStatus }) {
+export default function VkImportPanel({ initialStatus, initialTagStatus }: { initialStatus: VkImportStatus; initialTagStatus?: VkTagRecheckStatus | null }) {
   const [status, setStatus] = useState(initialStatus);
   const [pending, setPending] = useState(false);
+  const [tagsPending, setTagsPending] = useState(false);
+  const [tagStatus, setTagStatus] = useState(initialTagStatus);
   const running = useRef(false);
   const router = useRouter();
   useEffect(() => { setStatus(initialStatus); }, [initialStatus]);
+  useEffect(() => { setTagStatus(initialTagStatus); }, [initialTagStatus]);
 
   async function check() {
     if (running.current || !status.configured) return;
@@ -33,6 +37,16 @@ export default function VkImportPanel({ initialStatus }: { initialStatus: VkImpo
     } finally { running.current = false; setPending(false); }
   }
 
+  async function retryTags() {
+    if (running.current || !status.configured) return;
+    running.current = true; setTagsPending(true);
+    try {
+      const result = await recheckVkNewsTags();
+      if (result.ok) { setTagStatus(result.data); router.refresh(); }
+      else setTagStatus((old) => old ? { ...old, error: result.error } : old);
+    } catch { setTagStatus((old) => old ? { ...old, error: "Не удалось пересмотреть теги. Запрос сохранён для повтора." } : old); }
+    finally { running.current = false; setTagsPending(false); }
+  }
   const source = status.group?.screenName ?? status.source;
   const sourcePath = source && /^-?\d+$/.test(source) ? `club${Math.abs(Number(source))}` : source;
   const result = status.lastResult;
@@ -51,7 +65,7 @@ export default function VkImportPanel({ initialStatus }: { initialStatus: VkImpo
             </Tag>
           </div>
         </div>
-        <Button type="primary" icon={<SyncOutlined />} loading={pending} disabled={pending || !status.configured} onClick={check}>
+        <Button type="primary" icon={<SyncOutlined />} loading={pending} disabled={pending || tagsPending || !status.configured} onClick={check}>
           Проверить сейчас
         </Button>
       </div>
@@ -60,6 +74,13 @@ export default function VkImportPanel({ initialStatus }: { initialStatus: VkImpo
         Импортируются собственные посты сообщества с тегами сайта и датой от 1 сентября 2026 года. Репосты пропускаются.
       </p>
       <p className="mt-2 text-sm text-gray-600">Правки за пределами окна автоматически не проверяются. Удаление ранее наблюдавшихся постов проверяется отдельно в ограниченном объёме. Старую новость можно проверить действием «Проверить эту новость» в её карточке. Фото сохраняются на сайте, остальные вложения доступны по ссылке на оригинал.</p>
+      {tagStatus && tagStatus.revision > 0 && <div className="mt-4 rounded border p-3 text-sm" aria-live="polite">
+        <p className="font-medium">{tagStatus.pending ? "Пересмотр тегов ожидает повтора" : "Пересмотр тегов завершён"}</p>
+        <p className="mt-1 text-gray-600">Новый или переименованный тег пересматривает только 30 последних постов. Более ранние записи доступны через импорт истории; опубликованные новости сохраняются.</p>
+        <p className="mt-1 text-gray-500">Последний успешный пересмотр: {formatTime(tagStatus.lastSuccessAt)}</p>
+        {tagStatus.error && <p role="alert" className="mt-2 text-red-700">{tagStatus.error}</p>}
+        {tagStatus.pending && <Button className="mt-2" loading={tagsPending} disabled={pending || tagsPending || !status.configured} onClick={retryTags}>Повторить пересмотр тегов</Button>}
+      </div>}
       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
         <div><dt className="text-gray-500">Последняя попытка</dt><dd>{formatTime(status.lastAttemptAt)}</dd></div>
         <div><dt className="text-gray-500">Последняя успешная проверка новых постов</dt><dd>{formatTime(status.lastSuccessAt)}</dd></div>

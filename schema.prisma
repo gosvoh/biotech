@@ -187,6 +187,11 @@ model VkImportSource {
     lastSyncError String?
     lastSyncResult Json?
     posts VkImportPost[]
+    histories VkHistoryJob[]
+    tagRecheckAppliedRevision Int @default(0)
+    lastTagRecheckAt DateTime?
+    lastTagRecheckError String?
+    lastTagRecheckResult Json?
 }
 
 model VkImportPost {
@@ -212,4 +217,52 @@ model VkImportPost {
 
     @@id([groupId, postId])
     @@index([groupId, status])
+}
+
+
+model VkImportTagCatalog {
+    id Int @id @default(1)
+    revision Int @default(0)
+    lastAttemptAt DateTime?
+    lastError String?
+}
+
+model VkHistoryJob {
+    id String @id @default(cuid())
+    groupId String
+    source VkImportSource @relation(fields: [groupId], references: [groupId], onDelete: Cascade)
+    initialKey String? @unique
+    activeKey String? @unique
+    from String
+    to String
+    initial Boolean @default(false)
+    state String @default("queued")
+    scanOffset Int @default(0)
+    scanCount Int?
+    anchorDate Int?
+    anchorPostId String?
+    exhausted Boolean @default(false)
+    lastSuccessAt DateTime?
+    error String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    posts VkHistoryPost[]
+    @@index([groupId, state])
+}
+
+model VkHistoryPost {
+    jobId String
+    job VkHistoryJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+    postId String
+    snapshot Json
+    state String @default("pending")
+    outcome String?
+    wasImported Boolean @default(false)
+    updated Boolean @default(false)
+    hidden Boolean @default(false)
+    restored Boolean @default(false)
+    attempts Int @default(0)
+    error String?
+    @@id([jobId, postId])
+    @@index([jobId, state])
 }

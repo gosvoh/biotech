@@ -98,3 +98,22 @@ export interface VkNewsState {
   lastCheckedAt: string | null;
   lastCheckError: string | null;
 }
+
+export interface VkHistoryState {
+  id: string;
+  groupId: string;
+  from: string;
+  to: string;
+  initial: boolean;
+  state: "queued" | "running" | "waiting" | "completed";
+  processed: number;
+  added: number;
+  updated: number;
+  hidden: number;
+  restored: number;
+  skipped: number;
+  failed: number;
+  queued: number;
+  lastSuccessAt: string | null;
+  error: string | null;
+}

@@ -14,6 +14,7 @@ vi.mock("@/prisma", () => ({ get prisma() { return mocks.db; } }));
 vi.mock("@/auth", () => ({ auth: mocks.auth, signIn: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidateTag: mocks.revalidateTag }));
 import { addNewsTags, deleteNewsTags, updateNewsTags } from "./actions";
+import { getVkTagRecheckStatus } from "@/lib/vk-import/recheck";
 
 const migration = "20261013220000_news_tag_normalized_title";
 let directory: string;
@@ -50,11 +51,16 @@ beforeAll(async () => {
     foreignKeys: await mocks.db.$queryRawUnsafe("PRAGMA foreign_key_check"),
   };
   vi.stubEnv("DISABLE_ADMIN_AUTH", "false");
+  vi.stubEnv("VK_GROUP_ID", "");
+  vi.stubEnv("VK_GROUP_TOKEN", "");
 }, 30000);
 
 beforeEach(async () => {
   vi.clearAllMocks();
   mocks.auth.mockResolvedValue({ user: { role: "admin" } });
+  await mocks.db.vkImportPost.deleteMany();
+  await mocks.db.vkImportSource.deleteMany();
+  await mocks.db.vkImportTagCatalog.deleteMany();
   await mocks.db.news.deleteMany();
   await mocks.db.newsTags.deleteMany();
 });
@@ -163,4 +169,64 @@ describe("news tag administration", () => {
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.data).toMatchObject({ id: created.data.id, title: "Учёба" });
   });
+});
+
+it("saves an added tag and durable recheck request while VK is not configured", async () => {
+  const saved = await addNewsTags("Образование");
+  expect(saved.ok).toBe(true);
+  expect(await getVkTagRecheckStatus(mocks.db)).toMatchObject({ revision: 1, appliedRevision: 0, pending: true });
+});
+
+it("queues a real rename but leaves the queue unchanged for invalid, unchanged and deleted tags", async () => {
+  const added = await addNewsTags("Наука");
+  if (!added.ok) throw new Error("Fixture creation failed");
+  expect(await getVkTagRecheckStatus(mocks.db)).toMatchObject({ revision: 1 });
+  expect((await updateNewsTags(added.data)).ok).toBe(true);
+  expect((await updateNewsTags({ ...added.data, title: "Не подходит" })).ok).toBe(false);
+  expect(await getVkTagRecheckStatus(mocks.db)).toMatchObject({ revision: 1 });
+  expect((await updateNewsTags({ ...added.data, title: "Образование" })).ok).toBe(true);
+  expect(await getVkTagRecheckStatus(mocks.db)).toMatchObject({ revision: 2 });
+  expect((await deleteNewsTags(added.data.id)).ok).toBe(true);
+  expect(await getVkTagRecheckStatus(mocks.db)).toMatchObject({ revision: 2 });
+});
+
+it("returns a saved tag after VK failure and retains a safe recheck error for retry", async () => {
+  vi.stubEnv("VK_GROUP_ID", "123");
+  vi.stubEnv("VK_GROUP_TOKEN", "VERY_SECRET");
+  vi.stubGlobal("fetch", async () => { throw new Error("network token=VERY_SECRET"); });
+  try {
+    const saved = await addNewsTags("Образование");
+    expect(saved.ok).toBe(true);
+    const queued = await getVkTagRecheckStatus(mocks.db);
+    expect(queued).toMatchObject({ revision: 1, pending: true });
+    expect(queued.error).toContain("Не удалось подключиться");
+    expect(JSON.stringify([saved, queued])).not.toContain("VERY_SECRET");
+  } finally {
+    vi.stubEnv("VK_GROUP_ID", "");
+    vi.stubEnv("VK_GROUP_TOKEN", "");
+    vi.unstubAllGlobals();
+  }
+});
+
+it("runs the queued latest-window recheck immediately after a configured tag is saved", async () => {
+  vi.stubEnv("VK_GROUP_ID", "123");
+  vi.stubEnv("VK_GROUP_TOKEN", "VERY_SECRET");
+  vi.stubGlobal("fetch", async (input: string | URL | Request) => {
+    const url = String(input);
+    if (url.endsWith("groups.getById")) return Response.json({ response: { groups: [{ id: 123, name: "Биотехнологии", screen_name: "biotech.itmo" }] } });
+    if (url.endsWith("wall.get")) return Response.json({ response: { count: 1, items: [{ id: 1, owner_id: -123, from_id: -123, date: 1788339600, text: "Новость\nТекст #Наука", post_type: "post", attachments: [] }] } });
+    throw new Error("Unexpected VK API request");
+  });
+  try {
+    const saved = await addNewsTags("Наука");
+    expect(saved.ok).toBe(true);
+    expect(await getVkTagRecheckStatus(mocks.db, "123")).toMatchObject({ revision: 1, appliedRevision: 1, pending: false, error: null });
+    expect(await mocks.db.news.findFirst({ include: { tags: true } })).toMatchObject({ title: "Новость", hidden: false, tags: [{ title: "Наука" }] });
+    expect(mocks.revalidateTag.mock.calls.map(([tag]) => tag)).toContain("newsTags");
+    expect(mocks.revalidateTag.mock.calls.map(([tag]) => tag)).toContain("news");
+  } finally {
+    vi.stubEnv("VK_GROUP_ID", "");
+    vi.stubEnv("VK_GROUP_TOKEN", "");
+    vi.unstubAllGlobals();
+  }
 });

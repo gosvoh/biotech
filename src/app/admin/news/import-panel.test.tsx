@@ -3,10 +3,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import VkImportPanel from "./import-panel";
-import { checkVkNews } from "./import-actions";
+import { checkVkNews, recheckVkNewsTags } from "./import-actions";
 import type { VkImportStatus } from "@/lib/vk-import/types";
 
-vi.mock("./import-actions", () => ({ checkVkNews: vi.fn() }));
+vi.mock("./import-actions", () => ({ checkVkNews: vi.fn(), recheckVkNewsTags: vi.fn() }));
 const refresh = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 const configured: VkImportStatus = {
@@ -70,4 +70,16 @@ describe("manual VK import panel", () => {
     await act(async () => finish({ ok: false, error: "Не удалось подключиться к ВК" }));
     expect(container.querySelector<HTMLButtonElement>("button")!.disabled).toBe(false);
   });
+});
+
+it("shows a durable tag recheck waiting after failure and retries only the bounded tag operation", async () => {
+  const queued = { revision: 2, appliedRevision: 1, pending: true, lastAttemptAt: null, lastSuccessAt: null, error: "Пересмотр тегов ожидает повтора" };
+  vi.mocked(recheckVkNewsTags).mockResolvedValue({ ok: true, data: { ...queued, pending: false, appliedRevision: 2, error: null, group: { id: "42", name: "Биотех", screenName: "biotech.itmo" }, checked: 30, added: 1, skipped: 29, failed: 0, successful: true } });
+  await act(async () => root.render(<VkImportPanel initialStatus={configured} initialTagStatus={queued} />));
+  expect(container.textContent).toContain("Пересмотр тегов ожидает повтора");
+  const retry = [...container.querySelectorAll<HTMLButtonElement>("button")].find((item) => item.textContent?.includes("Повторить пересмотр тегов"));
+  expect(retry).toBeDefined();
+  await act(async () => retry!.click());
+  expect(recheckVkNewsTags).toHaveBeenCalledOnce(); expect(checkVkNews).not.toHaveBeenCalled();
+  expect(container.textContent).toContain("Пересмотр тегов завершён");
 });
