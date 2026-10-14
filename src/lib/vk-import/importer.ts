@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { Prisma, PrismaClient } from "@/lib/db/client";
-import { prepareVkPost } from "./post";
+import { getStoredVkSelectionBasis, prepareVkPost } from "./post";
 import { VkApiError, getVkApiErrorMessage } from "./client";
 import type { PreparedVkImage, VkApi, VkImageStore, VkImportResult, VkPost } from "./types";
+import { createVkLeaseFence, LostVkLease as LostLease, VK_LEASE_MS as LEASE_MS } from "./lease";
 
-const LEASE_MS = 5 * 60 * 1000;
 const PAGE_SIZE = 100;
 const MAX_REASONS = 30;
 const ERRORS = {
@@ -15,7 +15,6 @@ const ERRORS = {
   lease: "Проверка уже выполняется или была продолжена другим процессом.",
   storage: "Не удалось сохранить результат проверки. Повторите проверку.",
 };
-class LostLease extends Error {}
 class IncompleteWallPage extends Error {}
 
 export interface VkImportOptions {
@@ -42,19 +41,12 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
     if (result.reasons.length < MAX_REASONS) result.reasons.push({ postId, reason: message });
   };
   // This write also serves as the fence: publication and lease verification share a transaction.
-  const fence = async (client: Prisma.TransactionClient = db) => {
-    const current = now();
-    const changed = await client.vkImportSource.updateMany({
-      where: { groupId: group.id, leaseToken: token, leaseUntil: { gt: current } },
-      data: { leaseUntil: new Date(current.getTime() + LEASE_MS) },
-    });
-    if (changed.count !== 1) throw new LostLease();
-  };
+  const fence = createVkLeaseFence(db, group.id, token, now);
   const heartbeat = () => fence();
-  const recordFailure = async (postId: string, message: string) => {
+  const recordFailure = async (postId: string, message: string, revision: number) => {
     await db.$transaction(async (tx) => {
       await fence(tx);
-      await tx.vkImportPost.update({ where: { groupId_postId: { groupId: group.id, postId } }, data: { status: "failed", error: message } });
+      await tx.vkImportPost.updateMany({ where: { groupId: group.id, postId, revision, manualDeleted: false }, data: { status: "failed", error: message } });
     });
     result.failed++;
     reason(postId, message);
@@ -93,7 +85,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
       }
       scanCursor = [...candidates.values()].reduce((latest, post) => Math.max(latest, post.date), previous.cursorDate ?? 0) || previous.cursorDate;
 
-      const retries = await db.vkImportPost.findMany({ where: { groupId: group.id, status: { in: ["failed", "pending"] } }, select: { postId: true } });
+      const retries = await db.vkImportPost.findMany({ where: { groupId: group.id, status: { in: ["failed", "pending"] }, manualDeleted: false }, select: { postId: true, revision: true } });
       const missing = retries.filter((item) => !candidates.has(item.postId));
       for (let offset = 0; offset < missing.length; offset += PAGE_SIZE) {
         await heartbeat();
@@ -102,7 +94,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
         await heartbeat();
         const requestedIds = new Set(requested.map((item) => item.postId));
         for (const post of fetched) if (requestedIds.has(post.id)) candidates.set(post.id, post);
-        for (const item of requested) if (!candidates.has(item.postId)) await recordFailure(item.postId, ERRORS.missing);
+        for (const item of requested) if (!candidates.has(item.postId)) await recordFailure(item.postId, ERRORS.missing, item.revision);
       }
     } catch (error) {
       if (error instanceof LostLease) throw error;
@@ -116,13 +108,18 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
       const key = { groupId: group.id, postId: post.id };
       const existing = await db.vkImportPost.findUnique({ where: { groupId_postId: key } });
       // The ledger intentionally survives deletion of a news row, so a deleted post cannot reappear.
-      if (existing?.status === "imported" || existing?.status === "skipped") {
+      if (existing?.manualDeleted || existing?.status === "imported" || existing?.status === "skipped") {
         result.skipped++;
         continue;
       }
-      const preparedPost = prepareVkPost(post, group, tags);
+      const preparedPost = prepareVkPost(post, group, tags, getStoredVkSelectionBasis(existing?.selectionBasis));
+      const expectedRevision = existing?.revision ?? 0;
       await db.$transaction(async (tx) => {
         await fence(tx);
+        if (existing) {
+          const current = await tx.vkImportPost.findUnique({ where: { groupId_postId: key } });
+          if (!current || current.manualDeleted || current.revision !== expectedRevision || current.newsId !== existing.newsId) throw new LostLease();
+        }
         await tx.vkImportPost.upsert({
           where: { groupId_postId: key },
           create: { ...key, status: preparedPost.ok ? "pending" : "skipped", snapshot: post as unknown as Prisma.InputJsonValue, attempts: 1, error: preparedPost.ok ? null : preparedPost.reason },
@@ -137,16 +134,16 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
         await db.$transaction(async (tx) => {
           await fence(tx);
           const ledger = await tx.vkImportPost.findUniqueOrThrow({ where: { groupId_postId: key } });
-          if (ledger.status !== "pending" || ledger.newsId !== null) throw new LostLease();
+          if (ledger.status !== "pending" || ledger.newsId !== null || ledger.manualDeleted || ledger.revision !== expectedRevision) throw new LostLease();
           const news = await tx.news.create({
             data: {
-              title: preparedPost.title, text: preparedPost.text, date: preparedPost.date, links: preparedPost.links,
+              title: preparedPost.title, text: preparedPost.text, date: preparedPost.date, links: preparedPost.links, hidden: ledger.manualHidden,
               tags: { connect: preparedPost.tagIds.map((id) => ({ id })) },
               images: { create: preparedImages.map((image) => ({ id: image.id, sortOrder: image.sortOrder })) },
             },
           });
-          await tx.vkImportPost.update({ where: { groupId_postId: key }, data: { status: "imported", newsId: news.id, error: null } });
-          await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true } });
+          await tx.vkImportPost.update({ where: { groupId_postId: key }, data: { status: "imported", newsId: news.id, error: null, selectionBasis: preparedPost.selectionBasis as unknown as Prisma.InputJsonValue, autoHiddenReason: null, lastCheckedAt: now(), lastCheckError: null } });
+          await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: true, revalidationRevision: { increment: 1 } } });
         });
         committed = true;
         result.added++;
@@ -156,7 +153,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
           try { await images.discard(preparedImages); } catch { /* Cleanup remains scoped to this attempt. */ }
         }
         if (error instanceof LostLease) throw error;
-        await recordFailure(post.id, ERRORS.post);
+        await recordFailure(post.id, ERRORS.post, expectedRevision);
       }
     }
     await db.$transaction(async (tx) => {
@@ -170,7 +167,7 @@ export async function importVkNews({ db, api, images, invalidate, now = () => ne
       catch { result.error = ERRORS.cache; }
       if (!result.error) await db.$transaction(async (tx) => {
         await fence(tx);
-        await tx.vkImportSource.update({ where: { groupId: group.id }, data: { needsRevalidate: false } });
+        await tx.vkImportSource.updateMany({ where: { groupId: group.id, revalidationRevision: current.revalidationRevision }, data: { needsRevalidate: false } });
       });
     }
     if (result.failed && !result.error) result.error = "Некоторые записи не импортированы. Повторите проверку для новой попытки.";

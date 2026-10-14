@@ -13,6 +13,9 @@ import {
   Upload,
 } from "antd";
 import { addNews, updateNews } from "./actions";
+import { duplicateNews } from "../actions";
+import VkNewsControls from "./vk-controls";
+import type { VkNewsState } from "@/lib/vk-import/types";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useAction } from "@/lib/use-action";
@@ -40,9 +43,13 @@ function parseNewsLinks(links?: string | null): {
 export default function NewsClient({
   news,
   tags,
+  vkState,
+  canCheck = true,
 }: {
   news?: News & { tags: NewsTags[]; images: NewsImages[] };
   tags: NewsTags[];
+  vkState?: VkNewsState | null;
+  canCheck?: boolean;
 }) {
   // Parse defensively: legacy or hand-edited rows may hold a non-JSON `links`
   // value, and an unguarded JSON.parse here would crash the whole edit page.
@@ -54,9 +61,13 @@ export default function NewsClient({
 
   return (
     <>
+      {news && vkState && <VkNewsControls newsId={news.id} state={vkState} canCheck={canCheck} />}
+      {news && <div className="mb-4"><Button disabled={pending} onClick={() => startTransition(async () => { await runAction(duplicateNews(news.id), (draft) => router.push(`/admin/news/${draft.id}`)); })}>Создать самостоятельную копию</Button><p className="mt-2 text-sm text-gray-600">Копия сохранённой новости будет скрытым черновиком с собственными фотографиями.</p></div>}
       <Form
+        disabled={vkState?.syncEnabled}
         preserve={false}
         onFinish={(values) => {
+          if (vkState?.syncEnabled) return;
           const fd = new FormData();
           if (news?.id) fd.append("id", news.id);
           for (const key in values) {
@@ -166,9 +177,9 @@ export default function NewsClient({
         <Form.Item name="date" label="Дата" rules={[{ required: true }]}>
           <DatePicker format="LL" className="w-full" />
         </Form.Item>
-        <Form.Item name="hidden" label="Скрыта" valuePropName="checked">
+        {!vkState && <Form.Item name="hidden" label="Скрыта" valuePropName="checked">
           <Checkbox />
-        </Form.Item>
+        </Form.Item>}
         <Form.Item
           label="Изображения"
           name="images"
@@ -199,6 +210,8 @@ export default function NewsClient({
         >
           <MarkdownEditor
             height={400}
+            hideToolbar={vkState?.syncEnabled}
+            textareaProps={{readOnly: vkState?.syncEnabled}}
             previewOptions={{
               rehypeRewrite,
               className: cn(
@@ -232,7 +245,7 @@ export default function NewsClient({
             }}
           />
         </Form.Item>
-        <Button type="primary" htmlType="submit" loading={pending}>
+        <Button type="primary" htmlType="submit" loading={pending} disabled={vkState?.syncEnabled}>
           Сохранить
         </Button>
       </Form>

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import type { VkImportStatus } from "@/lib/vk-import/types";
 import { checkVkNews } from "./import-actions";
 
-function formatTime(value: string | null) {
+function formatTime(value: string | null | undefined) {
   return value ? new Intl.DateTimeFormat("ru-RU", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Moscow" }).format(new Date(value)) + " МСК" : "Ещё не выполнялась";
 }
 
@@ -25,7 +25,7 @@ export default function VkImportPanel({ initialStatus }: { initialStatus: VkImpo
       const result = await checkVkNews();
       if (!result.ok) setStatus((old) => ({ ...old, error: result.error, lastResult: null }));
       else {
-        setStatus((old) => ({ ...old, group: result.data.group, lastAttemptAt: result.data.startedAt, lastSuccessAt: result.data.lastSuccessAt, lastResult: result.data, error: result.data.error }));
+        setStatus((old) => ({ ...old, group: result.data.group, lastAttemptAt: result.data.startedAt, lastSuccessAt: result.data.lastSuccessAt, lastResult: result.data, lastSyncAt: result.data.sync?.successful ? result.data.sync.finishedAt : old.lastSyncAt, lastSyncResult: result.data.sync ?? old.lastSyncResult, error: result.data.error }));
         router.refresh();
       }
     } catch {
@@ -36,6 +36,7 @@ export default function VkImportPanel({ initialStatus }: { initialStatus: VkImpo
   const source = status.group?.screenName ?? status.source;
   const sourcePath = source && /^-?\d+$/.test(source) ? `club${Math.abs(Number(source))}` : source;
   const result = status.lastResult;
+  const synced = status.lastSyncResult ?? result?.sync;
   return (
     <Card className="my-5" title="Новости из ВК">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -55,14 +56,16 @@ export default function VkImportPanel({ initialStatus }: { initialStatus: VkImpo
         </Button>
       </div>
       <p className="mt-4 text-sm text-gray-600">
-        Кнопка проверяет новые публикации после предыдущей проверки. При первом запуске проверяются 30 последних постов; после простоя — все новые публикации.
+        Кнопка проверяет новые публикации после предыдущей проверки и изменения в 30 последних постах. При первом запуске проверяются 30 последних постов; после простоя — все новые публикации.
         Импортируются собственные посты сообщества с тегами сайта и датой от 1 сентября 2026 года. Репосты пропускаются.
       </p>
-      <p className="mt-2 text-sm text-gray-600">Редактирования ранее импортированных новостей и более старый архив этой проверкой пока не обрабатываются. Фото сохраняются на сайте, остальные вложения доступны по ссылке на оригинал.</p>
+      <p className="mt-2 text-sm text-gray-600">Правки за пределами окна автоматически не проверяются. Удаление ранее наблюдавшихся постов проверяется отдельно в ограниченном объёме. Старую новость можно проверить действием «Проверить эту новость» в её карточке. Фото сохраняются на сайте, остальные вложения доступны по ссылке на оригинал.</p>
       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
         <div><dt className="text-gray-500">Последняя попытка</dt><dd>{formatTime(status.lastAttemptAt)}</dd></div>
-        <div><dt className="text-gray-500">Последняя успешная проверка</dt><dd>{formatTime(status.lastSuccessAt)}</dd></div>
+        <div><dt className="text-gray-500">Последняя успешная проверка новых постов</dt><dd>{formatTime(status.lastSuccessAt)}</dd></div>
+        <div><dt className="text-gray-500">Последняя успешная проверка изменений (30 постов)</dt><dd>{formatTime(status.lastSyncAt)}</dd></div>
       </dl>
+      {synced && <div className="mt-3 text-sm" aria-live="polite"><p className="font-medium">Изменения: {synced.successful ? "проверка завершена" : "проверка завершена с ошибками"}</p><p>Проверено: {synced.checked} · Обновлено: {synced.updated} · Скрыто: {synced.hidden} · Восстановлено: {synced.restored} · Ошибок: {synced.failed}</p></div>}
       {status.error && <p role="alert" className="mt-4 text-red-700">{status.error}</p>}
       {result && <div aria-live="polite" className="mt-4">
         <p className="font-medium">{result.successful ? "Проверка завершена" : "Проверка завершена с ошибками"}</p>

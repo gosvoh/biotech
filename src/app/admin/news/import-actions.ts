@@ -7,6 +7,8 @@ import { createVkApi, getVkApiErrorMessage } from "@/lib/vk-import/client";
 import { getVkConfigStatus, readVkConfig } from "@/lib/vk-import/config";
 import { createVkImageStore } from "@/lib/vk-import/images";
 import { importVkNews } from "@/lib/vk-import/importer";
+import { syncVkNews } from "@/lib/vk-import/sync";
+import { createNewsPhotoFiles } from "@/lib/vk-import/news-files";
 import type { VkImportResult } from "@/lib/vk-import/types";
 
 export async function checkVkNews(): Promise<ActionResult<VkImportResult>> {
@@ -15,10 +17,15 @@ export async function checkVkNews(): Promise<ActionResult<VkImportResult>> {
   const status = getVkConfigStatus();
   if (!status.configured) return { ok: false, error: status.error ?? "Настройте подключение к ВК на сервере" };
   try {
+    const api = createVkApi(readVkConfig());
     const result = await importVkNews({
-      db: prisma, api: createVkApi(readVkConfig()), images: createVkImageStore(),
+      db: prisma, api, images: createVkImageStore(),
       invalidate: () => revalidate("news"),
     });
+    // A failed new post must not block checking already published news.
+    result.sync = await syncVkNews({db:prisma,api:{...api,getGroup:async()=>result.group},images:createVkImageStore(),removeOldImages:createNewsPhotoFiles().remove,invalidate:()=>revalidate("news")});
+    result.successful = result.successful && result.sync.successful;
+    result.error ??= result.sync.error;
     return { ok: true, data: result };
   } catch (error) {
     return { ok: false, error: getVkApiErrorMessage(error) };

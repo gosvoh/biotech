@@ -153,3 +153,130 @@ describe("VK HTTP boundary", () => {
       await expect(api.getWall(String(group), Number(offset), Number(count))).rejects.toThrow(/параметр/i);
     });
 });
+
+describe("VK conservative post lookup", () => {
+  it("returns complete live posts separately from explicit boolean deletion stubs", async () => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { items: [
+      post, { id: 8, owner_id: -123, is_deleted: true },
+    ] } })));
+    expect(await api.lookupPosts!("123", ["7", "8"])).toEqual({
+      items: [{ id: "7", ownerId: "-123", fromId: "-123", date: 1788210000,
+        text: "Заголовок\nТекст #образование", isPinned: false, isRepost: false, postType: "post", photos: [] }],
+      deletedIds: ["8"], ambiguousIds: [],
+    });
+  });
+
+  it("treats an empty response as ambiguous even when count claims completeness", async () => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { count: 0, items: [] } })));
+    expect(await api.lookupPosts!("123", ["7", "8"])).toEqual({ items: [], deletedIds: [], ambiguousIds: ["7", "8"] });
+  });
+
+  it("preserves valid live items from a partial response without inferring omitted deletions", async () => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { items: [post] } })));
+    const result = await api.lookupPosts!("123", ["7", "8"]);
+    expect(result.items.map((item) => item.id)).toEqual(["7"]);
+    expect(result.deletedIds).toEqual([]);
+    expect(result.ambiguousIds).toEqual(["8"]);
+  });
+
+  it("does not confirm even explicit deletion in an incomplete response", async () => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { items: [
+      { id: 7, owner_id: -123, is_deleted: true },
+    ] } })));
+    expect(await api.lookupPosts!("123", ["7", "8"])).toEqual({ items: [], deletedIds: [], ambiguousIds: ["7", "8"] });
+  });
+
+  it.each([
+    { items: [{ ...post, owner_id: -999 }] },
+    { items: [{ ...post, id: 9 }] },
+    { items: [{ id: 7, owner_id: -999, is_deleted: true }] },
+    { items: [post, { ...post, is_deleted: true }] },
+    { items: [{ id: 7, owner_id: -123, is_deleted: true }, { id: 7, owner_id: -123, is_deleted: true }] },
+    { items: [post, { ...post, id: 8 }] },
+  ])("makes an entire contaminated lookup ambiguous without trusting deletion %#", async ({ items }) => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { items } })));
+    expect(await api.lookupPosts!("123", ["7"])).toEqual({ items: [], deletedIds: [], ambiguousIds: ["7"] });
+  });
+
+  it.each([1, "true", null])("does not accept an undocumented deletion flag %#", async (isDeleted) => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { items: [{ ...post, is_deleted: isDeleted }] } })));
+    expect(await api.lookupPosts!("123", ["7"])).toEqual({ items: [], deletedIds: [], ambiguousIds: ["7"] });
+  });
+
+  it("accepts the documented false deletion flag as a live post", async () => {
+    const api = createVkApi(config, fakeFetch(() => response({ response: { items: [{ ...post, is_deleted: false }] } })));
+    const result = await api.lookupPosts!("123", ["7"]);
+    expect(result.items.map((item) => item.id)).toEqual(["7"]);
+    expect(result.deletedIds).toEqual([]);
+    expect(result.ambiguousIds).toEqual([]);
+  });
+
+  it.each([
+    { response: [] }, { response: {} }, { response: { items: null } },
+    { response: { items: [null] } },
+    { response: { items: [{ id: "7", owner_id: -123, is_deleted: true }] } },
+    { response: { items: [{ id: 7, owner_id: null, is_deleted: true }] } },
+    { response: { items: [post, { ...post, id: 8, text: null }] } },
+  ])("rejects the entire malformed lookup response safely %#", async (envelope) => {
+    const api = createVkApi(config, fakeFetch(() => response(envelope)));
+    await expect(api.lookupPosts!("123", ["7", "8"])).rejects.toThrow(/ВК/);
+  });
+
+  it.each([5, 27])("sanitizes lookup API error %s without producing deletion evidence", async (code) => {
+    const api = createVkApi(config, fakeFetch(() => response({ error: {
+      error_code: code, error_msg: secret, request_params: [{ key: "access_token", value: secret }],
+    } })));
+    const error = await api.lookupPosts!("123", ["7"]).catch((value: unknown) => value as Error);
+    expect(error).toBeInstanceOf(Error);
+    expect(getVkApiErrorMessage(error)).toMatch(/токен/i);
+    expect(JSON.stringify(error, Object.getOwnPropertyNames(error))).not.toContain(secret);
+  });
+
+  it("sanitizes lookup transport failures without returning partial deletion evidence", async () => {
+    const api = createVkApi(config, fakeFetch(() => { throw new Error(secret); }));
+    const error = await api.lookupPosts!("123", ["7"]).catch((value: unknown) => value as Error);
+    expect(error).toBeInstanceOf(Error);
+    expect(getVkApiErrorMessage(error)).toMatch(/ВК/);
+    expect(JSON.stringify(error, Object.getOwnPropertyNames(error))).not.toContain(secret);
+  });
+
+  it("deduplicates requested IDs and chunks at 100 while validating each exact identity", async () => {
+    const requested: string[][] = [];
+    const api = createVkApi(config, fakeFetch((url, init) => {
+      expect(url).toBe("https://api.vk.com/method/wall.getById");
+      const ids = new URLSearchParams(String(init.body)).get("posts")!.split(",");
+      requested.push(ids);
+      return response({ response: { items: ids.map((id) => ({ id: Number(id.split("_")[1]), owner_id: -123, is_deleted: true })) } });
+    }));
+    const result = await api.lookupPosts!("123", ["1", ...Array.from({ length: 101 }, (_v, i) => String(i + 1))]);
+    expect(requested.map((ids) => ids.length)).toEqual([100, 1]);
+    expect(requested[0][0]).toBe("-123_1");
+    expect(requested[1]).toEqual(["-123_101"]);
+    expect(result.items).toEqual([]);
+    expect(result.deletedIds).toHaveLength(101);
+    expect(result.deletedIds[0]).toBe("1");
+    expect(result.deletedIds[100]).toBe("101");
+    expect(result.ambiguousIds).toEqual([]);
+  });
+
+  it("returns no partial evidence if a later lookup chunk fails", async () => {
+    let page = 0;
+    const api = createVkApi(config, fakeFetch((_url, init) => {
+      if (page++ > 0) return response({ error: { error_code: 5, error_msg: secret } });
+      const ids = new URLSearchParams(String(init.body)).get("posts")!.split(",");
+      return response({ response: { items: ids.map((id) => ({ id: Number(id.split("_")[1]), owner_id: -123, is_deleted: true })) } });
+    }));
+    await expect(api.lookupPosts!("123", Array.from({ length: 101 }, (_v, i) => String(i + 1)))).rejects.toThrow(/токен/i);
+  });
+
+  it("does not send an empty lookup request", async () => {
+    const api = createVkApi(config, fakeFetch(() => { throw new Error("must not call"); }));
+    expect(await api.lookupPosts!("123", [])).toEqual({ items: [], deletedIds: [], ambiguousIds: [] });
+  });
+
+  it.each([["-123", ["7"]], ["123", ["0"]], ["123", ["9007199254740992"]]])
+    ("rejects invalid lookup arguments before transport %#", async (group, ids) => {
+      const api = createVkApi(config, fakeFetch(() => { throw new Error("must not call"); }));
+      await expect(api.lookupPosts!(group as string, ids as string[])).rejects.toThrow(/параметр/i);
+    });
+});

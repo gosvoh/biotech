@@ -111,3 +111,39 @@ it.each([
   if (result.ok) expect(result.data.successful).toBe(false);
   expect(await mocks.db.news.count()).toBe(0);
 });
+
+it("ordinary check updates an already imported post despite an unchanged publication date", async () => {
+  await checkVkNews();
+  const baseline=fetchMock.getMockImplementation()!;
+  fetchMock.mockImplementation(async(url,init)=>{
+    const original=await baseline(url,init);
+    if(!String(url).endsWith("wall.get")) return original;
+    const payload=await original.json(); payload.response.items[0].text="Изменённая новость #Наука";
+    return new Response(JSON.stringify(payload));
+  });
+  const result=await checkVkNews();
+  expect(result).toMatchObject({ok:true,data:{added:0,sync:{updated:1,successful:true}}});
+  expect((await getNews())[0][0].title).toBe("Изменённая новость");
+});
+
+it.each(["edit","deleted"])("checks existing window news despite an unrelated new photo failure (%s)", async (existingChange) => {
+  await checkVkNews();
+  const baseline=fetchMock.getMockImplementation()!;
+  fetchMock.mockImplementation(async(url,init)=>{
+    if(String(url).startsWith("https://sun9-1.userapi.com/")) throw new Error("test-only photo failure");
+    if(String(url).endsWith("wall.getById")) return response({items:[{id:3,owner_id:-42,is_deleted:true}]});
+    const original=await baseline(url,init);
+    if(!String(url).endsWith("wall.get")) return original;
+    const payload=await original.json();
+    if(existingChange==="edit") payload.response.items[0].text="Правка прежней новости #Наука";
+    else payload.response.items.shift();
+    payload.response.items.unshift({id:4,owner_id:-42,from_id:-42,date:Date.parse("2026-10-14T10:00:00Z")/1000,text:"Новый пост с ошибкой фото #Наука",post_type:"post",attachments:[{type:"photo",photo:{sizes:[{url:"https://sun9-1.userapi.com/test.jpg",width:100,height:100}]}}]});
+    payload.response.count=payload.response.items.length;
+    return new Response(JSON.stringify(payload));
+  });
+  const result=await checkVkNews();
+  expect(result).toMatchObject({ok:true,data:{successful:false,failed:1,sync:{successful:true}}});
+  expect(await getVkImportStatus()).toMatchObject({lastResult:{successful:false},lastSyncResult:{successful:true}});
+  if(existingChange==="edit") expect((await getNews())[0][0].title).toBe("Правка прежней новости");
+  else expect((await getNews())[1]).toBe(0);
+});

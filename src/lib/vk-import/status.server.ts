@@ -1,6 +1,6 @@
 import { prisma } from "@/prisma";
 import { getVkConfigStatus } from "./config";
-import type { VkImportResult, VkImportStatus } from "./types";
+import type { VkImportResult, VkImportStatus, VkSyncResult } from "./types";
 
 /** No credentials or network requests cross this administrative read boundary. */
 export async function getVkImportStatus(): Promise<VkImportStatus> {
@@ -13,13 +13,18 @@ export async function getVkImportStatus(): Promise<VkImportStatus> {
     const sources = await prisma.vkImportSource.findMany();
     const stored = sources.find((item) => numeric ? item.groupId === numeric : item.screenName.toLowerCase() === source);
     if (!stored) return status;
+    const imported = stored.lastResult as unknown as VkImportResult | null;
+    const synced = stored.lastSyncResult as unknown as VkSyncResult | null;
+    const combined = imported && synced ? {...imported,sync:synced,successful:imported.successful && synced.successful,error:imported.error ?? synced.error} : imported;
     return {
       ...status,
       group: { id: stored.groupId, name: stored.name, screenName: stored.screenName },
       lastAttemptAt: stored.lastAttemptAt?.toISOString() ?? null,
       lastSuccessAt: stored.lastSuccessAt?.toISOString() ?? null,
-      lastResult: stored.lastResult as unknown as VkImportResult | null,
-      error: stored.lastError,
+      lastResult: combined,
+      lastSyncAt: stored.lastSyncAt?.toISOString() ?? null,
+      lastSyncResult: stored.lastSyncResult as unknown as VkSyncResult | null,
+      error: stored.lastError ?? stored.lastSyncError,
     };
   } catch {
     return { ...status, error: "Не удалось прочитать состояние импорта. Проверьте миграции базы и повторите попытку." };

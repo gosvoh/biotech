@@ -179,8 +179,13 @@ model VkImportSource {
     lastError String?
     lastResult Json?
     needsRevalidate Boolean @default(false)
+    revalidationRevision Int @default(0)
     leaseToken String?
     leaseUntil DateTime?
+    recentPostIds Json?
+    lastSyncAt DateTime?
+    lastSyncError String?
+    lastSyncResult Json?
     posts VkImportPost[]
 }
 
@@ -192,6 +197,16 @@ model VkImportPost {
     news News? @relation(fields: [newsId], references: [id], onDelete: SetNull)
     status String
     snapshot Json?
+    selectionBasis Json?
+    syncEnabled Boolean @default(true)
+    manualHidden Boolean @default(false)
+    manualDeleted Boolean @default(false)
+    autoHiddenReason String?
+    lastCheckedAt DateTime?
+    lastCheckError String?
+    deletionRetry Boolean @default(false)
+    deletionRetryAt DateTime?
+    revision Int @default(0)
     attempts Int @default(0)
     error String?
 

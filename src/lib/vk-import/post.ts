@@ -1,5 +1,5 @@
 import { parseNewsTagTitle, type NewsTagName } from "@/lib/news-tags";
-import type { VkGroup, VkPost } from "./types";
+import type { VkGroup, VkPost, VkSelectionBasis } from "./types";
 
 const FIRST_PUBLICATION = Date.parse("2026-08-31T21:00:00Z") / 1000;
 
@@ -61,24 +61,48 @@ function heading(text: string): string | null {
   return null;
 }
 
-export function prepareVkPost(post: VkPost, group: VkGroup, tags: readonly NewsTagName[]):
-  | { ok: true; title: string; text: string; date: string; tagIds: string[]; links: string }
+/** The spelling of a publication basis survives catalog rename and deletion. */
+export function getVkHashtags(text: string, group: VkGroup): Set<string> {
+  const suffixes = new Set([group.screenName.toLowerCase(), `club${group.id}`, `public${group.id}`]);
+  return new Set(hashtags(text).filter((match) => !match[2] || suffixes.has(match[2].toLowerCase())).map((match) => match[1].toLowerCase()));
+}
+
+export function getStoredVkSelectionBasis(value: unknown): VkSelectionBasis[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => item && typeof item === "object" && !Array.isArray(item)
+    && typeof item.name === "string" && typeof item.tagId === "string" && item.name && item.tagId
+    ? [{ name: item.name.toLowerCase(), tagId: item.tagId }] : []);
+}
+
+export function getVkSelectionBasis(text: string, group: VkGroup, tags: readonly NewsTagName[]): VkSelectionBasis[] {
+  const found = getVkHashtags(text, group);
+  return tags.flatMap((tag) => {
+    const parsed = parseNewsTagTitle(tag.title);
+    return parsed.ok && parsed.title === tag.title && found.has(parsed.normalizedTitle)
+      ? [{ name: parsed.normalizedTitle, tagId: tag.id }] : [];
+  });
+}
+
+export function prepareVkPost(post: VkPost, group: VkGroup, tags: readonly NewsTagName[], savedBasis: readonly VkSelectionBasis[] = []):
+  | { ok: true; title: string; text: string; date: string; tagIds: string[]; links: string; selectionBasis: VkSelectionBasis[] }
   | { ok: false; reason: string } {
   if (post.ownerId !== `-${group.id}` || post.fromId !== `-${group.id}`) return { ok: false, reason: "Пост опубликован не от имени сообщества" };
   if (post.isRepost) return { ok: false, reason: "Репосты не импортируются" };
   if (post.postType !== "post") return { ok: false, reason: "Пост ещё не опубликован" };
   if (!Number.isSafeInteger(post.date) || post.date < FIRST_PUBLICATION) return { ok: false, reason: "Пост опубликован раньше 1 сентября 2026 года" };
-  const suffixes = new Set([group.screenName.toLowerCase(), `club${group.id}`, `public${group.id}`]);
-  const found = new Set(hashtags(post.text).filter((match) => !match[2] || suffixes.has(match[2].toLowerCase())).map((match) => match[1].toLowerCase()));
-  const tagIds = tags.filter((tag) => {
-    const parsed = parseNewsTagTitle(tag.title);
-    return parsed.ok && parsed.title === tag.title && found.has(parsed.normalizedTitle);
-  }).map((tag) => tag.id);
-  if (!tagIds.length) return { ok: false, reason: "Нет совпадений с тегами сайта" };
+  const found = getVkHashtags(post.text, group);
+  const selectionBasis = [...savedBasis];
+  for (const item of getVkSelectionBasis(post.text, group, tags)) {
+    if (!selectionBasis.some((old) => old.name === item.name && old.tagId === item.tagId)) selectionBasis.push(item);
+  }
+  const matching = selectionBasis.filter((item) => found.has(item.name));
+  if (!matching.length) return { ok: false, reason: "Нет совпадений с тегами сайта или сохранённым основанием публикации" };
+  const available = new Set(tags.map((tag) => tag.id));
+  const tagIds = [...new Set(matching.map((item) => item.tagId).filter((id) => available.has(id)))];
   const title = heading(post.text);
   if (!title) return { ok: false, reason: "В посте нет содержательного текста" };
   return {
-    ok: true, title, text: vkTextToMarkdown(post.text), tagIds,
+    ok: true, title, text: vkTextToMarkdown(post.text), tagIds, selectionBasis,
     date: new Date((post.date + 3 * 3600) * 1000).toISOString().slice(0, 10),
     links: JSON.stringify({ vkLink: `https://vk.ru/wall-${group.id}_${post.id}` }),
   };

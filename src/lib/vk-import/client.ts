@@ -1,4 +1,4 @@
-import type { VkApi, VkPhoto, VkPost } from "./types";
+import type { VkApi, VkPhoto, VkPost, VkPostLookup } from "./types";
 import type { VkConfig } from "./config";
 
 // VKCOM/vk-api-schema (5.199): groups.getById -> { groups }, wall.getById -> { items }.
@@ -123,6 +123,49 @@ function invalidParameters(): never {
   throw new VkApiError(errors.parameters);
 }
 
+/** Explicit deletion is boolean in VKCOM schema 5.199 wall_wallpost. */
+function normalizeLookup(value: unknown, groupId: string, requested: string[]): VkPostLookup {
+  const entries = list(record(value).items).map((value) => {
+    const raw = record(value);
+    const id = String(integer(raw.id, 1));
+    const owner = ownerId(raw.owner_id);
+    const deleted = raw.is_deleted;
+    if (deleted !== undefined && typeof deleted !== "boolean") return { id, owner, ambiguous: true };
+    if (deleted === true) {
+      // Tombstones need identity and the explicit flag, not absent live content.
+      // Reject malformed supplied content before trusting any entry in the response.
+      if (raw.from_id !== undefined) ownerId(raw.from_id);
+      if (raw.date !== undefined) integer(raw.date, 0);
+      if (raw.text !== undefined) string(raw.text);
+      if (raw.post_type !== undefined) string(raw.post_type);
+      if (raw.attachments !== undefined) photos(raw.attachments);
+      if (raw.copy_history !== undefined) list(raw.copy_history);
+      if (raw.is_pinned !== undefined) flag(raw.is_pinned);
+      return { id, owner, deleted: true };
+    }
+    return { id, owner, post: normalizePost(raw) };
+  });
+  const requestedSet = new Set(requested);
+  const seen = new Set<string>();
+  const contaminated = entries.some((entry) => {
+    const duplicate = seen.has(entry.id);
+    seen.add(entry.id);
+    return duplicate || entry.owner !== `-${groupId}` || !requestedSet.has(entry.id) || entry.ambiguous;
+  });
+  if (contaminated) return { items: [], deletedIds: [], ambiguousIds: requested };
+
+  const complete = entries.length === requested.length;
+  const byId = new Map(entries.map((entry) => [entry.id, entry]));
+  const result: VkPostLookup = { items: [], deletedIds: [], ambiguousIds: [] };
+  for (const id of requested) {
+    const entry = byId.get(id);
+    if (entry?.post) result.items.push(entry.post);
+    else if (entry?.deleted && complete) result.deletedIds.push(id);
+    else result.ambiguousIds.push(id);
+  }
+  // An omission, count, or failed request never establishes deletion.
+  return result;
+}
 /** Fetch-only boundary. Eligibility and publication decisions belong to the importer. */
 export function createVkApi(config: VkConfig, fetcher: typeof fetch = fetch): VkApi {
   async function request(method: "groups.getById" | "wall.get" | "wall.getById", parameters: Record<string, string>): Promise<unknown> {
@@ -184,6 +227,20 @@ export function createVkApi(config: VkConfig, fetcher: typeof fetch = fetch): Vk
         owner_id: `-${groupId}`, offset: String(offset), count: String(Math.min(count, 100)), filter: "all",
       }));
       return { count: integer(response.count, 0), items: list(response.items).map(normalizePost) };
+    },
+    async lookupPosts(groupId, postIds) {
+      if (!positiveId(groupId) || postIds.some((id) => !positiveId(id))) invalidParameters();
+      const requested = [...new Set(postIds)];
+      const result: VkPostLookup = { items: [], deletedIds: [], ambiguousIds: [] };
+      for (let start = 0; start < requested.length; start += 100) {
+        const chunk = requested.slice(start, start + 100);
+        const posts = chunk.map((id) => `-${groupId}_${id}`).join(",");
+        const lookup = normalizeLookup(await request("wall.getById", { posts }), groupId, chunk);
+        result.items.push(...lookup.items);
+        result.deletedIds.push(...lookup.deletedIds);
+        result.ambiguousIds.push(...lookup.ambiguousIds);
+      }
+      return result;
     },
     async getPosts(groupId, postIds) {
       if (!positiveId(groupId) || postIds.some((id) => !positiveId(id))) invalidParameters();

@@ -89,10 +89,14 @@ export async function updateNews(formData: FormData) {
 
     return dbActionWithResult(
       prisma.$transaction(async (prisma) => {
+        const linked = await prisma.vkImportPost.findUnique({ where: { newsId: id } });
+        if (linked?.syncEnabled) throw new Error("Отключите синхронизацию с ВК, чтобы редактировать новость");
+        if (linked) await prisma.vkImportPost.update({ where: { groupId_postId: { groupId: linked.groupId, postId: linked.postId } }, data: { revision: { increment: 1 } } });
         const newNews = await prisma.news.update({
           where: { id },
           data: {
             ...news,
+            hidden: linked ? undefined : news.hidden,
             tags: { set: tags.map((id) => ({ id })) },
           },
           include: {
@@ -120,10 +124,13 @@ export async function updateNews(formData: FormData) {
 
         if (images.length) {
           await fs.mkdir("uploads/news", { recursive: true });
-          for (const image of images) {
-            if (typeof image === "string") continue;
+          for (const [sortOrder, image] of images.entries()) {
+            if (typeof image === "string") {
+              await prisma.newsImages.updateMany({ where: { id: image, newsId: id }, data: { sortOrder } });
+              continue;
+            }
             const n = await prisma.newsImages.create({
-              data: { newsId: id },
+              data: { newsId: id, sortOrder },
             });
             await new Bun.Image(await image.arrayBuffer())
               .webp()

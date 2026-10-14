@@ -1,0 +1,14 @@
+ALTER TABLE "VkImportSource" ADD COLUMN "recentPostIds" JSONB;
+ALTER TABLE "VkImportSource" ADD COLUMN "lastSyncAt" DATETIME;
+ALTER TABLE "VkImportSource" ADD COLUMN "lastSyncError" TEXT;
+ALTER TABLE "VkImportSource" ADD COLUMN "lastSyncResult" JSONB;
+ALTER TABLE "VkImportPost" ADD COLUMN "selectionBasis" JSONB;
+ALTER TABLE "VkImportPost" ADD COLUMN "syncEnabled" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "VkImportPost" ADD COLUMN "manualHidden" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "VkImportPost" ADD COLUMN "manualDeleted" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "VkImportPost" ADD COLUMN "autoHiddenReason" TEXT;
+ALTER TABLE "VkImportPost" ADD COLUMN "lastCheckedAt" DATETIME;
+ALTER TABLE "VkImportPost" ADD COLUMN "lastCheckError" TEXT;
+ALTER TABLE "VkImportPost" ADD COLUMN "revision" INTEGER NOT NULL DEFAULT 0;
+UPDATE "VkImportPost" SET "manualHidden" = true WHERE "newsId" IN (SELECT "id" FROM "News" WHERE "hidden" = true);
+UPDATE "VkImportPost" SET "manualDeleted" = true WHERE "status" = 'imported' AND "newsId" IS NULL;

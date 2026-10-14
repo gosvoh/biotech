@@ -25,6 +25,7 @@ export interface VkApi {
   getGroup(): Promise<VkGroup>;
   getWall(groupId: string, offset: number, count: number): Promise<{ items: VkPost[]; count: number }>;
   getPosts(groupId: string, postIds: string[]): Promise<VkPost[]>;
+  lookupPosts?(groupId: string, postIds: string[]): Promise<VkPostLookup>;
 }
 
 export interface PreparedVkImage {
@@ -44,6 +45,7 @@ export interface VkImportCounts {
 }
 
 export interface VkImportResult extends VkImportCounts {
+  sync?: VkSyncResult;
   group: VkGroup;
   successful: boolean;
   startedAt: string;
@@ -54,6 +56,8 @@ export interface VkImportResult extends VkImportCounts {
 }
 
 export interface VkImportStatus {
+  lastSyncAt?: string | null;
+  lastSyncResult?: VkSyncResult | null;
   configured: boolean;
   source: string | null;
   group: VkGroup | null;
@@ -61,4 +65,36 @@ export interface VkImportStatus {
   lastSuccessAt: string | null;
   lastResult: VkImportResult | null;
   error: string | null;
+}
+
+export interface VkPostLookup {
+  items: VkPost[];
+  deletedIds: string[];
+  ambiguousIds: string[];
+}
+
+export interface VkSelectionBasis { name: string; tagId: string }
+
+export interface VkSyncResult {
+  group: VkGroup;
+  checked: number;
+  updated: number;
+  hidden: number;
+  restored: number;
+  failed: number;
+  successful: boolean;
+  startedAt: string;
+  finishedAt: string;
+  error: string | null;
+}
+
+export interface VkNewsState {
+  groupId: string;
+  postId: string;
+  syncEnabled: boolean;
+  manualHidden: boolean;
+  manualDeleted: boolean;
+  autoHiddenReason: string | null;
+  lastCheckedAt: string | null;
+  lastCheckError: string | null;
 }

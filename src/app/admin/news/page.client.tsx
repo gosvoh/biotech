@@ -30,6 +30,7 @@ export default function NewsClient({
   news: (Omit<News, "text" | "createdAt" | "updatedAt"> & {
     tags: NewsTags[];
     images: { id: string }[];
+    vkImport?: {groupId:string;postId:string;syncEnabled:boolean;manualHidden:boolean;autoHiddenReason:string|null} | null;
   })[];
 }) {
   const runAction = useAction();
@@ -51,6 +52,7 @@ export default function NewsClient({
         />
         <div className="min-w-0 flex-1">
           <div className="font-semibold">{record.title}</div>
+          {record.vkImport && <p className="mt-1 text-sm text-gray-500">{record.vkImport.autoHiddenReason ? `Скрыта автоматически: ${record.vkImport.autoHiddenReason}` : record.vkImport.syncEnabled ? "ВК: синхронизация включена" : "ВК: самостоятельная редактура"}</p>}
           <div className="mt-1 flex flex-wrap gap-1">
             {record.tags.map((t) => (
               <Tag key={`tag-${record.id}-${t.id}`}>{t.title}</Tag>
@@ -60,12 +62,12 @@ export default function NewsClient({
       </div>
       <div className="mt-3 flex items-center justify-between">
         <Checkbox
-          checked={record.hidden}
+          checked={record.vkImport?.manualHidden ?? record.hidden}
           onChange={(v) =>
             runAction(changeVisibility(record.id, v.target.checked))
           }
         >
-          Скрыта
+          Скрыть вручную
         </Checkbox>
         <div className="flex gap-2">
           <Link href={`/admin/news/${record.id}`}>
@@ -73,6 +75,7 @@ export default function NewsClient({
           </Link>
           <Popconfirm
             title="Удалить?"
+            description={record.vkImport ? "Пост будет исключён из повторного импорта. Снять запрет можно в блоке «Исключённые посты ВК»." : undefined}
             onConfirm={() => runAction(deleteNews(record.id))}
           >
             <Button danger icon={<DeleteOutlined />} />
@@ -110,7 +113,7 @@ export default function NewsClient({
           },
           {
             title: "Название",
-            dataIndex: "title",
+            render: (_, record) => <div>{record.title}{record.vkImport && <p className="mt-1 text-sm text-gray-500">{record.vkImport.autoHiddenReason ? `Скрыта автоматически: ${record.vkImport.autoHiddenReason}` : record.vkImport.syncEnabled ? "ВК: синхронизация включена" : "ВК: самостоятельная редактура"}</p>}</div>,
             width: 200,
           },
           {
@@ -125,12 +128,12 @@ export default function NewsClient({
             ),
           },
           {
-            title: "Скрыта",
+            title: "Скрыть вручную",
             width: 100,
 
             render: (_, record) => (
               <Checkbox
-                checked={record.hidden}
+                checked={record.vkImport?.manualHidden ?? record.hidden}
                 onChange={(v) =>
                   runAction(changeVisibility(record.id, v.target.checked))
                 }
@@ -147,6 +150,7 @@ export default function NewsClient({
                 </Link>
                 <Popconfirm
                   title="Удалить?"
+            description={record.vkImport ? "Пост будет исключён из повторного импорта. Снять запрет можно в блоке «Исключённые посты ВК»." : undefined}
                   onConfirm={() => runAction(deleteNews(record.id))}
                 >
                   <Button danger icon={<DeleteOutlined />} />
