@@ -7,4 +7,5 @@ README.md
 .git
 .env
 .env.local
+.mcp.json
 database
