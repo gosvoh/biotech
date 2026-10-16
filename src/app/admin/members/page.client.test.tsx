@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { App, ConfigProvider } from "antd";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import MembersClient from "./page.client";
-import { updateMember } from "./actions";
+import { addMember, deleteMember, duplicateMember, reorderMembers, updateMember } from "./actions";
 import type { MemberWithRelations } from "./types";
 
 // Server actions require authentication and a database; keep the client UI real.
@@ -16,6 +16,7 @@ vi.mock("./actions", () => ({
   duplicateMember: vi.fn(),
   reorderMembers: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const dates = { createdAt: new Date(0), updatedAt: new Date(0) };
 const department = { id: "department-a", name: "Отдел А", ...dates };
@@ -145,6 +146,34 @@ function expectEmptyOptionalFields() {
 }
 
 describe("member editing sessions", () => {
+  it("searches full names, department, position and contacts, retaining the full ordering form", async () => {
+    const search = () => container.querySelector<HTMLInputElement>('input[aria-label^="Поиск"]')!;
+    async function query(value: string) {
+      expect(search()).toBeTruthy();
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(search(), value);
+        search().dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    }
+    for (const value of [" ИВАНОВ ИВАН ", " ИВАНОВИЧ ", " ОТДЕЛ А ", " ИССЛЕДОВАТЕЛЬ ", " IVAN@EXAMPLE.COM ", " 1112233 "]) {
+      await query(value);
+      expect(container.querySelectorAll(".ant-card")).toHaveLength(1);
+      expect(container.textContent).toContain("Иванов");
+      expect(container.textContent).toContain("Найдено: 1");
+    }
+    await click([...container.querySelectorAll("button")].find(button => button.textContent === "Изменить порядок"));
+    expect(document.querySelector(".ant-modal")!.textContent).toContain("Иванов");
+    expect(document.querySelector(".ant-modal")!.textContent).toContain("Петров");
+    await cancel();
+    await query("ничего");
+    expect(container.textContent).toContain("Ничего не найдено");
+    await click(container.querySelector('button[aria-label="Очистить поиск"]'));
+    expect(container.querySelectorAll(".ant-card")).toHaveLength(2);
+    for (const action of [addMember, updateMember, deleteMember, duplicateMember, reorderMembers]) expect(action).not.toHaveBeenCalled();
+    await edit("Иванов"); await changeLastName("Несохранённая фамилия"); await cancel();
+    await query(" ПЕТРОВ "); await edit("Петров");
+    expect(field("lastName").value).toBe("Петров"); expectEmptyOptionalFields();
+  });
   it("opens the second member with their own data after cancelling the first", async () => {
     await edit("Иванов");
     expect(field("lastName").value).toBe("Иванов");

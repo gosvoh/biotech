@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { execFileSync } from "node:child_process";
 import { cpSync, copyFileSync, mkdtempSync, readdirSync, rmSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -10,6 +10,7 @@ import { syncVkNews } from "./sync";
 import { setNewsVisibility, deleteNewsWithDecisions, disableVkSync } from "./editor";
 import { createNewsPhotoFiles } from "./news-files";
 import { queueVkHistory, runVkHistoryBatch, getVkHistory } from "./history";
+import { listVkHistoryDetails } from "./history-details";
 import type { PreparedVkImage, VkApi, VkGroup, VkImageStore, VkPost } from "./types";
 
 let directory: string;
@@ -282,6 +283,7 @@ it("retains its own addition after publication succeeds but the lease expires be
   const job = await queueVkHistory(opts, { from: "2026-09-01", to: "2026-09-03" });
   expect((await runVkHistoryBatch(opts, job.id)).error).toContain("выполняется");
   expect(await db.news.count()).toBe(1);
+  expect(await db.vkHistoryPost.findUniqueOrThrow({ where: { jobId_postId: { jobId: job.id, postId: "1" } } })).toMatchObject({ outcome: "added", reasonCode: "added", reasonText: "Новость добавлена на сайт" });
   const original = await db.news.findFirstOrThrow({ include: { images: true } });
   expect(existsSync(join(directory, `${original.images[0].id}.webp`))).toBe(true);
   const independentDb = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
@@ -349,10 +351,82 @@ it.each(["updated", "hidden", "restored"] as const)("keeps its atomic %s effect 
   const interrupted = await runVkHistoryBatch(opts, job.id);
   expect(interrupted.error).toContain("выполняется");
   expect(interrupted).toMatchObject({ [effect]: 1, processed: 1, added: 0, skipped: 0 });
+  expect(await db.vkHistoryPost.findUniqueOrThrow({ where: { jobId_postId: { jobId: job.id, postId: "1" } } })).toMatchObject({ reasonCode: effect, reasonText: expect.any(String) });
   const independentDb = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
   try {
     expect(await runVkHistoryBatch({ ...opts, db: independentDb }, job.id)).toMatchObject({ state: "completed", [effect]: 1, processed: 1, added: 0, skipped: 0, failed: 0 });
     expect((await getVkHistory({ ...opts, db: independentDb }, job.id))?.[effect]).toBe(1);
     expect(await independentDb.news.count()).toBe(1);
   } finally { await independentDb.$disconnect(); }
+});
+
+it.each([false, true])("persists all selection and editor reasons for initial=%s beyond thirty rows and after restart", async (initial) => {
+  const posts = [post(1, { isRepost: true }), post(2, { text: "Нет тега" }), post(3, { text: "#Наука" }), post(4), post(5), ...Array.from({ length: 31 }, (_, i) => post(i + 10, { isRepost: true }))];
+  await run(wall([post(4), post(5)]));
+  await db.vkImportPost.update({ where: { groupId_postId: { groupId: group.id, postId: "4" } }, data: { manualDeleted: true } });
+  await db.vkImportPost.update({ where: { groupId_postId: { groupId: group.id, postId: "5" } }, data: { syncEnabled: false } });
+  const opts = options(wall(posts));
+  const job = await queueVkHistory(opts, { from: "2026-09-01", to: "2026-10-14", initial });
+  await runVkHistoryBatch(opts, job.id);
+  const independentDb = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
+  try {
+    expect(await runVkHistoryBatch({ ...opts, db: independentDb }, job.id)).toMatchObject({ state: "completed", skipped: 36, failed: 0 });
+    const rows = await independentDb.vkHistoryPost.findMany({ where: { jobId: job.id } });
+    expect(rows.every((row) => row.reasonCode && row.reasonText)).toBe(true);
+    expect(rows.find((row) => row.postId === "1")?.reasonText).toContain("Репост");
+    expect(rows.find((row) => row.postId === "2")?.reasonText).toContain("тег");
+    expect(rows.find((row) => row.postId === "3")?.reasonText).toContain("текст");
+    expect(rows.find((row) => row.postId === "4")?.reasonCode).toBe("manual_deleted");
+    expect(rows.find((row) => row.postId === "5")?.reasonCode).toBe("sync_disabled");
+  } finally { await independentDb.$disconnect(); }
+});
+
+it.each([false, true])("replaces a safe photo failure on %s existing publication with the successful retry", async (existing) => {
+  if (existing) await run(wall([post(1)]));
+  const changed = post(1, { text: "Обновление #Наука", photos: [{ url: "private-photo-url" }] });
+  const opts = options(wall([changed]), { images: images(0) });
+  const job = await queueVkHistory(opts, { from: "2026-09-01", to: "2026-09-03" });
+  expect(await runVkHistoryBatch(opts, job.id)).toMatchObject({ failed: 1 });
+  const where = { jobId_postId: { jobId: job.id, postId: "1" } };
+  const failed = await db.vkHistoryPost.findUniqueOrThrow({ where });
+  expect(failed.reasonCode).toBe(existing ? "sync_failed" : "import_failed");
+  expect(failed.reasonText).toContain("Не удалось");
+  expect(failed.reasonText).toContain("фотографии");
+  expect(failed.reasonText).not.toMatch(/VERY_SECRET|private-photo-url/);
+  const independentDb = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
+  try {
+    expect(await runVkHistoryBatch({ ...options(wall([changed])), db: independentDb }, job.id)).toMatchObject({ failed: 0, state: "completed" });
+    expect(await independentDb.vkHistoryPost.findUniqueOrThrow({ where })).toMatchObject({ error: null, reasonCode: existing ? "updated" : "added", reasonText: expect.not.stringContaining("Не удалось") });
+  } finally { await independentDb.$disconnect(); }
+});
+
+it("replaces a prior photo reason when a retry fails before recording a current sync outcome", async () => {
+  await run(wall([post(1)]));
+  const changed = post(1, { text: "Обновление #Наука", photos: [{ url: "private-photo-url" }] });
+  const opts = options(wall([changed]), { images: images(0) });
+  const job = await queueVkHistory(opts, { from: "2026-09-01", to: "2026-09-03" });
+  const beforeState = await runVkHistoryBatch(opts, job.id);
+  const where = { jobId_postId: { jobId: job.id, postId: "1" } };
+  const beforeRow = await db.vkHistoryPost.findUniqueOrThrow({ where });
+  expect(beforeRow.reasonText).toContain("фотографии");
+  const findMany = db.vkImportPost.findMany.bind(db.vkImportPost);
+  let injected = false;
+  const read = vi.spyOn(db.vkImportPost, "findMany").mockImplementation((args) => {
+    // Exclusion lookup has OR; the first non-exclusion read is sync's
+    // attemptedEntries query, before its per-entry reason recorder.
+    if (!args?.where?.OR && !injected) {
+      injected = true;
+      throw new Error("TRANSIENT_DB_SECRET");
+    }
+    return findMany(args);
+  });
+  try {
+    const afterState = await runVkHistoryBatch(options(wall([changed])), job.id);
+    expect(injected).toBe(true);
+    expect(afterState).toMatchObject({ processed: beforeState.processed, added: beforeState.added, updated: beforeState.updated, hidden: beforeState.hidden, restored: beforeState.restored, skipped: beforeState.skipped, failed: beforeState.failed });
+    const afterRow = await db.vkHistoryPost.findUniqueOrThrow({ where });
+    expect(afterRow).toMatchObject({ state: beforeRow.state, outcome: beforeRow.outcome, attempts: beforeRow.attempts + 1, reasonCode: "processing_failed", reasonText: afterState.error });
+    expect(afterRow.reasonText).not.toMatch(/фотографии|TRANSIENT_DB_SECRET/);
+    expect((await listVkHistoryDetails(db, { jobId: job.id, page: 1, filter: "failed" })).items[0].reasonText).toBe(afterState.error);
+  } finally { read.mockRestore(); }
 });

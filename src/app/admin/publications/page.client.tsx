@@ -29,7 +29,9 @@ import type { Publication } from "@/lib/db/client";
 import type { getPublications } from "./page";
 import dayjs from "@/lib/dayjs";
 import { useAction } from "@/lib/use-action";
+import { usePendingAction } from "@/lib/use-pending-action";
 import { ResponsiveTable } from "../responsive-table";
+import { ListSearch } from "../list-search";
 
 function EditModal({
   publication,
@@ -41,14 +43,23 @@ function EditModal({
   close: () => void;
 }) {
   const [form] = Form.useForm();
-  const runAction = useAction();
+  const { run, pending, isPending } = usePendingAction();
+  const saving = pending.has("save");
 
   return (
     <Modal
       open={open}
       title={publication ? "Редактировать публикацию" : "Добавить публикацию"}
-      onOk={() => form.submit()}
-      onCancel={close}
+      okText="Сохранить"
+      cancelText="Отмена"
+      onOk={() => { if (!isPending("save")) form.submit(); }}
+      onCancel={() => { if (!isPending("save")) close(); }}
+      confirmLoading={saving}
+      okButtonProps={{ disabled: saving }}
+      cancelButtonProps={{ disabled: saving }}
+      closable={{ disabled: saving }}
+      keyboard={!saving}
+      mask={{ closable: !saving }}
       destroyOnHidden
     >
       <Form
@@ -58,6 +69,7 @@ function EditModal({
         // only when the modal opens, and values applied at mount always stick.
         key={publication?.id ?? "new"}
         preserve={false}
+        disabled={saving}
         initialValues={{
           authors: publication?.authors,
           title: publication?.title,
@@ -65,8 +77,8 @@ function EditModal({
           year: publication ? dayjs(publication.year) : undefined,
         }}
         onFinish={(values) =>
-          runAction(
-            publication
+          run("save",
+            () => publication
               ? updatePublication({
                   ...values,
                   id: publication.id,
@@ -118,6 +130,10 @@ export default function ProjectsClient({
   const [project, setProject] = useState<Publication | undefined>();
   const runAction = useAction();
 
+  const [query, setQuery] = useState("");
+  const search = query.trim().toLocaleLowerCase("ru");
+  const filtered = publications.filter(record => [record.title, record.authors, record.year].join(" ").toLocaleLowerCase("ru").includes(search));
+
   const renderPublicationCard = (record: Publication) => {
     const items: DescriptionsProps["items"] = [
       { key: "year", label: "Год", children: record.year },
@@ -140,16 +156,20 @@ export default function ProjectsClient({
         <div className="mt-3 flex justify-end gap-2">
           <Button
             icon={<EditOutlined />}
+            aria-label={`Редактировать: ${record.title}`}
+            title="Редактировать"
             onClick={() => {
               setProject(record);
               setModalOpen(true);
             }}
           />
           <Popconfirm
-            title="Удалить?"
+            title={`Удалить публикацию «${record.title}»?`}
+            okText="Удалить"
+            cancelText="Отмена"
             onConfirm={() => runAction(deletePublication(record.id))}
           >
-            <Button danger icon={<DeleteOutlined />} />
+            <Button danger icon={<DeleteOutlined />} aria-label={`Удалить: ${record.title}`} title="Удалить" />
           </Popconfirm>
         </div>
       </Card>
@@ -166,8 +186,11 @@ export default function ProjectsClient({
           setProject(undefined);
         }}
       />
+      <ListSearch value={query} onChange={setQuery} foundCount={filtered.length} placeholder="Поиск по названию, авторам или году публикации" />
+      <div hidden={filtered.length === 0}>
       <ResponsiveTable
-        dataSource={publications}
+        dataSource={filtered}
+        resetKey={search}
         rowKey="id"
         pagination={{ pageSize: 30, hideOnSinglePage: true }}
         columns={[
@@ -197,16 +220,20 @@ export default function ProjectsClient({
               <Space>
                 <Button
                   icon={<EditOutlined />}
+                  aria-label={`Редактировать: ${record.title}`}
+                  title="Редактировать"
                   onClick={() => {
                     setProject(record);
                     setModalOpen(true);
                   }}
                 />
                 <Popconfirm
-                  title="Удалить?"
+                  title={`Удалить публикацию «${record.title}»?`}
+                  okText="Удалить"
+                  cancelText="Отмена"
                   onConfirm={() => runAction(deletePublication(record.id))}
                 >
-                  <Button danger icon={<DeleteOutlined />} />
+                  <Button danger icon={<DeleteOutlined />} aria-label={`Удалить: ${record.title}`} title="Удалить" />
                 </Popconfirm>
               </Space>
             ),
@@ -214,6 +241,7 @@ export default function ProjectsClient({
         ]}
         renderCard={renderPublicationCard}
       />
+      </div>
       <FloatButton
         icon={<PlusOutlined />}
         type="primary"

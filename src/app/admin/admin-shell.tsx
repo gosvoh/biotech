@@ -6,8 +6,10 @@ import { LogoutOutlined, MenuOutlined } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import type { AdminAccess } from "@/lib/admin-access";
+import { readOwnAdminAccess } from "./access-actions";
 import {
-  adminMenuItems,
+  getAdminMenuItems,
   getBreadcrumbItems,
   getSelectedKey,
 } from "./admin-nav";
@@ -18,11 +20,27 @@ const COLLAPSE_KEY = "admin-sider-collapsed";
 
 export default function AdminShell({
   children,
+  initialAccess,
 }: {
   children: React.ReactNode;
+  initialAccess: AdminAccess | null;
 }) {
   const pathname = usePathname() ?? "/admin";
   const router = useRouter();
+  const [ownAccess, setOwnAccess] = useState({ pathname, initialAccess, access: initialAccess });
+
+  // Layouts survive navigation. Re-read only the current user's safe access on
+  // each path or refreshed layout payload, ignoring replies from older paths.
+  useEffect(() => {
+    let current = true;
+    readOwnAdminAccess().then(
+      access => { if (current) setOwnAccess({ pathname, initialAccess, access }); },
+      () => { if (current) setOwnAccess({ pathname, initialAccess, access: null }); },
+    );
+    return () => { current = false; };
+  }, [pathname, initialAccess]);
+  const access = ownAccess.pathname === pathname && ownAccess.initialAccess === initialAccess ? ownAccess.access : null;
+  const adminMenuItems = getAdminMenuItems(access);
 
   // Start expanded so the first client render matches the server (which has no
   // localStorage); read the persisted value only after mount to avoid a

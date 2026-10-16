@@ -17,11 +17,30 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    sectionPermissions UserSectionPermission[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     role String @default("user")
+    accessStatus String @default("pending")
+    accessRevision Int @default(0)
+}
+
+model UserSectionPermission {
+    userId String
+    section String
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, section])
+}
+
+model AuthRateLimit {
+    key String @id
+    count Int
+    expiresAt DateTime
+
+    @@index([expiresAt])
 }
 
 model Account {
@@ -61,6 +80,7 @@ model VerificationToken {
     identifier String
     token      String
     expires    DateTime
+    accessRevision Int @default(0)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt @default(now())
@@ -284,6 +304,8 @@ model VkHistoryPost {
     restored Boolean @default(false)
     attempts Int @default(0)
     error String?
+    reasonCode String?
+    reasonText String?
     @@id([jobId, postId])
     @@index([jobId, state])
 }

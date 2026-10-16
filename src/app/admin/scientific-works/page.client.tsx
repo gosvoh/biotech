@@ -15,6 +15,8 @@ import {
   deleteScientificWork,
 } from "./actions";
 import { useAction } from "@/lib/use-action";
+import { usePendingAction } from "@/lib/use-pending-action";
+import { ListSearch } from "../list-search";
 
 export default function ScientificWorksClient({
   scientificWorks,
@@ -22,17 +24,21 @@ export default function ScientificWorksClient({
   scientificWorks: ScientificWork[];
 }) {
   const runAction = useAction();
+  const { run, pending } = usePendingAction();
   const [currentItem, setCurrentItem] = useState<ScientificWork>();
   const [form] = Form.useForm();
-  const input = Form.useWatch("title", form) as string | undefined;
+  const [query, setQuery] = useState("");
+  const search = query.trim().toLocaleLowerCase("ru");
+  const filtered = scientificWorks.filter(item => item.title.toLocaleLowerCase("ru").includes(search));
 
   return (
     <Space orientation="vertical" className="w-full">
       <Form
         form={form}
+        disabled={pending.has("add")}
         className="w-full"
         onFinish={(values) =>
-          runAction(addScientificWork(values.title), () => form.resetFields())
+          run("add", () => addScientificWork(values.title), () => form.resetFields())
         }
       >
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -52,17 +58,18 @@ export default function ScientificWorksClient({
               },
             ]}
           >
-            <Input placeholder="Название" />
+            <Input placeholder="Название" aria-label="Название новой научной работы" />
           </Form.Item>
-          <Button htmlType="submit" type="primary">
+          <Button htmlType="submit" type="primary" disabled={pending.has("add")} loading={pending.has("add")}>
             Добавить
           </Button>
         </div>
       </Form>
+      <ListSearch value={query} onChange={setQuery} foundCount={filtered.length} placeholder="Поиск по названию научной работы" />
+      <div hidden={filtered.length === 0}>
       <List
-        dataSource={scientificWorks.filter((d) =>
-          d.title.toLowerCase().includes(input?.toLowerCase() ?? "")
-        )}
+        dataSource={filtered}
+        locale={{ emptyText: null }}
         renderItem={(item) => {
           const isEditing =
             (currentItem && currentItem.id === item.id) ?? false;
@@ -74,6 +81,8 @@ export default function ScientificWorksClient({
                 <div className="min-w-0 flex-1">
                   {isEditing ? (
                     <Input
+                      aria-label={`Название научной работы ${item.title}`}
+                      disabled={pending.has("save")}
                       value={currentItem?.title}
                       onChange={(e) =>
                         setCurrentItem((i) => ({ ...i!, title: e.target.value }))
@@ -87,19 +96,26 @@ export default function ScientificWorksClient({
                   <Button
                     size="small"
                     type="text"
-                    disabled={isEditingNotCurrent}
+                    disabled={isEditingNotCurrent || pending.has("save")}
                     onClick={() => {
                       if (!isEditing) setCurrentItem(item);
                       else {
-                        runAction(updateScientificWork(currentItem!), () =>
+                        run("save", () => updateScientificWork(currentItem!), () =>
                           setCurrentItem(undefined)
                         );
                       }
                     }}
+                    loading={isEditing && pending.has("save")}
                     icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+                    aria-label={`${isEditing ? "Сохранить" : "Редактировать"}: ${item.title}`}
+                    title={isEditing ? "Сохранить" : "Редактировать"}
                   />
                   <Popconfirm
-                    title="Удалить?"
+                    title={`Удалить научную работу «${item.title}»?`}
+                    description="Научная работа будет удалена из карточек сотрудников. Сотрудники сохранятся."
+                    okText="Удалить"
+                    cancelText="Отмена"
+                    disabled={isEditing}
                     onConfirm={() => {
                       if (isEditing) return setCurrentItem(undefined);
                       else return runAction(deleteScientificWork(item.id));
@@ -109,8 +125,11 @@ export default function ScientificWorksClient({
                       size="small"
                       type="text"
                       danger
-                      disabled={isEditingNotCurrent}
+                      disabled={isEditingNotCurrent || pending.has("save")}
                       icon={isEditing ? <CloseOutlined /> : <DeleteOutlined />}
+                      aria-label={`${isEditing ? "Отменить редактирование" : "Удалить"}: ${item.title}`}
+                      title={isEditing ? "Отмена" : "Удалить"}
+                      onClick={isEditing ? () => setCurrentItem(undefined) : undefined}
                     />
                   </Popconfirm>
                 </div>
@@ -119,6 +138,7 @@ export default function ScientificWorksClient({
           );
         }}
       />
+      </div>
     </Space>
   );
 }

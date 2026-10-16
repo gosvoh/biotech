@@ -18,12 +18,13 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { PrismaClient } from "@/lib/db/client";
+import type { PrismaClient } from "@/lib/db/client";
+import { createAuthTestClient } from "@/lib/auth-test-client";
 import { memberOrderBy } from "@/lib/member-order";
 
 const mocks = vi.hoisted(() => ({
   db: null as unknown as PrismaClient,
-  auth: vi.fn(async () => ({ user: { role: "admin" } })),
+  auth: vi.fn<() => Promise<{ user: { id?: string; role: string } } | null>>(async () => ({ user: { id: "suite-admin", role: "admin" } })),
   revalidateTag: vi.fn(),
   writeImage: vi.fn(async () => {}),
   copyImage: vi.fn(async () => {}),
@@ -93,9 +94,7 @@ beforeAll(async () => {
   }
   writeFileSync(join(directory, "test.db"), "");
   deploy();
-  mocks.db = new PrismaClient({
-    datasources: { db: { url: `file:${join(directory, "test.db")}` } },
-  });
+  mocks.db = createAuthTestClient(`file:${join(directory, "test.db")}`);
   // Seed the old schema before adding the column, including both relation tables.
   await mocks.db.$executeRawUnsafe(
     `INSERT INTO "Member" (id, firstName, lastName) VALUES ('legacy', 'Иван', 'Иванов')`,
@@ -151,7 +150,10 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
+  await mocks.db.user.upsert({ where: { id: "suite-admin" }, create: { id: "suite-admin", role: "admin", accessStatus: "active" }, update: { role: "admin", accessStatus: "active" } });
+  await mocks.db.user.upsert({ where: { id: "suite-editor" }, create: { id: "suite-editor", role: "user", accessStatus: "active" }, update: { role: "user", accessStatus: "active" } });
   vi.clearAllMocks();
+  mocks.auth.mockResolvedValue({ user: { id: "suite-admin", role: "admin" } });
   await mocks.db.member.deleteMany();
   await mocks.db.department.deleteMany();
   await mocks.db.discipline.deleteMany();
@@ -268,11 +270,11 @@ describe("persistent member order", () => {
     expect(mocks.revalidateTag).not.toHaveBeenCalled();
   });
 
-  it("requires administrator access", async () => {
-    mocks.auth.mockResolvedValueOnce({ user: { role: "user" } });
+  it("requires members-section access", async () => {
+    mocks.auth.mockResolvedValueOnce({ user: { id: "suite-editor", role: "user" } });
     expect(
       await reorderMembers([{ departmentId: "a", memberIds: ["a2", "a1"] }]),
-    ).toEqual({ ok: false, error: "Unauthorized" });
+    ).toEqual({ ok: false, error: "Недостаточно прав для этого раздела." });
     expect((await list("a")).map((m) => m.id)).toEqual(["a1", "a2"]);
   });
 

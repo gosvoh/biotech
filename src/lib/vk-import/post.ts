@@ -1,7 +1,6 @@
 import { parseNewsTagTitle, type NewsTagName } from "@/lib/news-tags";
 import type { VkGroup, VkPost, VkSelectionBasis } from "./types";
-
-const FIRST_PUBLICATION = Date.parse("2026-08-31T21:00:00Z") / 1000;
+import { VK_FIRST_PUBLICATION_SECONDS, VK_TIME_ZONE } from "./policy";
 
 // Consume the whole Unicode hashtag, including an optional community suffix.
 // This prevents an allowed tag from matching the prefix of a longer word.
@@ -89,7 +88,7 @@ export function prepareVkPost(post: VkPost, group: VkGroup, tags: readonly NewsT
   if (post.ownerId !== `-${group.id}` || post.fromId !== `-${group.id}`) return { ok: false, reason: "Пост опубликован не от имени сообщества" };
   if (post.isRepost) return { ok: false, reason: "Репосты не импортируются" };
   if (post.postType !== "post") return { ok: false, reason: "Пост ещё не опубликован" };
-  if (!Number.isSafeInteger(post.date) || post.date < FIRST_PUBLICATION) return { ok: false, reason: "Пост опубликован раньше 1 сентября 2026 года" };
+  if (!Number.isSafeInteger(post.date) || post.date < VK_FIRST_PUBLICATION_SECONDS) return { ok: false, reason: "Пост опубликован раньше 1 сентября 2026 года" };
   const found = getVkHashtags(post.text, group);
   const selectionBasis = [...savedBasis];
   for (const item of getVkSelectionBasis(post.text, group, tags)) {
@@ -103,7 +102,7 @@ export function prepareVkPost(post: VkPost, group: VkGroup, tags: readonly NewsT
   if (!title) return { ok: false, reason: "В посте нет содержательного текста" };
   return {
     ok: true, title, text: vkTextToMarkdown(post.text), tagIds, selectionBasis,
-    date: new Date((post.date + 3 * 3600) * 1000).toISOString().slice(0, 10),
+    date: new Intl.DateTimeFormat("sv-SE", { timeZone: VK_TIME_ZONE }).format(new Date(post.date * 1000)),
     links: JSON.stringify({ vkLink: `https://vk.ru/wall-${group.id}_${post.id}` }),
   };
 }

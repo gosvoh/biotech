@@ -1,6 +1,7 @@
+import { requireAdminSectionPage } from "@/lib/admin-access.server";
 import { prisma } from "@/prisma";
 import { memberOrderBy } from "@/lib/member-order";
-import { requireAdminPage } from "@/lib/utils.server";
+
 import { cacheLife, cacheTag } from "next/cache";
 import MembersClient from "./page.client";
 import { Suspense } from "react";
@@ -37,7 +38,7 @@ async function getScientificWorks() {
 }
 
 export default async function Members() {
-  await requireAdminPage();
+  await requireAdminSectionPage("members");
   const members = await getMembers();
   const departments = await getDepartments();
   const disciplines = await getDisciplines();

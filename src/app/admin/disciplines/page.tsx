@@ -1,6 +1,7 @@
+import { requireAdminSectionPage } from "@/lib/admin-access.server";
 import DisciplinesClient from "./page.client";
 import { prisma } from "@/prisma";
-import { requireAdminPage } from "@/lib/utils.server";
+
 import { cacheLife, cacheTag } from "next/cache";
 import { Suspense } from "react";
 
@@ -12,7 +13,7 @@ async function getDisciplines() {
 }
 
 export default async function Disciplines() {
-  await requireAdminPage();
+  await requireAdminSectionPage("disciplines");
   const disciplines = await getDisciplines();
 
   return (

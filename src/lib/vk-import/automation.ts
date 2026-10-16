@@ -7,6 +7,7 @@ import { recheckVkTags } from "./recheck";
 import { getVkApiErrorMessage } from "./client";
 import { VK_LEASE_MS, type VkAutomationGuard } from "./lease";
 import type { VkAutomationState, VkGroup, VkImportResult } from "./types";
+import { VK_FIRST_DAY, VK_TIME_ZONE } from "./policy";
 export type { VkAutomationState } from "./types";
 export class VkAutomationError extends Error {
 }
@@ -89,13 +90,13 @@ export async function enableVkAutomation(options: VkAutomationOptions): Promise<
   if (options.currentGroupId && options.currentGroupId !== group.id)
     throw new VkAutomationError("Источник ВК изменился. Повторите включение.");
   await selectSource(db, group.id);
-  const current = now(), today = new Date(current.getTime() + 3 * 3600000).toISOString().slice(0, 10);
+  const current = now(), today = new Intl.DateTimeFormat("sv-SE", { timeZone: VK_TIME_ZONE }).format(current);
   await db.$transaction(async (tx) => {
     assertCurrent(options);
     const source = await tx.vkImportSource.upsert({ where: { groupId: group.id }, update: { name: group.name, screenName: group.screenName }, create: { groupId: group.id, name: group.name, screenName: group.screenName } });
     if (expectedRevision !== undefined && source.autoRevision !== expectedRevision)
       throw new VkAutomationError("Настройка расписания изменилась во время проверки. Повторите включение.");
-    const initial = await tx.vkHistoryJob.upsert({ where: { initialKey: group.id }, update: {}, create: { id: randomUUID(), groupId: group.id, initialKey: group.id, initial: true, from: "2026-09-01", to: today, createdAt: current } });
+    const initial = await tx.vkHistoryJob.upsert({ where: { initialKey: group.id }, update: {}, create: { id: randomUUID(), groupId: group.id, initialKey: group.id, initial: true, from: VK_FIRST_DAY, to: today, createdAt: current } });
     await tx.vkImportSource.update({ where: { groupId: group.id }, data: { autoEnabled: true, ...(!source.autoEnabled ? { autoRevision: { increment: 1 } } : {}), ...(source.cursorDate === null ? { cursorDate: Math.floor(initial.createdAt.getTime() / 1000) } : {}), nextNewAt: source.nextNewAt ?? current, nextSyncAt: source.nextSyncAt ?? current, nextHistoryAt: source.nextHistoryAt ?? current, lastAutomationError: null } });
   });
   return getVkAutomationState(db, group.id);

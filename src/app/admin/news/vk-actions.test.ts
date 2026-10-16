@@ -3,8 +3,9 @@ import { execFileSync } from "node:child_process";
 import { cpSync, copyFileSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { PrismaClient } from "@/lib/db/client";
-const mocks = vi.hoisted(() => ({ db: null as unknown as PrismaClient, auth: vi.fn(async () => ({ user: { role: "admin" } } as { user: { role: string } } | null)), revalidateTag: vi.fn() }));
+import type { PrismaClient } from "@/lib/db/client";
+import { createAuthTestClient } from "@/lib/auth-test-client";
+const mocks = vi.hoisted(() => ({ db: null as unknown as PrismaClient, auth: vi.fn<() => Promise<{ user: { id?: string; role: string } } | null>>(async () => ({ user: { id: "suite-admin", role: "admin" } })), revalidateTag: vi.fn() }));
 vi.mock("@/prisma", () => ({ get prisma() { return mocks.db; } }));
 vi.mock("@/auth", () => ({ auth: mocks.auth, signIn: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidateTag: mocks.revalidateTag }));
@@ -29,7 +30,7 @@ function form(id = "news-id", title = "Ручная правка") {
 beforeAll(async () => {
   directory = mkdtempSync(join(tmpdir(), "biotech-vk-editor-action-")); writeFileSync(join(directory, "test.db"), ""); copyFileSync("schema.prisma", join(directory, "schema.prisma"));
   for (const entry of readdirSync("migrations")) if (entry !== migration && entry !== retryMigration) cpSync(join("migrations", entry), join(directory, "migrations", entry), { recursive: true });
-  deploy(); mocks.db = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
+  deploy(); mocks.db = createAuthTestClient(`file:${join(directory, "test.db")}`);
   await mocks.db.news.create({ data: { id: "legacy", title: "Старая скрытая", text: "Текст", links: "{}", date: "2026-09-01", hidden: true } });
   await mocks.db.$executeRawUnsafe(`INSERT INTO "VkImportSource" ("groupId","name","screenName") VALUES ('legacy','Группа','old.group')`);
   await mocks.db.$executeRawUnsafe(`INSERT INTO "VkImportPost" ("groupId","postId","newsId","status") VALUES ('legacy','1','legacy','imported'),('legacy','2',NULL,'imported')`);
@@ -37,12 +38,14 @@ beforeAll(async () => {
   migrationState = { hidden: (await mocks.db.news.findUniqueOrThrow({ where: { id: "legacy" } })).hidden, manuallyHidden: (await mocks.db.vkImportPost.findUniqueOrThrow({ where: { groupId_postId: {groupId:"legacy",postId:"1"} } })).manualHidden, deleted: (await mocks.db.vkImportPost.findUniqueOrThrow({ where: { groupId_postId: {groupId:"legacy",postId:"2"} } })).manualDeleted };
 }, 30000);
 beforeEach(async () => {
+  await mocks.db.user.upsert({ where: { id: "suite-admin" }, create: { id: "suite-admin", role: "admin", accessStatus: "active" }, update: { role: "admin", accessStatus: "active" } });
+  await mocks.db.user.upsert({ where: { id: "suite-editor" }, create: { id: "suite-editor", role: "user", accessStatus: "active" }, update: { role: "user", accessStatus: "active" } });
   vi.clearAllMocks(); await mocks.db.vkImportPost.deleteMany(); await mocks.db.vkImportSource.deleteMany(); await mocks.db.news.deleteMany(); await mocks.db.newsTags.deleteMany();
   await mocks.db.newsTags.create({ data: { id: "science", title: "Наука", normalizedTitle: "наука" } });
   await mocks.db.vkImportSource.create({ data: { groupId: "42", name: "Биотех", screenName: "biotech.itmo" } });
   await mocks.db.news.create({ data: { id: "news-id", title: "Оригинал", text: "Оригинал #Наука", date: "2026-10-13", links: "{}", tags: { connect: { id: "science" } } } });
   await mocks.db.vkImportPost.create({ data: { groupId: "42", postId: "1", newsId: "news-id", status: "imported", selectionBasis: [{name:"наука",tagId:"science"}] } });
-  mocks.auth.mockResolvedValue({user:{role:"admin"}}); vi.stubEnv("DISABLE_ADMIN_AUTH","false"); vi.stubEnv("VK_GROUP_ID","biotech.itmo"); vi.stubEnv("VK_GROUP_TOKEN","test-token-no-output");
+  mocks.auth.mockResolvedValue({user:{id:"suite-admin",role:"admin"}}); vi.stubEnv("DISABLE_ADMIN_AUTH","false"); vi.stubEnv("VK_GROUP_ID","biotech.itmo"); vi.stubEnv("VK_GROUP_TOKEN","test-token-no-output");
   text="Обновлённый оригинал #Наука"; vi.stubGlobal("fetch",fetchMock);
   fetchMock.mockImplementation(async (url) => {
     if(String(url).endsWith("groups.getById")) return response({groups:[{id:42,name:"Биотех",screen_name:"biotech.itmo"}]});
@@ -82,7 +85,7 @@ describe("authorized VK editor actions", () => {
     expect(await mocks.db.news.findFirstOrThrow({where:{id:{not:"news-id"}},include:{vkImport:true}})).toMatchObject({hidden:true,vkImport:null});
   });
   it.each(["check","enable","disable","restore","delete","hide","duplicate","edit"])("rejects non-admin %s before source or database mutation", async (operation) => {
-    mocks.auth.mockResolvedValue({user:{role:"user"}});
+    mocks.auth.mockResolvedValue({user:{id:"suite-editor",role:"user"}});
     const actions:Record<string,()=>Promise<{ok:boolean}>>={ check:()=>checkVkNewsPost("news-id"),enable:()=>enableVkNewsSync("news-id"),disable:()=>disableVkNewsSync("news-id"),restore:()=>restoreVkNewsPost("42","1"),delete:()=>deleteNews("news-id"),hide:()=>changeVisibility("news-id",true),duplicate:()=>duplicateNews("news-id"),edit:()=>updateNews(form()) };
     expect((await actions[operation]()).ok).toBe(false); expect(fetchMock).not.toHaveBeenCalled();
     expect(await mocks.db.news.count()).toBe(1); expect(await mocks.db.vkImportPost.findFirstOrThrow()).toMatchObject({syncEnabled:true,manualHidden:false,manualDeleted:false,revision:0});

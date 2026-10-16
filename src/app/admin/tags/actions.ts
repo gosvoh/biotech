@@ -1,6 +1,8 @@
 "use server";
 
-import { actionResult, dbAction, revalidate, requireAdmin } from "@/lib/utils.server";
+import { requireAdminSection } from "@/lib/admin-access.server";
+
+import { actionResult, dbAction, revalidate } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import { markVkTagCatalogChanged } from "@/lib/vk-import/recheck";
 import { drainVkTagRecheck } from "@/lib/vk-import/recheck.server";
@@ -41,14 +43,14 @@ async function saveAndRecheckNewsTag(title: unknown, id?: string) {
 
 export async function addNewsTags(title: string) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("news");
     return saveAndRecheckNewsTag(title);
   });
 }
 
 export async function updateNewsTags(newsTags: Pick<NewsTags, "id" | "title">) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("news");
     if (!newsTags || typeof newsTags.id !== "string" || !newsTags.id) throw new Error("Не указан тег");
     return saveAndRecheckNewsTag(newsTags.title, newsTags.id);
   });
@@ -56,7 +58,7 @@ export async function updateNewsTags(newsTags: Pick<NewsTags, "id" | "title">) {
 
 export async function deleteNewsTags(id: string) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("news");
     await dbAction(prisma.newsTags.delete({ where: { id } }), ["newsTags", "news"]);
   });
 }

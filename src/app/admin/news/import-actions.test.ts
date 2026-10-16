@@ -3,11 +3,12 @@ import { execFileSync } from "node:child_process";
 import { cpSync, copyFileSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { PrismaClient } from "@/lib/db/client";
+import type { PrismaClient } from "@/lib/db/client";
+import { createAuthTestClient } from "@/lib/auth-test-client";
 
 const mocks = vi.hoisted(() => ({
   db: null as unknown as PrismaClient,
-  auth: vi.fn(async () => ({ user: { role: "admin" } } as { user: { role: string } } | null)),
+  auth: vi.fn<() => Promise<{ user: { id?: string; role: string } } | null>>(async () => ({ user: { id: "suite-admin", role: "admin" } })),
   revalidateTag: vi.fn(),
 }));
 vi.mock("@/prisma", () => ({ get prisma() { return mocks.db; } }));
@@ -37,13 +38,15 @@ beforeAll(async () => {
   copyFileSync("schema.prisma", join(directory, "schema.prisma"));
   cpSync("migrations", join(directory, "migrations"), { recursive: true });
   execFileSync(process.execPath, [resolve("node_modules/prisma/build/index.js"), "migrate", "deploy", "--schema", join(directory, "schema.prisma")], { env: { ...process.env, DATABASE_URL: `file:${join(directory, "test.db")}`, SHADOW_DATABASE_URL: `file:${join(directory, "shadow.db")}` }, stdio: "pipe" });
-  mocks.db = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
+  mocks.db = createAuthTestClient(`file:${join(directory, "test.db")}`);
 }, 30000);
 beforeEach(async () => {
+  await mocks.db.user.upsert({ where: { id: "suite-admin" }, create: { id: "suite-admin", role: "admin", accessStatus: "active" }, update: { role: "admin", accessStatus: "active" } });
+  await mocks.db.user.upsert({ where: { id: "suite-editor" }, create: { id: "suite-editor", role: "user", accessStatus: "active" }, update: { role: "user", accessStatus: "active" } });
   vi.clearAllMocks();
   await mocks.db.vkImportPost.deleteMany(); await mocks.db.vkImportSource.deleteMany(); await mocks.db.news.deleteMany(); await mocks.db.newsTags.deleteMany();
   await mocks.db.newsTags.create({ data: { title: "Наука", normalizedTitle: "наука" } });
-  mocks.auth.mockResolvedValue({ user: { role: "admin" } });
+  mocks.auth.mockResolvedValue({ user: { id: "suite-admin", role: "admin" } });
   vi.stubEnv("DISABLE_ADMIN_AUTH", "false"); vi.stubEnv("VK_GROUP_ID", "biotech.itmo"); vi.stubEnv("VK_GROUP_TOKEN", "test-secret-never-in-output");
   vi.stubGlobal("fetch", fetchMock); setupWall();
 });
@@ -53,7 +56,7 @@ afterAll(async () => {
   vi.unstubAllEnvs(); vi.unstubAllGlobals();
 });
 describe("administrator launches real importer", () => {
-  it.each([null, { user: { role: "user" } }])("rejects unauthorized access before reading source or calling VK: %j", async (session) => {
+  it.each([null, { user: { id: "suite-editor", role: "user" } }])("rejects unauthorized access before reading source or calling VK: %j", async (session) => {
     mocks.auth.mockResolvedValue(session);
     expect(await checkVkNews()).toEqual({ ok: false, error: "Недостаточно прав для импорта новостей" });
     expect(fetchMock).not.toHaveBeenCalled(); expect(await mocks.db.vkImportSource.count()).toBe(0);

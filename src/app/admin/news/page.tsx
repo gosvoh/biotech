@@ -1,3 +1,4 @@
+import { requireAdminSectionPage } from "@/lib/admin-access.server";
 import { getVkAutomationPanelState } from "@/lib/vk-import/automation-state.server";
 import VkHistoryPanel from "./history-panel";
 import { getVkHistoryPanelState, getVkTagRecheckPanelState } from "@/lib/vk-import/history-state.server";
@@ -7,7 +8,7 @@ import VkImportPanel from "./import-panel";
 import { getVkImportStatus } from "@/lib/vk-import/status.server";
 import { newsOrderBy, newsImagesOrderBy } from "@/lib/news-order";
 import { prisma } from "@/prisma";
-import { requireAdminPage } from "@/lib/utils.server";
+
 import { cacheLife, cacheTag } from "next/cache";
 import NewsClient from "./page.client";
 import { Suspense } from "react";
@@ -32,7 +33,7 @@ async function getNews() {
 }
 
 export default async function News() {
-  await requireAdminPage();
+  await requireAdminSectionPage("news");
   const [news, importStatus, exclusions, history, automation] = await Promise.all([getNews(), getVkImportStatus(), getExcludedVkPosts(), getVkHistoryPanelState(), getVkAutomationPanelState()]);
   const tagStatus = await getVkTagRecheckPanelState(importStatus.group?.id);
   const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Moscow", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());

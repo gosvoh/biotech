@@ -1,11 +1,9 @@
 "use server";
 
+import { requireAdminSection } from "@/lib/admin-access.server";
+
 import { prisma } from "@/prisma";
-import {
-  actionResult,
-  dbActionWithResult,
-  requireAdmin,
-} from "@/lib/utils.server";
+import { actionResult, dbActionWithResult } from "@/lib/utils.server";
 import fs from "fs/promises";
 import { z } from "zod";
 
@@ -34,7 +32,7 @@ function parseNewsForm(formData: FormData) {
 
 export async function addNews(formData: FormData) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("news");
 
     const parsed = parseNewsForm(formData);
     if (!parsed.success) {
@@ -74,7 +72,7 @@ export async function addNews(formData: FormData) {
 
 export async function updateNews(formData: FormData) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("news");
 
     const id = formData.get("id");
     if (typeof id !== "string" || !id) {

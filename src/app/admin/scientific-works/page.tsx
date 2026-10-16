@@ -1,5 +1,6 @@
+import { requireAdminSectionPage } from "@/lib/admin-access.server";
 import { prisma } from "@/prisma";
-import { requireAdminPage } from "@/lib/utils.server";
+
 import { cacheLife, cacheTag } from "next/cache";
 import ScientificWorksClient from "./page.client";
 import { Suspense } from "react";
@@ -12,7 +13,7 @@ async function getScientificWorks() {
 }
 
 export default async function ScientificWorks() {
-  await requireAdminPage();
+  await requireAdminSectionPage("scientific-works");
   const scientificWorks = await getScientificWorks();
 
   return (

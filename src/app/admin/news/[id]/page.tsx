@@ -1,10 +1,11 @@
+import { requireAdminSectionPage } from "@/lib/admin-access.server";
 import { createHash } from "node:crypto";
 import { getVkNewsState } from "@/lib/vk-import/news-state.server";
 import { getVkImportStatus } from "@/lib/vk-import/status.server";
 import { newsImagesOrderBy } from "@/lib/news-order";
 import NewsClient from "./page.client";
 import { prisma } from "@/prisma";
-import { requireAdminPage } from "@/lib/utils.server";
+
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -31,7 +32,7 @@ export default async function News({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdminPage();
+  await requireAdminSectionPage("news");
   const id = (await params).id;
   const tags = await getNewsTags();
 
