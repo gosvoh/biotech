@@ -4,12 +4,12 @@ import { applyVkPostBatch, type VkImportOptions } from "./importer";
 import { createVkLeaseFence, LostVkLease, VK_LEASE_MS } from "./lease";
 import { getVkApiErrorMessage } from "./client";
 import type { VkHistoryState, VkPost } from "./types";
+import { VK_FIRST_DAY, VK_TIME_ZONE } from "./policy";
 
 export class VkHistoryError extends Error {}
 export interface VkHistoryOptions extends VkImportOptions {
   removeOldImages?: (images: { id: string }[]) => Promise<void>;
 }
-const FIRST_DAY = "2026-09-01";
 function calendarDay(value: string) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new VkHistoryError("Укажите дату в формате ГГГГ-ММ-ДД.");
   const timestamp = Date.parse(`${value}T00:00:00+03:00`);
@@ -43,9 +43,9 @@ export async function queueVkHistory(options: VkHistoryOptions, period: { from: 
   const { db, api, now = () => new Date() } = options;
   if (!period || typeof period !== "object") throw new VkHistoryError("Укажите период истории.");
   calendarDay(period.from); calendarDay(period.to);
-  const today = new Date(now().getTime() + 3 * 3600_000).toISOString().slice(0, 10);
-  if (period.from < FIRST_DAY || period.from > period.to || period.to > today) throw new VkHistoryError("Период должен начинаться не раньше 1 сентября 2026 года и заканчиваться не позже сегодняшнего дня по Москве.");
-  if (period.initial && (period.from !== FIRST_DAY || period.to !== today)) throw new VkHistoryError("Первоначальная история загружается с 1 сентября по сегодняшний день по Москве.");
+  const today = new Intl.DateTimeFormat("sv-SE", { timeZone: VK_TIME_ZONE }).format(now());
+  if (period.from < VK_FIRST_DAY || period.from > period.to || period.to > today) throw new VkHistoryError("Период должен начинаться не раньше 1 сентября 2026 года и заканчиваться не позже сегодняшнего дня по Москве.");
+  if (period.initial && (period.from !== VK_FIRST_DAY || period.to !== today)) throw new VkHistoryError("Первоначальная история загружается с 1 сентября по сегодняшний день по Москве.");
   let group;
   try { group = await api.getGroup(); } catch (error) { throw new VkHistoryError(getVkApiErrorMessage(error)); }
   const key = `${group.id}:${period.from}:${period.to}`;
@@ -144,22 +144,31 @@ export async function runVkHistoryBatch(options: VkHistoryOptions, id: string): 
     for (const item of work) {
       await fence();
       const post = item.state === "failed" ? retried.get(item.postId) : item.snapshot as unknown as VkPost;
+      const historyAttempt = { failedPostIds: new Set<string>() };
       let error: string | null = null, outcome = item.outcome === "added" ? "added" : item.updated || item.hidden || item.restored ? "changed" : "skipped";
       if (excluded.has(item.postId)) { /* Explicit editor exclusions also settle prior update failures. */ }
       else if (!post) error = retryFetchError ?? HISTORY_ERRORS.missing;
       else {
-        const result = await applyVkPostBatch(options, [post], { reconsiderSkipped: true, syncExisting: true, historyJobId: id, lease: { group, token } });
+        const result = await applyVkPostBatch(options, [post], { reconsiderSkipped: true, syncExisting: true, historyJobId: id, historyAttempt, lease: { group, token } });
         error = result.successful ? null : result.error ?? HISTORY_ERRORS.storage;
         const applied = await db.vkHistoryPost.findUniqueOrThrow({ where: { jobId_postId: { jobId: id, postId: item.postId } } });
         outcome = applied.outcome === "added" ? "added" : applied.updated || applied.hidden || applied.restored ? "changed" : "skipped";
       }
       await db.$transaction(async (tx) => {
         await fence(tx);
+        let reason: { reasonCode: string; reasonText: string } | undefined;
         if (excluded.has(item.postId)) {
           const current = await tx.vkImportPost.findUnique({ where: { groupId_postId: { groupId: group.id, postId: item.postId } } });
           if (!current || (!current.manualDeleted && current.syncEnabled)) throw new VkHistoryError("Решения редактора изменились во время проверки. Повторите часть истории.");
+          reason = current.manualDeleted
+            ? { reasonCode: "manual_deleted", reasonText: "Новость удалена редактором; повторный импорт исключён" }
+            : { reasonCode: "sync_disabled", reasonText: "Синхронизация выключена редактором; сохранена редакторская версия" };
+        } else if (!post) {
+          reason = { reasonCode: "fetch_failed", reasonText: error! };
+        } else if (error && !historyAttempt.failedPostIds.has(item.postId)) {
+          reason = { reasonCode: "processing_failed", reasonText: error };
         }
-        await tx.vkHistoryPost.update({ where: { jobId_postId: { jobId: id, postId: item.postId } }, data: { state: error ? "failed" : "done", outcome: error && outcome === "skipped" ? null : outcome, error, attempts: { increment: 1 }, ...(post ? { snapshot: post as unknown as Prisma.InputJsonValue } : {}) } });
+        await tx.vkHistoryPost.update({ where: { jobId_postId: { jobId: id, postId: item.postId } }, data: { ...reason, state: error ? "failed" : "done", outcome: error && outcome === "skipped" ? null : outcome, error, attempts: { increment: 1 }, ...(post ? { snapshot: post as unknown as Prisma.InputJsonValue } : {}) } });
       });
       if (error) batchError ??= error;
       else successfulPart = true;

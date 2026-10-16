@@ -3,10 +3,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import VkHistoryPanel from "./history-panel";
-import { queueVkNewsHistory, continueVkNewsHistory } from "./history-actions";
+import { queueVkNewsHistory, continueVkNewsHistory, getVkNewsHistoryDetails } from "./history-actions";
 import type { VkHistoryState } from "@/lib/vk-import/types";
 
-vi.mock("./history-actions", () => ({ queueVkNewsHistory: vi.fn(), continueVkNewsHistory: vi.fn() }));
+vi.mock("./history-actions", () => ({ queueVkNewsHistory: vi.fn(), continueVkNewsHistory: vi.fn(), getVkNewsHistoryDetails: vi.fn() }));
 const refresh = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 let root: Root;
@@ -53,9 +53,24 @@ it("queues the explicit Moscow period and exposes a separate continuation withou
 
 it("disables queue and continuation when server configuration is missing", async () => {
   await render([job], false);
-  expect([...container.querySelectorAll<HTMLButtonElement>("button")].every((item) => item.disabled)).toBe(true);
+  expect(button("Импортировать историю").disabled).toBe(true);
+  expect(button("Обработать порцию").disabled).toBe(true);
   await act(async () => container.querySelector("form")!.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
   expect(queueVkNewsHistory).not.toHaveBeenCalled(); expect(continueVkNewsHistory).not.toHaveBeenCalled();
+});
+
+it("fetches only the expanded job, permits reading saved history without VK configuration, and collapses details", async () => {
+  vi.mocked(getVkNewsHistoryDetails).mockResolvedValue({ ok: true, data: { page: 1, pageSize: 20, total: 0, items: [] } });
+  await render([job, { ...job, id: "job-2" }], false);
+  expect(getVkNewsHistoryDetails).not.toHaveBeenCalled();
+  const details = () => [...container.querySelectorAll<HTMLButtonElement>("button")].filter((item) => item.textContent?.includes("Подробности"));
+  await act(async () => details()[1].click());
+  expect(getVkNewsHistoryDetails).toHaveBeenLastCalledWith({ jobId: "job-2", page: 1, filter: "all" });
+  expect(container.querySelectorAll('[aria-label="Подробности задания"]')).toHaveLength(1);
+  await act(async () => details()[0].click());
+  expect(getVkNewsHistoryDetails).toHaveBeenLastCalledWith({ jobId: "job-1", page: 1, filter: "all" });
+  await act(async () => details()[0].click());
+  expect(container.querySelector('[aria-label="Подробности задания"]')).toBeNull();
 });
 
 it("keeps the saved job and last success when continuation fails and prevents a second launch", async () => {

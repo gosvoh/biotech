@@ -3,8 +3,9 @@ import { execFileSync } from "node:child_process";
 import { cpSync, copyFileSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { PrismaClient } from "@/lib/db/client";
-const mocks = vi.hoisted(() => ({ db: null as unknown as PrismaClient, auth: vi.fn(async () => ({ user: { role: "admin" } } as { user: { role: string } } | null)), revalidateTag: vi.fn() }));
+import type { PrismaClient } from "@/lib/db/client";
+import { createAuthTestClient } from "@/lib/auth-test-client";
+const mocks = vi.hoisted(() => ({ db: null as unknown as PrismaClient, auth: vi.fn<() => Promise<{ user: { id?: string; role: string } } | null>>(async () => ({ user: { id: "suite-admin", role: "admin" } })), revalidateTag: vi.fn() }));
 vi.mock("@/prisma", () => ({ get prisma() { return mocks.db; } }));
 vi.mock("@/auth", () => ({ auth: mocks.auth, signIn: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidateTag: mocks.revalidateTag }));
@@ -18,11 +19,13 @@ beforeAll(async () => {
   directory = mkdtempSync(join(tmpdir(), "biotech-vk-auto-action-")); writeFileSync(join(directory, "test.db"), "");
   copyFileSync("schema.prisma", join(directory, "schema.prisma")); cpSync("migrations", join(directory, "migrations"), { recursive: true });
   execFileSync(process.execPath, [resolve("node_modules/prisma/build/index.js"), "migrate", "deploy", "--schema", join(directory, "schema.prisma")], { env: { ...process.env, DATABASE_URL: `file:${join(directory, "test.db")}`, SHADOW_DATABASE_URL: `file:${join(directory, "shadow.db")}` }, stdio: "pipe" });
-  mocks.db = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
+  mocks.db = createAuthTestClient(`file:${join(directory, "test.db")}`);
 }, 30000);
 beforeEach(async () => {
+  await mocks.db.user.upsert({ where: { id: "suite-admin" }, create: { id: "suite-admin", role: "admin", accessStatus: "active" }, update: { role: "admin", accessStatus: "active" } });
+  await mocks.db.user.upsert({ where: { id: "suite-editor" }, create: { id: "suite-editor", role: "user", accessStatus: "active" }, update: { role: "user", accessStatus: "active" } });
   vi.clearAllMocks(); await mocks.db.vkAutomationRuntime.deleteMany(); await mocks.db.vkImportSource.deleteMany();
-  mocks.auth.mockResolvedValue({ user: { role: "admin" } }); vi.stubEnv("DISABLE_ADMIN_AUTH", "false");
+  mocks.auth.mockResolvedValue({ user: { id: "suite-admin", role: "admin" } }); vi.stubEnv("DISABLE_ADMIN_AUTH", "false");
   vi.stubEnv("VK_GROUP_ID", "biotech.itmo"); vi.stubEnv("VK_GROUP_TOKEN", "test-secret-not-for-output");
   fetchMock.mockImplementation(async (url) => {
     if (String(url).endsWith("groups.getById")) return response({ groups: [{ id: 42, name: "Тестовая группа", screen_name: "biotech.itmo" }] });
@@ -32,7 +35,7 @@ beforeEach(async () => {
 });
 afterAll(async () => { await mocks.db?.$disconnect(); if (directory) { if (!resolve(directory).startsWith(resolve(tmpdir(), "biotech-vk-auto-action-"))) throw new Error("Unsafe cleanup"); rmSync(directory, { recursive: true, force: true }); } vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-it.each([null, { user: { role: "user" } }])("protects enabling and disabling before API access or state changes", async (session) => {
+it.each([null, { user: { id: "suite-editor", role: "user" } }])("protects enabling and disabling before API access or state changes", async (session) => {
   mocks.auth.mockResolvedValue(session);
   expect(await setVkNewsAutomation(true, "biotech.itmo", null)).toMatchObject({ ok: false });
   expect(await setVkNewsAutomation(false, "biotech.itmo", "42")).toMatchObject({ ok: false });

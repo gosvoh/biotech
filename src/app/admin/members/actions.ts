@@ -1,11 +1,8 @@
 "use server";
 
-import {
-  actionResult,
-  dbAction,
-  getOptionalString,
-  requireAdmin,
-} from "@/lib/utils.server";
+import { requireAdminSection } from "@/lib/admin-access.server";
+
+import { actionResult, dbAction, getOptionalString } from "@/lib/utils.server";
 import { prisma } from "@/prisma";
 import { nextMemberSortOrder } from "@/lib/member-order";
 import type { Member } from "@/lib/db/client";
@@ -21,7 +18,7 @@ const reorderSchema = z.array(z.object({
 
 export async function reorderMembers(input: unknown) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("members");
     const parsed = reorderSchema.safeParse(input);
     if (!parsed.success) throw new Error("Некорректный список сотрудников.");
     const groups = parsed.data;
@@ -117,7 +114,7 @@ async function saveMemberImage(image: File, imageKey: string) {
 
 export async function addMember(formData: FormData) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("members");
 
     const parsed = parseMemberForm(formData);
     if (!parsed.success) {
@@ -169,7 +166,7 @@ export async function addMember(formData: FormData) {
 
 export async function updateMember(formData: FormData) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("members");
 
     const id = formData.get("id");
     if (typeof id !== "string" || !id) {
@@ -239,7 +236,7 @@ export async function updateMember(formData: FormData) {
 
 export async function deleteMember(memberId: string) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("members");
     await dbAction(
       prisma.$transaction(async (prisma) => {
         const member = await prisma.member.findUnique({
@@ -261,7 +258,7 @@ export async function deleteMember(memberId: string) {
 
 export async function duplicateMember(memberId: string) {
   return actionResult(async () => {
-    await requireAdmin();
+    await requireAdminSection("members");
     await dbAction(
       prisma.$transaction(async (prisma) => {
         const member = await prisma.member.findUnique({

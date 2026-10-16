@@ -1,8 +1,7 @@
 import NextAuth, { type DefaultSession } from "next-auth";
-import type { Adapter } from "next-auth/adapters";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { headers } from "next/headers";
 import { prisma } from "@/prisma";
-import authConfig from "./auth.config";
+import { createAuthConfig } from "@/lib/auth-config.server";
 
 declare module "next-auth" {
   interface Session {
@@ -15,24 +14,6 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  // Duplicate @auth/core installs (one hoisted, one nested under next-auth)
-  // yield two structurally-identical but nominally-distinct `Adapter` types.
-  // Cast to next-auth's own `Adapter` so the return type is assignable here
-  // deterministically (a `@ts-expect-error`/`@ts-ignore` would be flaky: the
-  // mismatch only surfaces depending on type-resolution order).
-  adapter: PrismaAdapter(prisma) as Adapter,
-  callbacks: {
-    authorized: async ({ auth }) => !!auth,
-    session({ session, user }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          role: user.role,
-        },
-      };
-    },
-  },
-  ...authConfig,
-});
+export const { handlers, signIn, signOut, auth } = NextAuth(async (request) =>
+  createAuthConfig(prisma, new Headers(request?.headers ?? await headers()))
+);

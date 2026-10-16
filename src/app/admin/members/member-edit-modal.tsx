@@ -15,7 +15,7 @@ import { useCallback, useEffect, useState } from "react";
 import { addMember, updateMember } from "./actions";
 import type { MemberEditModalProps } from "./types";
 import { MemberImageCropModal } from "./member-image-crop-modal";
-import { useAction } from "@/lib/use-action";
+import { usePendingAction } from "@/lib/use-pending-action";
 
 function buildMemberFormData(
   values: Record<string, unknown>,
@@ -54,7 +54,8 @@ export function MemberEditModal({
   close,
 }: MemberEditModalProps) {
   const [form] = Form.useForm();
-  const runAction = useAction();
+  const { run, pending, isPending } = usePendingAction();
+  const saving = pending.has("save");
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [imageToCropSrc, setImageToCropSrc] = useState<string>();
   const [imageToCropName, setImageToCropName] = useState<string>();
@@ -118,8 +119,14 @@ export function MemberEditModal({
       <Modal
         open={open}
         title={member ? "Редактировать сотрудника" : "Добавить сотрудника"}
-        onOk={() => form.submit()}
+        onOk={() => { if (!isPending("save")) form.submit(); }}
+        confirmLoading={saving}
+        okButtonProps={{ disabled: saving }}
+        cancelButtonProps={{ disabled: saving }}
+        closable={{ disabled: saving }}
+        keyboard={!saving}
         onCancel={() => {
+          if (isPending("save")) return;
           closeCropModal();
           close();
         }}
@@ -129,6 +136,7 @@ export function MemberEditModal({
         <Form
           // MembersClient mounts a fresh modal (and form instance) per opening.
           preserve={false}
+          disabled={saving}
           form={form}
           labelCol={{ span: 8 }}
           wrapperCol={{ span: 16 }}
@@ -146,8 +154,8 @@ export function MemberEditModal({
           }}
           onFinish={(values) => {
             const formData = buildMemberFormData(values, member?.id);
-            return runAction(
-              member ? updateMember(formData) : addMember(formData),
+            return run("save",
+              () => member ? updateMember(formData) : addMember(formData),
               close,
             );
           }}

@@ -1,8 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { generateMeta } from "@/lib/meta";
 import { SITE_URL, siteUrl } from "@/lib/site";
+
+function currentSourceFiles(cwd = process.cwd()) {
+  return execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { cwd, encoding: "utf8" })
+    .split("\0").filter(file => file && existsSync(resolve(cwd, file)));
+}
+
+it("scans current Git files after tracked deletions and includes new nonignored files", () => {
+  const directory = mkdtempSync(join(tmpdir(), "biotech-meta-files-"));
+  try {
+    execFileSync("git", ["init", "--quiet", directory]);
+    writeFileSync(join(directory, "deleted.ts"), "old");
+    writeFileSync(join(directory, "kept.ts"), "current");
+    execFileSync("git", ["add", "deleted.ts", "kept.ts"], { cwd: directory });
+    unlinkSync(join(directory, "deleted.ts"));
+    writeFileSync(join(directory, "new.ts"), "new");
+    writeFileSync(join(directory, ".gitignore"), "ignored.ts\n");
+    writeFileSync(join(directory, "ignored.ts"), "ignored");
+    expect(currentSourceFiles(directory).sort()).toEqual([".gitignore", "kept.ts", "new.ts"]);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 describe("production metadata", () => {
   it("pins the public HTTPS origin", () => {
@@ -35,7 +59,7 @@ describe("production metadata", () => {
   it("keeps tracked source files free of the retired host", () => {
     // Assemble the forbidden hostname so the guard itself is not a stale URL.
     const retiredHost = ["cedne", "ru"].join(".");
-    const files = execFileSync("git", ["ls-files", "-z"], { encoding: "utf8" }).split("\0").filter(Boolean);
+    const files = currentSourceFiles();
     for (const file of files) {
       const content = readFileSync(file);
       if (!content.includes(0)) expect(content.toString(), file).not.toContain(retiredHost);

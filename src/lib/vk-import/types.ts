@@ -119,6 +119,21 @@ export interface VkHistoryState {
   lastSuccessAt: string | null;
   error: string | null;
 }
+export type VkHistoryFilter = "all" | "skipped" | "failed";
+export interface VkHistoryDetail {
+  postId: string;
+  sourceUrl: string | null;
+  state: string;
+  outcome: string | null;
+  reasonCode: string | null;
+  reasonText: string;
+}
+export interface VkHistoryDetailsPage {
+  items: VkHistoryDetail[];
+  total: number;
+  page: number;
+  pageSize: 20;
+}
 export interface VkAutomationState {
  manualCheckPending?: boolean;
  groupId: string | null;

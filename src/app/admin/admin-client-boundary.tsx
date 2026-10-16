@@ -5,6 +5,7 @@ import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { ConfigProvider, App } from "antd";
 import ruRU from "antd/locale/ru_RU";
 import AdminShell from "./admin-shell";
+import type { AdminAccess } from "@/lib/admin-access";
 import AdminSkeleton from "./admin-skeleton";
 
 // Ant Design styles are CSS-in-JS injected by antd's own client runtime. Under
@@ -20,8 +21,10 @@ import AdminSkeleton from "./admin-skeleton";
 // is client-rendered (no SSR HTML for it), which is fine for an internal tool.
 export default function AdminClientBoundary({
   children,
+  initialAccess,
 }: {
   children: React.ReactNode;
+  initialAccess: AdminAccess | null;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -36,7 +39,7 @@ export default function AdminClientBoundary({
     <AntdRegistry>
       <ConfigProvider locale={ruRU}>
         <App>
-          <AdminShell>{children}</AdminShell>
+          <AdminShell initialAccess={initialAccess}>{children}</AdminShell>
         </App>
       </ConfigProvider>
     </AntdRegistry>

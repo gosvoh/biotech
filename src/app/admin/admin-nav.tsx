@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { canManageSection, getAdminSectionForPath, isFullAdmin, type AdminAccess } from "@/lib/admin-access";
 import type { BreadcrumbProps, MenuProps } from "antd";
 import {
   BookOutlined,
@@ -36,9 +37,14 @@ export const adminNav: AdminNavEntry[] = [
   },
 ];
 
-export const adminMenuItems: MenuProps["items"] = adminNav.map(
-  ({ key, label, icon }) => ({ key, label, icon }),
-);
+export function getAdminMenuItems(access: AdminAccess | null): MenuProps["items"] {
+  if (!access) return [];
+  return adminNav.filter(entry => {
+    if (entry.key === "/admin/users") return isFullAdmin(access);
+    const section = getAdminSectionForPath(entry.key);
+    return section !== null && canManageSection(access, section);
+  }).map(({ key, label, icon }) => ({ key, label, icon }));
+}
 
 // Активный пункт — тот, чей путь является самым длинным префиксом текущего
 // (чтобы /admin/news/123 подсвечивал «Новости»). На самом дашборде /admin ни

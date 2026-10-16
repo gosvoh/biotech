@@ -1,11 +1,8 @@
 import { generateMeta } from "@/lib/meta";
-import Mvk from "@public/mvk.jpg";
 import type { Metadata } from "next";
-import Image from "next/image";
 // import Timeline from "@/components/timeline";
 import FigureImage from "@/components/figure-image";
 import NewsCarouselSection from "@/components/news-carousel-section";
-import { removeHangingPrepositionsAndConjunctions } from "@/lib/utils";
 
 export const metadata: Metadata = generateMeta(
   "Биотех ИТМО",

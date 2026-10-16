@@ -43,6 +43,7 @@
   ],
   "exclude": [
     "node_modules",
-    "database/vk-import"
+    "database/vk-import",
+    "database/admin-redesign"
   ]
 }

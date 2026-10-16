@@ -11,13 +11,18 @@ import { Button, Form, Input, List, Popconfirm, Space } from "antd";
 import { useState } from "react";
 import { addNewsTags, deleteNewsTags, updateNewsTags } from "./actions";
 import { useAction } from "@/lib/use-action";
+import { usePendingAction } from "@/lib/use-pending-action";
 import { getNewsTagError, getStoredNewsTagIssue, normalizeNewsTagTitle } from "@/lib/news-tags";
+import { ListSearch } from "../list-search";
 
 export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
   const runAction = useAction();
+  const { run, pending } = usePendingAction();
   const [currentItem, setCurrentItem] = useState<NewsTags>();
   const [form] = Form.useForm();
-  const input = Form.useWatch("title", form);
+  const [query, setQuery] = useState("");
+  const search = query.trim().toLocaleLowerCase("ru");
+  const filtered = newsTags.filter(item => item.title.toLocaleLowerCase("ru").includes(search));
   const editError = currentItem ? getNewsTagError(currentItem.title, newsTags, currentItem.id) : undefined;
 
   return (
@@ -28,9 +33,10 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
       </p>
       <Form
         form={form}
+        disabled={pending.has("add")}
         className="w-full"
         onFinish={(values) =>
-          runAction(addNewsTags(values.title), () => form.resetFields())
+          run("add", () => addNewsTags(values.title), () => form.resetFields())
         }
       >
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -49,15 +55,16 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
           >
             <Input maxLength={31} placeholder="Название" aria-label="Название нового тега" />
           </Form.Item>
-          <Button htmlType="submit" type="primary">
+          <Button htmlType="submit" type="primary" disabled={pending.has("add")} loading={pending.has("add")}>
             Добавить
           </Button>
         </div>
       </Form>
+      <ListSearch value={query} onChange={setQuery} foundCount={filtered.length} placeholder="Поиск по названию тега" />
+      <div hidden={filtered.length === 0}>
       <List
-        dataSource={newsTags.filter((d) =>
-          d.title.toLowerCase().includes(input?.toLowerCase() ?? "")
-        )}
+        dataSource={filtered}
+        locale={{ emptyText: null }}
         renderItem={(item) => {
           const issue = getStoredNewsTagIssue(item, newsTags);
           const isEditing =
@@ -75,6 +82,7 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
                       aria-invalid={Boolean(editError)}
                       aria-describedby={editError ? `tag-error-${item.id}` : undefined}
                       status={editError ? "error" : undefined}
+                      disabled={pending.has("save")}
                       value={currentItem?.title}
                       onChange={(e) =>
                         setCurrentItem((i) => ({ ...i!, title: normalizeNewsTagTitle(e.target.value) }))
@@ -98,19 +106,26 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
                   <Button
                     size="small"
                     type="text"
-                    disabled={isEditingNotCurrent || (isEditing && Boolean(editError))}
+                    disabled={isEditingNotCurrent || pending.has("save") || (isEditing && Boolean(editError))}
                     onClick={() => {
                       if (!isEditing) setCurrentItem(item);
                       else {
-                        runAction(updateNewsTags(currentItem!), () =>
+                        run("save", () => updateNewsTags(currentItem!), () =>
                           setCurrentItem(undefined)
                         );
                       }
                     }}
+                    loading={isEditing && pending.has("save")}
                     icon={isEditing ? <SaveOutlined /> : <EditOutlined />}
+                    aria-label={`${isEditing ? "Сохранить" : "Редактировать"}: ${item.title}`}
+                    title={isEditing ? "Сохранить" : "Редактировать"}
                   />
                   <Popconfirm
-                    title="Удалить?"
+                    title={`Удалить тег «${item.title}»?`}
+                    description="Тег будет удалён из новостей. Новости сохранятся."
+                    okText="Удалить"
+                    cancelText="Отмена"
+                    disabled={isEditing}
                     onConfirm={() => {
                       if (isEditing) return setCurrentItem(undefined);
                       else return runAction(deleteNewsTags(item.id));
@@ -120,8 +135,11 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
                       size="small"
                       type="text"
                       danger
-                      disabled={isEditingNotCurrent}
+                      disabled={isEditingNotCurrent || pending.has("save")}
                       icon={isEditing ? <CloseOutlined /> : <DeleteOutlined />}
+                      aria-label={`${isEditing ? "Отменить редактирование" : "Удалить"}: ${item.title}`}
+                      title={isEditing ? "Отмена" : "Удалить"}
+                      onClick={isEditing ? () => setCurrentItem(undefined) : undefined}
                     />
                   </Popconfirm>
                 </div>
@@ -130,6 +148,7 @@ export default function NewsTagsClient({ newsTags }: { newsTags: NewsTags[] }) {
           );
         }}
       />
+      </div>
     </Space>
   );
 }

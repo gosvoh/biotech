@@ -1,6 +1,4 @@
 import { revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
-import { auth, signIn } from "@/auth";
 import type { ActionResult } from "./action-result";
 
 /**
@@ -13,53 +11,8 @@ export function getOptionalString(
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-/**
- * Whether admin auth is bypassed for local development. Gated on
- * `NODE_ENV !== "production"` so the `DISABLE_ADMIN_AUTH` env var can never
- * open the admin area on a production deploy, even if it is set there.
- */
-function isAdminAuthDisabled() {
-  const disabled =
-    process.env.NODE_ENV !== "production" &&
-    process.env.DISABLE_ADMIN_AUTH === "true";
-  if (disabled) {
-    console.warn(
-      "[admin] DISABLE_ADMIN_AUTH is on — admin auth is bypassed (dev only)."
-    );
-  }
-  return disabled;
-}
-
-export async function requireAdmin() {
-  if (isAdminAuthDisabled()) return;
-  const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    throw new Error("Unauthorized");
-  }
-}
-
-/**
- * Guards an admin page (Server Component) close to its data fetching: redirects
- * anonymous visitors into the sign-in flow and authenticated non-admins to the
- * home page, then returns the session for callers that need the current user.
- *
- * Page-level guarding is required because in the App Router a layout and its
- * pages render in parallel, so a layout-only check cannot prevent a page from
- * querying the database. Unlike {@link requireAdmin} (which throws and is meant
- * for mutations), this redirects and is meant for rendering.
- */
-export async function requireAdminPage() {
-  if (isAdminAuthDisabled()) return null;
-  const session = await auth();
-  if (!session) {
-    await signIn(undefined, { redirectTo: "/admin" });
-    return null;
-  }
-  if (session.user.role !== "admin") {
-    redirect("/");
-  }
-  return session;
-}
+/** Legacy guards retain full-admin semantics; section editors use explicit guards. */
+export { requireFullAdmin as requireAdmin, requireFullAdminPage as requireAdminPage } from "./admin-access.server";
 
 export function revalidate(tagToRevalidate: string | string[]) {
   if (Array.isArray(tagToRevalidate))

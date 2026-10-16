@@ -3,11 +3,12 @@ import { execFileSync } from "node:child_process";
 import { cpSync, copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { PrismaClient } from "@/lib/db/client";
+import type { PrismaClient } from "@/lib/db/client";
+import { createAuthTestClient } from "@/lib/auth-test-client";
 
 const mocks = vi.hoisted(() => ({
   db: null as unknown as PrismaClient,
-  auth: vi.fn<() => Promise<{ user: { role: string } } | null>>(async () => ({ user: { role: "admin" } })),
+  auth: vi.fn<() => Promise<{ user: { id?: string; role: string } } | null>>(async () => ({ user: { id: "suite-admin", role: "admin" } })),
   revalidateTag: vi.fn(),
 }));
 vi.mock("@/prisma", () => ({ get prisma() { return mocks.db; } }));
@@ -37,7 +38,7 @@ beforeAll(async () => {
     if (entry !== migration) cpSync(join("migrations", entry), join(directory, "migrations", entry), { recursive: true });
   }
   deploy();
-  mocks.db = new PrismaClient({ datasources: { db: { url: `file:${join(directory, "test.db")}` } } });
+  mocks.db = createAuthTestClient(`file:${join(directory, "test.db")}`);
   await mocks.db.$executeRawUnsafe(`INSERT INTO "NewsTags" (id, title) VALUES ('legacy-a', 'Наука'), ('legacy-b', 'наука'), ('legacy-c', 'Научные исследования')`);
   await mocks.db.$executeRawUnsafe(`INSERT INTO "News" (id, title, text, links, date) VALUES ('legacy-news', 'Новость', 'Текст', '', '2026-09-02')`);
   await mocks.db.$executeRawUnsafe(`INSERT INTO "_NewsToNewsTags" ("A", "B") VALUES ('legacy-news', 'legacy-a'), ('legacy-news', 'legacy-c')`);
@@ -56,8 +57,10 @@ beforeAll(async () => {
 }, 30000);
 
 beforeEach(async () => {
+  await mocks.db.user.upsert({ where: { id: "suite-admin" }, create: { id: "suite-admin", role: "admin", accessStatus: "active" }, update: { role: "admin", accessStatus: "active" } });
+  await mocks.db.user.upsert({ where: { id: "suite-editor" }, create: { id: "suite-editor", role: "user", accessStatus: "active" }, update: { role: "user", accessStatus: "active" } });
   vi.clearAllMocks();
-  mocks.auth.mockResolvedValue({ user: { role: "admin" } });
+  mocks.auth.mockResolvedValue({ user: { id: "suite-admin", role: "admin" } });
   await mocks.db.vkImportPost.deleteMany();
   await mocks.db.vkImportSource.deleteMany();
   await mocks.db.vkImportTagCatalog.deleteMany();
@@ -149,11 +152,11 @@ describe("news tag administration", () => {
     const news = await mocks.db.news.findFirstOrThrow({ include: { tags: true } });
     expect(news.tags.map((tag) => ({ id: tag.id, title: tag.title }))).toEqual([{ id: old.id, title: "НаучныеИсследования" }]);
   });
-  it.each(["user", null])("rejects all mutations for a non-admin session %j", async (role) => {
+  it.each(["user", null])("rejects all mutations for an unassigned or anonymous session %j", async (role) => {
     const old = await mocks.db.newsTags.create({ data: { title: "Наука" } });
-    mocks.auth.mockResolvedValue(role ? { user: { role } } : null);
+    mocks.auth.mockResolvedValue(role ? { user: { id: "suite-editor", role } } : null);
     const results = await Promise.all([addNewsTags("Образование"), updateNewsTags({ ...old, title: "Медицина" }), deleteNewsTags(old.id)]);
-    expect(results).toEqual([{ ok: false, error: "Unauthorized" }, { ok: false, error: "Unauthorized" }, { ok: false, error: "Unauthorized" }]);
+    expect(results).toEqual([{ ok: false, error: "Недостаточно прав для этого раздела." }, { ok: false, error: "Недостаточно прав для этого раздела." }, { ok: false, error: "Недостаточно прав для этого раздела." }]);
     expect((await mocks.db.newsTags.findMany()).map((tag) => tag.title)).toEqual(["Наука"]);
   });
   it("removes a deleted name reservation so the name can be reused", async () => {
