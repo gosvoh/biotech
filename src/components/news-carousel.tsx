@@ -1,4 +1,4 @@
-import { newsOrderBy, newsImagesOrderBy } from "@/lib/news-order";
+import { getPublicNews } from "@/lib/public-news";
 import {
   CarouselContent,
   CarouselItem,
@@ -10,7 +10,6 @@ import Image from "next/image";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { cn } from "@/lib/utils";
-import { prisma } from "@/prisma";
 
 import dayjs from "@/lib/dayjs";
 import NewsCard from "./news-card";
@@ -19,17 +18,8 @@ async function getNews() {
   "use cache";
   cacheLife("minutes");
   cacheTag("news");
-  return prisma.news.findMany({
-      orderBy: newsOrderBy,
-    select: {
-      id: true,
-      date: true,
-      title: true,
-      images: { select: { id: true }, orderBy: newsImagesOrderBy },
-    },
-    where: { hidden: false },
-    take: 10,
-  });
+  const [news] = await getPublicNews(10);
+  return news;
 }
 
 const CarouselImage = ({
@@ -47,7 +37,7 @@ const CarouselImage = ({
 }) => (
   <CarouselItem
     className={cn(
-      "md:basis-3/4 xl:basis-2/5 min-h-350px max-md:pl-10 pl-6",
+      "flex md:basis-3/4 xl:basis-2/5 min-h-350px max-md:pl-10 pl-6",
       className
     )}
   >

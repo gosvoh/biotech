@@ -23,7 +23,7 @@ export default function NewsSkeleton({ children }: React.PropsWithChildren) {
         {Array.from({ length: 10 }).map((_, i) => (
           <CarouselItem
             key={`news-skeleton-${i}`}
-            className="md:basis-3/4 xl:basis-2/5 min-h-350px max-md:pl-10 pl-6"
+            className="flex md:basis-3/4 xl:basis-2/5 min-h-350px max-md:pl-10 pl-6"
           >
             <NewsCardSkeleton />
           </CarouselItem>

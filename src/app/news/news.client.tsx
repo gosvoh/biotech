@@ -76,7 +76,7 @@ export default function NewsClient({ newsTags }: { newsTags: NewsTags[] }) {
           <Link
             key={`news-${item.id}`}
             href={`/news/${item.id}`}
-            className="lg:first:col-span-2"
+            className="flex lg:first:col-span-2"
           >
             <NewsCard
               date={dayjs(item.date).format("LL")}

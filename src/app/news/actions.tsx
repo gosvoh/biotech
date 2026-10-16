@@ -1,29 +1,6 @@
 "use server";
-import { newsOrderBy, newsImagesOrderBy } from "@/lib/news-order";
-
-import { prisma } from "@/prisma";
+import { getPublicNews } from "@/lib/public-news";
 
 export async function getNews(page: number = 0, tags: string[] = []) {
-  const select = {
-    date: true,
-    id: true,
-    tags: true,
-    title: true,
-    images: { select: { id: true }, orderBy: newsImagesOrderBy },
-  };
-  const where = {
-    hidden: false,
-    tags: tags.length ? { some: { id: { in: tags } } } : undefined,
-  };
-
-  return prisma.$transaction([
-    prisma.news.findMany({
-      orderBy: newsOrderBy,
-      select,
-      where,
-      skip: page === 0 ? 0 : (page - 1) * 4 + 3,
-      take: page === 0 ? 3 : 4,
-    }),
-    prisma.news.count({ where }),
-  ]);
+  return getPublicNews(page === 0 ? 3 : 4, page === 0 ? 0 : (page - 1) * 4 + 3, tags);
 }
