@@ -127,12 +127,7 @@ export function MemberEditModal({
         mask={{ closable: false }}
       >
         <Form
-          // Remount per member so `initialValues` are re-applied on each open.
-          // Populating via `initialValues` (instead of a useEffect calling
-          // setFieldsValue) is immune to Modal mount timing: with
-          // `destroyOnHidden` the <Form> mounts only when the modal opens, and
-          // values applied at mount always stick.
-          key={member?.id ?? "new"}
+          // MembersClient mounts a fresh modal (and form instance) per opening.
           preserve={false}
           form={form}
           labelCol={{ span: 8 }}

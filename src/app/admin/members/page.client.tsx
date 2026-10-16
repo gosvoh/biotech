@@ -43,14 +43,16 @@ export default function MembersClient({
       {orderOpen && (
         <MemberOrderModal members={members} departments={departments} close={() => setOrderOpen(false)} />
       )}
-      <MemberEditModal
-        member={member}
-        departments={departments}
-        disciplines={disciplines}
-        scientificWorks={scientificWorks}
-        open={modalOpen}
-        close={closeModal}
-      />
+      {modalOpen && (
+        <MemberEditModal
+          member={member}
+          departments={departments}
+          disciplines={disciplines}
+          scientificWorks={scientificWorks}
+          open={modalOpen}
+          close={closeModal}
+        />
+      )}
       <MembersTable
         members={members}
         departments={departments}
